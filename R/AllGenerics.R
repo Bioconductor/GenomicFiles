@@ -1,0 +1,92 @@
+### =========================================================================
+### All generics 
+### =========================================================================
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructors 
+###
+
+setGeneric("BamFileViews",
+           function(fileList,
+                    fileSample=DataFrame(row.names=
+                      make.unique(basename(fileList))),
+                    fileRange=GRanges(),
+                    fileExperiment=list(), 
+                    yieldSize="NA_integer_",
+                   .views_on_file="environment", ...)
+           standardGeneric("BamFileViews"),
+           signature="fileList")
+
+setGeneric("FaFileViews",
+           function(fileList,
+                    fileSample=DataFrame(row.names=
+                      make.unique(basename(fileList))),
+                    fileRange=GRanges(),
+                    fileExperiment=list(),
+                    yieldSize="NA_integer_",
+                   .views_on_file="environment", ...)
+           standardGeneric("FaFileViews"),
+           signature="fileList")
+
+setGeneric("TabixFileViews",
+           function(fileList,
+                    fileSample=DataFrame(row.names=
+                      make.unique(basename(fileList))),
+                    fileRange=GRanges(),
+                    fileExperiment=list(),
+                    yieldSize="NA_integer_",
+                   .views_on_file="environment", ...)
+           standardGeneric("TabixFileViews"),
+           signature="fileList")
+
+setGeneric("VCFFileViews",
+           function(fileList,
+                    fileSample=DataFrame(row.names=
+                      make.unique(basename(fileList))),
+                    fileRange=GRanges(),
+                    fileExperiment=list(),
+                    yieldSize="NA_integer_",
+                   .views_on_file="environment", ...)
+           standardGeneric("VCFFileViews"),
+           signature="fileList")
+
+setGeneric("BigWigFileViews",
+           function(fileList,
+                    fileSample=DataFrame(row.names=
+                      make.unique(basename(fileList))),
+                    fileRange=GRanges(),
+                    fileExperiment=list(), 
+                    yieldSize="NA_integer_",
+                   .views_on_file="environment", ...)
+           standardGeneric("BigWigFileViews"),
+           signature="fileList")
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### reduceByFile and reduceByRange
+###
+
+setGeneric("reduceByRange", function(X, MAP, REDUCE, ...)
+    standardGeneric("reduceByRange"),
+    signature="X")
+
+setGeneric("reduceByFile", function(X, MAP, REDUCE, ...)
+    standardGeneric("reduceByFile"),
+    signature="X")
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### base::mean is an S3 generic
+###
+
+setGeneric("mean", signature="x")
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### pack and unpack
+###
+
+setGeneric("pack", function(x, ...)
+    standardGeneric("pack"), 
+    signature="x")
+
+setGeneric("unpack", function(x, y, ...)
+    standardGeneric("unpack"), 
+    signature=c("x", "y"))

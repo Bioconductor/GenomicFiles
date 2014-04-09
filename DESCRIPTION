@@ -1,0 +1,16 @@
+Package: GenomicFiles
+Title: Parallel queries distributed by file or by range
+Description: This package provides infrastructure for parallel 
+	queries distributed 'by file' or 'by range'. User defined
+	map and reduce functions provide added flexibility for
+	data combination and manipulation.
+Version: 0.99.24
+Author: Valerie Obenchain, Michael Love, Martin Morgan 
+Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
+biocViews: Infrastructure, DataImport
+Depends: methods, BiocGenerics, BiocParallel, Rsamtools, 
+         rtracklayer (>= 1.23.16)
+Imports: GenomicAlignments
+Suggests: genefilter, deepSNV, BiocStyle, IRanges, RUnit, 
+          RNAseqData.HNRNPC.bam.chr14, TxDb.Hsapiens.UCSC.hg19.knownGene 
+License: Artistic-2.0
