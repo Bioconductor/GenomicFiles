@@ -1,7 +1,7 @@
-%\VignetteIndexEntry{Introduction to GenomicFileViews}
+%\VignetteIndexEntry{Introduction to GenomicFiles}
 %\VignetteDepends{GenomicAlignments, RNAseqData.HNRNPC.bam.chr14}
 %\VignetteKeywords{parallel, sequencing, fileIO}
-%\VignettePackage{GenomicFileViews}
+%\VignettePackage{GenomicFiles}
 
 \documentclass{article}
 
@@ -9,7 +9,7 @@
 BiocStyle::latex()
 @
 
-\title{Introduction to GenomicFileViews}
+\title{Introduction to GenomicFiles}
 \author{Valerie Obenchain, Michael Love, Martin Morgan}
 \date{Last modified: April 2014; Compiled: \today}
 
@@ -25,7 +25,7 @@ BiocStyle::latex()
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This vignette illustrates how to use \Rpackage{GenomicFileViews}
+This vignette illustrates how to use \Rpackage{GenomicFiles}
 for parallel computations across files. Computations are distributed
 by genomic range or by file with the option to define map and
 reduce combinators.
@@ -37,7 +37,7 @@ reduce combinators.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 <<class-load-package, results=hide>>=
-library(GenomicFileViews)
+library(GenomicFiles)
 @
 
 Each file type (e.g., Bam, BigWig, Fasta) has a corresponding 
@@ -70,17 +70,17 @@ fileRange(bfv) <- GRanges("chr14", IRanges(c(1.9e7, 2e7), width = 900000))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Computations with \Rpackage{GenomicFileViews} are distributed in
+Computations with \Rpackage{GenomicFiles} are distributed in
 parallel by file or by range. The files in \Rcode{fileList} or ranges 
 in \Rcode{fileRange} are sent to workers along with functions to 
 perform map and reduce steps. The map step directives are specified in a 
 \Rcode{MAP} function and the reduce directives in a \Rcode{REDUCE} function.
 
-The map and reduce steps used by \Rpackage{GenomicFileViews} follow the 
+The map and reduce steps used by \Rpackage{GenomicFiles} follow the 
 list-processing combinators from functional programming (i.e., 
 \Rfunction{Map} and \Rfunction{Reduce} in \Rpackage{base} \R{}). We use 
 the all-caps designation of \Rfunction{MAP} and \Rfunction{REDUCE} to 
-represent the functions in \Rpackage{GenomicFileViews}. 
+represent the functions in \Rpackage{GenomicFiles}. 
 
 Note that the map and reduce directives both occur within the distributed step,
 which is slightly different than the typical map-reduce framework, where the 
@@ -235,98 +235,98 @@ the first file summarized across all ranges.
 res2[[1]]
 @
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Packing / unpacking ranges}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-The \Rfunction{pack} method attempts to re-package ranges in optimal form 
-for making file queries (i.e., data extraction). Given a \Rclass{GRanges} 
-object, \Rfunction{pack} produces a like object obtained by grouping and/or 
-concatenating ranges that meet specific criteria such as density, distance 
-between ranges and max length. See the ``Visualization of pack methods''
-vignette in this package for a visual representation of packed ranges.
-
-<<pack-pack-vignette, eval=FALSE>>=
-browseVignettes("GenomicFileViews")
-@ 
-
-\Rfunction{pack} checks the following range qualities:
-\begin{itemize}
-  \item density: Ranges are considered dense if they cover more than 
-        a user supplied \Rcode{density\_ratio} (value between 0 and 1)
-        of the total range. Dense ranges are packed as a single max range.
-
-  \item distance: Ranges are distant if the distance between any
-        of the individual ranges exceeds \Rcode{max\_inter\_range\_len}.
-        Distant ranges are packed in chunks (bins) around the gap
-        separating the distant ranges.
-
-  \item length: A range is considered long if it exceeds \Rcode{max\_len}.
-        Long ranges are packed as sub-ranges using the \Rfunction{tile} 
-        function and \Rcode{width} argument.
-\end{itemize}
-
-The `ranges1' object we created eariler has a couple of ranges clustered at 
-each end of the total range with a large distance between ranges 2 and 3.
-
-<<pack-GRanges>>=
-ranges1
-distance(ranges1[2], ranges1[3])
-@
-
-\Rfunction{pack} has an argument, \Rcode{max\_inter\_range\_len}, that 
-specifies the maximum tolerated distance between ranges. If the distance 
-between any 2 ranges in a chromosome group exceed this distance the ranges 
-are re-packed in bins around the gap. 
-
-\Rfunction{pack} creates 2 new ranges on either side of the gap:
-
-<<pack-pack>>=
-pack(ranges1, max_inter_range_len = 7e7)
-@
-
-The intention is that \Rfunction{pack} be used before the file query
-which usually occurs in the map step. Results of the query
-will be in the form of the packed ranges so they must be unpacked
-before moving on to the next computation. The \Rfunction{unpack} 
-function returns packed results to the same geometry as the original 
-ranges.
-
-We again use the \Rclass{BamFileViews} object \Robject{bfv1}, this time
-reading in genomic alignments and computing coverage for each range. Within
-the map function, the call to \Rfunction{pack} reorganizes the ranges
-before extracting alignments from the file. After extracting alignments,
-the \Rclass{SimpleRleList} of coverage can be made into the same dimensions
-of the ranges using \Rfunction{unpack}.
-
-<<pack-unpack>>=
-MAP3 <- function(FILE, RANGE, ...) {
-  require(GenomicFileViews)
-  require(GenomicAlignments)
-  packed <- pack(RANGE)
-  param <- ScanBamParam(which=RANGE)
-  algns <- readGAlignments(path(FILE), param=param)
-  cvr <- coverage(algns)
-  unpack(RANGE, cvr)
-}
-REDUCE3 <- function(MAPPED, ...) {
-  do.call(c, MAPPED)
-}
-@ 
-
-Calling \Rfunction{reduceByFile} returns a list of the same length as
-the number of files. Each element of this list is itself a list
-containing \Rclass{RleList} coverage for each range. 
-
-<<pack-unpack-results>>=
-res3 <- reduceByFile(bfv1, MAP=MAP3, REDUCE=REDUCE3)
-length(res3)
-length(res3[[1]])
-dim(bfv1)
-res3[[1]][[1]]
-@ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{Packing / unpacking ranges}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%The \Rfunction{pack} method attempts to re-package ranges in optimal form 
+%for making file queries (i.e., data extraction). Given a \Rclass{GRanges} 
+%object, \Rfunction{pack} produces a like object obtained by grouping and/or 
+%concatenating ranges that meet specific criteria such as density, distance 
+%between ranges and max length. See the ``Visualization of pack methods''
+%vignette in this package for a visual representation of packed ranges.
+%
+%<<pack-pack-vignette, eval=FALSE>>=
+%browseVignettes("GenomicFiles")
+%@ 
+%
+%\Rfunction{pack} checks the following range qualities:
+%\begin{itemize}
+%  \item density: Ranges are considered dense if they cover more than 
+%        a user supplied \Rcode{density\_ratio} (value between 0 and 1)
+%        of the total range. Dense ranges are packed as a single max range.
+%
+%  \item distance: Ranges are distant if the distance between any
+%        of the individual ranges exceeds \Rcode{max\_inter\_range\_len}.
+%        Distant ranges are packed in chunks (bins) around the gap
+%        separating the distant ranges.
+%
+%  \item length: A range is considered long if it exceeds \Rcode{max\_len}.
+%        Long ranges are packed as sub-ranges using the \Rfunction{tile} 
+%        function and \Rcode{width} argument.
+%\end{itemize}
+%
+%The `ranges1' object we created eariler has a couple of ranges clustered at 
+%each end of the total range with a large distance between ranges 2 and 3.
+%
+%<<pack-GRanges>>=
+%ranges1
+%distance(ranges1[2], ranges1[3])
+%@
+%
+%\Rfunction{pack} has an argument, \Rcode{max\_inter\_range\_len}, that 
+%specifies the maximum tolerated distance between ranges. If the distance 
+%between any 2 ranges in a chromosome group exceed this distance the ranges 
+%are re-packed in bins around the gap. 
+%
+%\Rfunction{pack} creates 2 new ranges on either side of the gap:
+%
+%<<pack-pack>>=
+%pack(ranges1, max_inter_range_len = 7e7)
+%@
+%
+%The intention is that \Rfunction{pack} be used before the file query
+%which usually occurs in the map step. Results of the query
+%will be in the form of the packed ranges so they must be unpacked
+%before moving on to the next computation. The \Rfunction{unpack} 
+%function returns packed results to the same geometry as the original 
+%ranges.
+%
+%We again use the \Rclass{BamFileViews} object \Robject{bfv1}, this time
+%reading in genomic alignments and computing coverage for each range. Within
+%the map function, the call to \Rfunction{pack} reorganizes the ranges
+%before extracting alignments from the file. After extracting alignments,
+%the \Rclass{SimpleRleList} of coverage can be made into the same dimensions
+%of the ranges using \Rfunction{unpack}.
+%
+%<<pack-unpack>>=
+%MAP3 <- function(FILE, RANGE, ...) {
+%  require(GenomicFiles)
+%  require(GenomicAlignments)
+%  packed <- pack(RANGE)
+%  param <- ScanBamParam(which=RANGE)
+%  algns <- readGAlignments(path(FILE), param=param)
+%  cvr <- coverage(algns)
+%  unpack(RANGE, cvr)
+%}
+%REDUCE3 <- function(MAPPED, ...) {
+%  do.call(c, MAPPED)
+%}
+%@ 
+%
+%Calling \Rfunction{reduceByFile} returns a list of the same length as
+%the number of files. Each element of this list is itself a list
+%containing \Rclass{RleList} coverage for each range. 
+%
+%<<pack-unpack-results>>=
+%res3 <- reduceByFile(bfv1, MAP=MAP3, REDUCE=REDUCE3)
+%length(res3)
+%length(res3[[1]])
+%dim(bfv1)
+%res3[[1]][[1]]
+%@ 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -425,7 +425,7 @@ colData names(1): filePath
 In Section~\ref{sec:reduceByRange}, an example of streaming along the
 genome was shown in which the nucleotide counts for a range were
 summed over a series of files. In this section we show a slightly more
-complicated example of using \Rpackage{GenomicFileViews} to stream
+complicated example of using \Rpackage{GenomicFiles} to stream
 along the genome and process a number of files, here passing along a
 variable which specifies which files belong to which experimental
 group. This allows for operations such as a basepair-level $t$-test on

@@ -3,26 +3,17 @@ import(BiocGenerics)
 import(Rsamtools)
 import(BiocParallel)
 import(rtracklayer)
-import(GenomicAlignments)
 
 importFrom(GenomicAlignments, summarizeOverlaps)
 importMethodsFrom(GenomicAlignments, seqnames, findOverlaps, summarizeOverlaps)
 
 export(
-    ## from GenomicFileViews:
     fileList, "fileList<-", fileSample, "fileSample<-", 
     fileRange, "fileRange<-", fileExperiment, "fileExperiment<-",
-
-    ## from reduceBy:
     reduceByFile, reduceByRange,
-
-    ## AllGenerics:
     BamFileViews, BigWigFileViews, FaFileViews, 
     reduceByRange, reduceByFile,
-    pack, unpack,
-
-    ## from register-utils:
-    .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType 
+    .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType
 )
 
 exportClasses(
@@ -30,18 +21,8 @@ exportClasses(
 )
 
 exportMethods(
-    ## from R/GenomicFileViews:
-    "[", dim, names, show, yieldSize, pack,
-
-    ## from R/BamFileViews:
+    "[", dim, names, show, yieldSize,
     BamFileViews, countBam, scanBam, summarizeOverlaps, 
-
-    ## from R/FaFileFiews:
-    FaFileViews,
-
-    ## from R/BigWigFileViews:
     BigWigFileViews, coverage, summary,
-
-    ## from R/pack:
-    pack, unpack
+    FaFileViews
 )
