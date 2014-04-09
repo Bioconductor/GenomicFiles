@@ -3,9 +3,7 @@ import(BiocGenerics)
 import(Rsamtools)
 import(BiocParallel)
 import(rtracklayer)
-
-importFrom(GenomicAlignments, summarizeOverlaps)
-importMethodsFrom(GenomicAlignments, seqnames, findOverlaps, summarizeOverlaps)
+import(GenomicAlignments)
 
 export(
     fileList, "fileList<-", fileSample, "fileSample<-", 

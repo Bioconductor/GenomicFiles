@@ -25,10 +25,29 @@ BiocStyle::latex()
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This vignette illustrates how to use \Rpackage{GenomicFiles}
-for parallel computations across files. Computations are distributed
-by genomic range or by file with the option to define map and
-reduce combinators.
+This vignette illustrates how to use the \Rpackage{GenomicFiles} package
+for distributed computations across files. The package introduces the
+\Rcode{GenomicFileViews} class infrastructure for defining and executing 
+genomic queries. \Rcode{reduceByFile} and \Rcode{reduceByRange}
+functions distribute computations in parallel by file or by range. 
+MAP and REDUCE functions, similar in spirit to \Rcode{Map} and 
+\Rcode{Reduce} in \Rpkg{base} \R{}, provide a flexible interface to 
+manipulate and combine data across workers.
+
+We assume the reader has some previous experience with \R{} and
+with basic manipulation of ranges objects such as \Rcode{GRanges} and
+\Rcode{GAlignments} and file classes such as \Rcode{BamFile} and 
+\Rcode{BigWigFile}. See the vignettes and documentation in 
+\Biocpkg{GenomicRanges}, \Biocpkg{GenomicAlignments}, \Biocpkg{Rsamtools} 
+and \Biocpkg{rtracklayer} for an introduction to these classes.
+
+The \Rpackage{GenomicFiles} package is available at bioconductor.org
+and can be downloaded via \Rfunction{biocLite}:
+
+<<biocLite, eval=FALSE>>=
+source("http://bioconductor.org/biocLite.R")
+biocLite("GenomicFiles")
+@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

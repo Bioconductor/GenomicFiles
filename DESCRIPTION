@@ -8,7 +8,7 @@ Version: 0.99.25
 Author: Valerie Obenchain, Michael Love, Martin Morgan 
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Infrastructure, DataImport
-Depends: methods, BiocGenerics, BiocParallel, Rsamtools, 
+Depends: R (>= 3.1.0), methods, BiocGenerics, BiocParallel, Rsamtools, 
          rtracklayer (>= 1.23.16)
 Imports: GenomicAlignments
 Suggests: genefilter, deepSNV, BiocStyle, IRanges, RUnit, 
