@@ -87,6 +87,6 @@ setGeneric("pack", function(x, ...)
     standardGeneric("pack"), 
     signature="x")
 
-setGeneric("unpack", function(x, y, ...)
+setGeneric("unpack", function(flesh, skeleton, ...)
     standardGeneric("unpack"), 
-    signature=c("x", "y"))
+    signature=c("flesh", "skeleton"))

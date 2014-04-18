@@ -3,6 +3,7 @@ import(BiocGenerics)
 import(Rsamtools)
 import(BiocParallel)
 import(rtracklayer)
+import(IRanges)
 import(GenomicAlignments)
 
 export(
@@ -10,7 +11,7 @@ export(
     fileRange, "fileRange<-", fileExperiment, "fileExperiment<-",
     reduceByFile, reduceByRange,
     BamFileViews, BigWigFileViews, FaFileViews, 
-    reduceByRange, reduceByFile,
+    reduceByRange, reduceByFile, pack, unpack, isPacked,
     .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType
 )
 
@@ -22,5 +23,6 @@ exportMethods(
     "[", dim, names, show, yieldSize,
     BamFileViews, countBam, scanBam, summarizeOverlaps, 
     BigWigFileViews, coverage, summary,
-    FaFileViews
+    FaFileViews,
+    pack, unpack
 )

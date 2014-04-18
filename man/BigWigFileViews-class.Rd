@@ -28,7 +28,8 @@
         fileRange, fileExperiment = list(), yieldSize = NA_integer_, 
         .views_on_file = new.env(parent=emptyenv()), ...)}:
       This constructor is a generic function with dispatch on argument
-      \code{fileList}. Methods exist for \link{BigWigFileList} and character 
+      \code{fileList}. Methods exist for 
+      \code{\link[rtracklayer]{BigWigFileList}} and \code{character()} 
       (vector of file names). 
     }
   }
@@ -91,13 +92,14 @@
   \describe{
     \item{}{
        \code{fileList}:
-         A character() vector of BigWig path names or a \code{\linkS4class{BigWigFileList}}.
+         A character() vector of BigWig path names or a 
+         \code{\link[rtracklayer]{BigWigFileList}}.
     }
     \item{}{
       \code{fileSample}:
         A \code{\link[IRanges]{DataFrame}} instance with as many rows as 
-        \code{length(fileList)}, containing sample information associated with 
-        each path.
+        \code{length(fileList)}, containing sample information associated 
+        with each path.
     }
     \item{}{
       \code{fileRange}:
@@ -181,12 +183,12 @@ if (.Platform$OS.type != "windows") {
   gr <- GRanges(Rle(c("chr2", "chr19"), c(4, 2)),
                 IRanges(1 + c(200, 250, 500, 550, 1450, 1750), width=100))
   bwfv <- BigWigFileViews(c(fl, fl), fileRange=gr)
-  
+ 
   ## Object dimensions are range by sample (files).
   bwfv 
   fileList(bwfv)
   fileRange(bwfv)
-  
+ 
   ## Subset by range(s) or sample(s).
   bwfv[1:3,]
   bwfv[1:3,2]
@@ -196,25 +198,25 @@ if (.Platform$OS.type != "windows") {
   ## ---------------------------------------------------------------------
   ## coverage() on a 'BigWigFileViews' object returns coverage for all 
   ## files in fileList() for the ranges in fileRange().
-    
+ 
   ## When 'summarize = FALSE' results are returned as a list. The
   ## 'by' argument specifies grouping by range or by file.
   cv1 <- coverage(bwfv, by = "file", summarize = FALSE)
   length(cv1)
   elementLengths(cv1)
-  
+ 
   cv2 <- coverage(bwfv, by = "range", summarize = FALSE)
   length(cv2)
   elementLengths(cv2)
-  
+ 
   ## When 'summarize = TRUE' output is a 'SummarizedExperiment'.
   cv3 <- coverage(bwfv, summarize = TRUE)
   assays(cv3)
-  
+ 
   ## FIXME: improve show method for 'Lists' in a matrix
   ## FIXME: assays as 'List' should respect 'withDimnames'
   assays(cv3, withDimnames=TRUE)[[1]]
-  
+ 
   ## ---------------------------------------------------------------------
   ## summary() 
   ## ---------------------------------------------------------------------
@@ -223,7 +225,7 @@ if (.Platform$OS.type != "windows") {
 
   sm1 <- summary(bwfv, type = "mean", by = "file", summarize = TRUE) 
   sm2 <- summary(bwfv, type = "max", by = "range", summarize = FALSE) 
-  
+ 
   ## ---------------------------------------------------------------------
   ## reduceByRange() and reduceByFile() 
   ## ---------------------------------------------------------------------

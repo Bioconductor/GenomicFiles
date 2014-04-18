@@ -76,21 +76,22 @@ setMethod(coverage, "BigWigFileViews",
         else 
             import(FILE, which=RANGE, as=as)
     }
-    REDUCE <- function(MAPPED, ...) do.call(c, MAPPED)
 
     ## NOTE: Data in 'assays' of an SE object must be
     ##       organized as ranges by files. Currently
-    ##       'assays' can hold a 'list' where the
-    ##       overall length matches the number of files
-    ##       and elementLengths match the number of ranges.
+    ##       'assays' can hold a matrix of list elements
+    ##       in the proper dimensions of ranges x files.
     ##       Specifying 'by=range' requires refactoring of
     ##       the list to fit in 'assays'. For this simple
     ##       coverage method 'by=range' and 'by=file' give the
     ##       same results. Choose 'by=file' which is faster.
-    if (summarize) 
-        .summarizeView(x, MAP, REDUCE, ..., BY="file")
-    else 
-        .reduce(x, MAP, REDUCE, ..., BY=by)
+    if (summarize) { 
+        REDUCE <- function(MAPPED, ...) { MAPPED } 
+        .summarizeView(x, MAP, REDUCE, .., BY="file", as=as)
+    } else {
+        REDUCE <- function(MAPPED, ...) do.call(c, MAPPED)
+        .reduce(x, MAP, REDUCE, ..., BY=by, as=as)
+    }
 })
 
 setMethod(summary, "BigWigFileViews",

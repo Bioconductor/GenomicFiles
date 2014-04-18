@@ -126,6 +126,14 @@ setMethod("[", c("GenomicFileViews", "ANY", "ANY"),
 ### reduceByFile and reduceByRange 
 ###
 
+.GRangesToGRangesList <- function(ranges, PACK) 
+{
+    if (PACK)
+        pack(ranges)
+    else
+        unname(splitAsList(ranges, seq_along(ranges)))
+}
+
 .reduce <-
     function(..., BY=c("range", "file"))
 {
@@ -137,20 +145,20 @@ setMethod("[", c("GenomicFileViews", "ANY", "ANY"),
 }
 
 setMethod(reduceByRange, "GenomicFileViews",
-    function(X, MAP, REDUCE, ..., init, ITERATE=FALSE)
+    function(X, MAP, REDUCE, ..., init, ITERATE=FALSE, PACK=FALSE)
 {
-    if (NO_REDUCE <- missing(REDUCE)) {
-        if(ITERATE) 
-            stop("'ITERATE' must be FALSE when REDUCE is missing")
-    } else {
+    NO_REDUCE <- missing(REDUCE)
+    if(ITERATE && NO_REDUCE) 
+       stop("'ITERATE' must be FALSE when 'REDUCE' is missing")
+    if (!NO_REDUCE) 
         REDUCE <- match.fun(REDUCE)
-    }
+    if (ITERATE && PACK)
+        stop("'ITERATE' and 'PACK' cannot both be TRUE")
     MAP <- match.fun(MAP)
     initmiss <- missing(init)
-    if (is(fileRange(X), "GenomicRanges"))
-        granges <- unname(splitAsList(fileRange(X), seq_along(fileRange(X))))
+    grl <- .GRangesToGRangesList(fileRange(X), PACK)
 
-    bplapply(granges, function(grange, ...) {
+    bplapply(grl, function(grange, ...) {
         if (ITERATE) {
             result <- if (initmiss) {
                 MAP(fileList(X)[[1]], grange, ...)
@@ -162,44 +170,48 @@ setMethod(reduceByRange, "GenomicFileViews",
             result
         } else {
             mapped <- lapply(fileList(X), MAP, RANGE=grange, ...)
-            if (!NO_REDUCE)
-                REDUCE(mapped, ..., RANGE=grange)
+            if (PACK)
+                mapped <- unpack(mapped, grl)
+            if (NO_REDUCE)
+                mapped
             else
-               mapped
+                REDUCE(mapped, ..., RANGE=grange)
         }
     }, ...)
 })
 
 setMethod(reduceByFile, "GenomicFileViews",
-    function(X, MAP, REDUCE, ..., init, ITERATE=FALSE)
+    function(X, MAP, REDUCE, ..., init, ITERATE=FALSE, PACK=FALSE)
 {
-    if (NO_REDUCE <- missing(REDUCE)) {
-        if(ITERATE) 
-            stop("'ITERATE' must be FALSE when REDUCE is missing")
-    } else {
+    NO_REDUCE <- missing(REDUCE)
+    if(ITERATE && NO_REDUCE) 
+       stop("'ITERATE' must be FALSE when 'REDUCE' is missing")
+    if (!NO_REDUCE) 
         REDUCE <- match.fun(REDUCE)
-    }
+    if (ITERATE && PACK)
+        stop("'ITERATE' and 'PACK' cannot both be TRUE")
     MAP <- match.fun(MAP)
     initmiss <- missing(init)
-    if (is(fileRange(X), "GenomicRanges"))
-        granges <- splitAsList(fileRange(X), seq_along(fileRange(X)))
+    grl <- .GRangesToGRangesList(fileRange(X), PACK)
 
     bplapply(fileList(X), function(fl, ...) {
         if (ITERATE) {
             result <- if (initmiss) {
-                MAP(fl, granges[[1]], ...)
+                MAP(fl, grl[[1]], ...)
             } else init
-            for (i in seq_along(granges)[-1]) {
-                mapped <- MAP(fl, granges[[i]], ...)
+            for (i in seq_along(grl)[-1]) {
+                mapped <- MAP(fl, grl[[i]], ...)
                 result <- REDUCE(result, mapped, ..., FILE=fl)
             }
             result
         } else {
-            mapped <- lapply(granges, MAP, FILE=fl, ...)
-            if (!NO_REDUCE)
-                REDUCE(mapped, ..., FILE=fl)
+            mapped <- lapply(grl, MAP, FILE=fl, ...)
+            if (PACK)
+                mapped <- unpack(mapped, grl)
+            if (NO_REDUCE)
+                mapped
             else
-               mapped
+                REDUCE(mapped, ..., FILE=fl)
         }
     }, ...)
 })

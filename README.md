@@ -1,4 +1,4 @@
 GenomicFiles
 =========
 
-Query genomic regions across multiple files
+Parallel queries distributed by file or by range.

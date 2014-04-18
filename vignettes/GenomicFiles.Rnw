@@ -254,98 +254,131 @@ the first file summarized across all ranges.
 res2[[1]]
 @
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\section{Packing / unpacking ranges}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%The \Rfunction{pack} method attempts to re-package ranges in optimal form 
-%for making file queries (i.e., data extraction). Given a \Rclass{GRanges} 
-%object, \Rfunction{pack} produces a like object obtained by grouping and/or 
-%concatenating ranges that meet specific criteria such as density, distance 
-%between ranges and max length. See the ``Visualization of pack methods''
-%vignette in this package for a visual representation of packed ranges.
-%
-%<<pack-pack-vignette, eval=FALSE>>=
-%browseVignettes("GenomicFiles")
-%@ 
-%
-%\Rfunction{pack} checks the following range qualities:
-%\begin{itemize}
-%  \item density: Ranges are considered dense if they cover more than 
-%        a user supplied \Rcode{density\_ratio} (value between 0 and 1)
-%        of the total range. Dense ranges are packed as a single max range.
-%
-%  \item distance: Ranges are distant if the distance between any
-%        of the individual ranges exceeds \Rcode{max\_inter\_range\_len}.
-%        Distant ranges are packed in chunks (bins) around the gap
-%        separating the distant ranges.
-%
-%  \item length: A range is considered long if it exceeds \Rcode{max\_len}.
-%        Long ranges are packed as sub-ranges using the \Rfunction{tile} 
-%        function and \Rcode{width} argument.
-%\end{itemize}
-%
-%The `ranges1' object we created eariler has a couple of ranges clustered at 
-%each end of the total range with a large distance between ranges 2 and 3.
-%
-%<<pack-GRanges>>=
-%ranges1
-%distance(ranges1[2], ranges1[3])
-%@
-%
-%\Rfunction{pack} has an argument, \Rcode{max\_inter\_range\_len}, that 
-%specifies the maximum tolerated distance between ranges. If the distance 
-%between any 2 ranges in a chromosome group exceed this distance the ranges 
-%are re-packed in bins around the gap. 
-%
-%\Rfunction{pack} creates 2 new ranges on either side of the gap:
-%
-%<<pack-pack>>=
-%pack(ranges1, max_inter_range_len = 7e7)
-%@
-%
-%The intention is that \Rfunction{pack} be used before the file query
-%which usually occurs in the map step. Results of the query
-%will be in the form of the packed ranges so they must be unpacked
-%before moving on to the next computation. The \Rfunction{unpack} 
-%function returns packed results to the same geometry as the original 
-%ranges.
-%
-%We again use the \Rclass{BamFileViews} object \Robject{bfv1}, this time
-%reading in genomic alignments and computing coverage for each range. Within
-%the map function, the call to \Rfunction{pack} reorganizes the ranges
-%before extracting alignments from the file. After extracting alignments,
-%the \Rclass{SimpleRleList} of coverage can be made into the same dimensions
-%of the ranges using \Rfunction{unpack}.
-%
-%<<pack-unpack>>=
-%MAP3 <- function(FILE, RANGE, ...) {
-%  require(GenomicFiles)
-%  require(GenomicAlignments)
-%  packed <- pack(RANGE)
-%  param <- ScanBamParam(which=RANGE)
-%  algns <- readGAlignments(path(FILE), param=param)
-%  cvr <- coverage(algns)
-%  unpack(RANGE, cvr)
-%}
-%REDUCE3 <- function(MAPPED, ...) {
-%  do.call(c, MAPPED)
-%}
-%@ 
-%
-%Calling \Rfunction{reduceByFile} returns a list of the same length as
-%the number of files. Each element of this list is itself a list
-%containing \Rclass{RleList} coverage for each range. 
-%
-%<<pack-unpack-results>>=
-%res3 <- reduceByFile(bfv1, MAP=MAP3, REDUCE=REDUCE3)
-%length(res3)
-%length(res3[[1]])
-%dim(bfv1)
-%res3[[1]][[1]]
-%@ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Packing ranges with \Rfunction{pack} and \Rfunction{unpack}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Packing ranges}
+
+The \Rfunction{pack} method attempts to re-package ranges in optimal form 
+for making file queries (i.e., data extraction). Given a \Rclass{GRanges} 
+object, \Rfunction{pack} produces a \Rclass{GRangesList} where the ranges
+have been ordered by position within chromosome and grouped based on
+criteria such as length and distance between ranges. Ranges are not
+modified (made shorter or longer) but re-ordered and / or re-grouped
+according to the following criteria.
+
+\begin{itemize}
+
+    \item order: Ranges are ordered by genomic position within
+          chromosomes.
+
+   \item distance: Ranges separated by a distance greater than
+         the \Rcode{inter\_range\_len} are packed in groups around
+         the gap separating the distant ranges.
+
+   \item length: Ranges longer than \Rcode{range\_len} are packed
+         `individually' (i.e., retrived from the file as a single
+          range vs grouped with other ranges).
+
+\end{itemize}
+
+The `ranges1' object we created eariler has a couple of ranges clustered at 
+each end of the total range with a large distance between ranges 2 and 3.
+
+<<pack-GRanges>>=
+ranges1
+distance(ranges1[2], ranges1[3])
+@
+
+\Rfunction{pack} has an argument, \Rcode{inter\_range\_len}, that 
+specifies the maximum tolerated distance between ranges. If the distance 
+between any 2 ranges in a chromosome group exceed this distance the ranges 
+are re-packed in bins around the gap. 
+
+\Rfunction{pack} creates groups on either side of the gap:
+
+<<pack-pack>>=
+pk <- pack(ranges1, max_inter_range_len = 7e7)
+pk
+@
+
+The \Rfunction{isPacked} helper determines if a \Robject{GRangesList} 
+is packed.
+
+<<pack-isPacked>>=
+isPacked(pk)
+@ 
+
+\subsection{Packed ranges with \Rfunction{reduceByFile} and
+            \Rfunction{reduceByRange}}
+
+\Rfunction{pack} re-orders and re-groups ranges prior to a file
+query. Results of the query are in the form of the packed ranges
+and the \Rfunction{unpack} function is applied to return results to 
+original order. \Rfunction{reduceByFile} and \Rfunction{reduceByRange} 
+have a \Rcode{PACK} argument that, when TRUE, will pack ranges before 
+the MAP function and unpack after MAP and before REDUCE.
+In general the MAP function is where the file query occurs; 
+REDUCE can change the geometry of the result of MAP so unpacking
+occurs before REDUCE. 
+
+Alternatively \Rfunction{pack} and \Rfunction{unpack} can be
+used in custom MAP and / or REDUCE functions provided the 
+geometry of the result is appropriate when \Rfunction{unpack}
+is invoked.
+
+This MAP function computes coverage for each range. Within MAP,
+the call to \Rfunction{pack} reorganizes the ranges before the
+file query. The resulting \Rclass{SimpleRleList} of coverage is
+returned to the same order and grouping of the original ranges 
+using \Rfunction{unpack}.
+<<pack-unpack-MAP>>=
+MAP <- function(FILE, RANGE, ..., param = ScanBamParam()) {
+    require(GenomicFiles)
+    require(GenomicAlignments)
+    bamWhich(param) <- RANGE 
+    coverage(FILE, param=param)[RANGE]
+}
+@
+
+Create a \Rclass{BamFileViews} object with ranges that are
+out of order and have a long inter-range g[ap
+
+<<pack-coverage-BWFV>>=
+fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
+rgs <- GRanges("chr14", IRanges(c(105421963, 19411677, 
+               105613740, 19659063), width = 20))
+bfv <- BamFileViews(fls, fileRange = rgs)
+@
+
+and a REDUCE function that simply unlists the result.
+
+<<pack-coverage-REDUCE>>=
+REDUCE <- function(MAPPED, ...) {
+    do.call(c, MAPPED)
+}
+@
+
+Calling \Rfunction{reduceByFile} returns a list of the same length as
+the number of files. Each element of this list is itself a list
+containing \Rclass{RleList} coverage for each range. 
+
+<<pack-coverage-results>>=
+res1 <- reduceByFile(bfv, MAP, REDUCE, PACKED = FALSE)
+length(res1)
+length(res1[[1]])
+dim(bfv)
+res1[[1]][[1]]
+@ 
+
+Perform the same run with packed ranges:
+
+<<pack-coverage-results, eval=FALSE>>=
+reduceByFile(bfv, MAP, REDUCE, PACKED = TRUE)
+@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

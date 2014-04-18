@@ -15,9 +15,11 @@
 }
 
 \usage{
-\S4method{reduceByFile}{GenomicFileViews}(X, MAP, REDUCE, ..., init, ITERATE=FALSE)
+\S4method{reduceByFile}{GenomicFileViews}(X, MAP, REDUCE, ..., 
+    init, ITERATE=FALSE, PACK = FALSE)
 
-\S4method{reduceByRange}{GenomicFileViews}(X, MAP, REDUCE, ..., init, ITERATE=FALSE)
+\S4method{reduceByRange}{GenomicFileViews}(X, MAP, REDUCE, ..., 
+    init, ITERATE=FALSE, PACK = FALSE)
 }
 
 \arguments{
@@ -72,6 +74,10 @@
   \item{ITERATE}{
     A \code{logical} specifying if reduction should be
     performed during the mapping step (TRUE) or after (FALSE).
+  }
+  \item{PACK}{
+    A \code{logical} specifying if ranges should be packed.
+    See ?\code{\link{pack}} for details.
   }
   \item{\dots}{
     Arguments passed to other methods.
