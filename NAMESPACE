@@ -11,7 +11,7 @@ export(
     fileRange, "fileRange<-", fileExperiment, "fileExperiment<-",
     reduceByFile, reduceByRange,
     BamFileViews, BigWigFileViews, FaFileViews, 
-    reduceByRange, reduceByFile, pack, unpack, isPacked,
+    reduceByRange, reduceByFile,
     .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType
 )
 
@@ -23,6 +23,5 @@ exportMethods(
     "[", dim, names, show, yieldSize,
     BamFileViews, countBam, scanBam, summarizeOverlaps, 
     BigWigFileViews, coverage, summary,
-    FaFileViews,
-    pack, unpack
+    FaFileViews
 )

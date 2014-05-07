@@ -125,15 +125,6 @@ setMethod("[", c("GenomicFileViews", "ANY", "ANY"),
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### reduceByFile and reduceByRange 
 ###
-
-.GRangesToGRangesList <- function(ranges, PACK) 
-{
-    if (PACK)
-        pack(ranges)
-    else
-        unname(splitAsList(ranges, seq_along(ranges)))
-}
-
 .reduce <-
     function(..., BY=c("range", "file"))
 {
@@ -145,18 +136,16 @@ setMethod("[", c("GenomicFileViews", "ANY", "ANY"),
 }
 
 setMethod(reduceByRange, "GenomicFileViews",
-    function(X, MAP, REDUCE, ..., init, ITERATE=FALSE, PACK=FALSE)
+    function(X, MAP, REDUCE, ..., init, ITERATE=FALSE)
 {
     NO_REDUCE <- missing(REDUCE)
     if(ITERATE && NO_REDUCE) 
        stop("'ITERATE' must be FALSE when 'REDUCE' is missing")
     if (!NO_REDUCE) 
         REDUCE <- match.fun(REDUCE)
-    if (ITERATE && PACK)
-        stop("'ITERATE' and 'PACK' cannot both be TRUE")
     MAP <- match.fun(MAP)
     initmiss <- missing(init)
-    grl <- .GRangesToGRangesList(fileRange(X), PACK)
+    grl <- unname(splitAsList(fileRange(X), seq_along(fileRange(X))))
 
     bplapply(grl, function(grange, ...) {
         if (ITERATE) {
@@ -170,8 +159,6 @@ setMethod(reduceByRange, "GenomicFileViews",
             result
         } else {
             mapped <- lapply(fileList(X), MAP, RANGE=grange, ...)
-            if (PACK)
-                mapped <- unpack(mapped, grl)
             if (NO_REDUCE)
                 mapped
             else
@@ -181,18 +168,16 @@ setMethod(reduceByRange, "GenomicFileViews",
 })
 
 setMethod(reduceByFile, "GenomicFileViews",
-    function(X, MAP, REDUCE, ..., init, ITERATE=FALSE, PACK=FALSE)
+    function(X, MAP, REDUCE, ..., init, ITERATE=FALSE)
 {
     NO_REDUCE <- missing(REDUCE)
     if(ITERATE && NO_REDUCE) 
        stop("'ITERATE' must be FALSE when 'REDUCE' is missing")
     if (!NO_REDUCE) 
         REDUCE <- match.fun(REDUCE)
-    if (ITERATE && PACK)
-        stop("'ITERATE' and 'PACK' cannot both be TRUE")
     MAP <- match.fun(MAP)
     initmiss <- missing(init)
-    grl <- .GRangesToGRangesList(fileRange(X), PACK)
+    grl <- unname(splitAsList(fileRange(X), seq_along(fileRange(X))))
 
     bplapply(fileList(X), function(fl, ...) {
         if (ITERATE) {
@@ -206,8 +191,6 @@ setMethod(reduceByFile, "GenomicFileViews",
             result
         } else {
             mapped <- lapply(grl, MAP, FILE=fl, ...)
-            if (PACK)
-                mapped <- unpack(mapped, grl)
             if (NO_REDUCE)
                 mapped
             else

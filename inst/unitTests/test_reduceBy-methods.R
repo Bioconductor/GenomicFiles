@@ -45,7 +45,7 @@ test_reduceByRange_MAP_only <- function()
     ans0 <- reduceByRange(bfv, MAP, param=ScanBamParam())
     checkIdentical(length(ans0), 3L)
 
-    ans1 <- unname(elementLengths(ans0))  
+    ans1 <- unname(elementLengths(ans0))
     checkIdentical(ans1, c(2L, 2L, 2L))
 }
 
