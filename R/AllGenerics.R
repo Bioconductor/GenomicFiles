@@ -80,3 +80,16 @@ setGeneric("reduceByFile",
 ###
 
 setGeneric("mean", signature="x")
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### pack and unpack
+###
+
+setGeneric("pack", function(x, ...)
+    standardGeneric("pack"),
+    signature="x")
+
+setGeneric("unpack", function(flesh, skeleton, ...)
+    standardGeneric("unpack"),
+    signature=c("flesh", "skeleton"))
+

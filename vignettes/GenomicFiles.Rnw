@@ -54,18 +54,18 @@ biocLite("GenomicFiles")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Overview of \Rcode{reduceByRange} and \Rcode{reduceByFile}}
+\section{Computing by range or by file}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\Rpackage{GenomicFiles} provides infrastructure to enables computing by 
-file or by range. Either the files or ranges are sent to workers along 
-with MAPPER and REDUCER functions. Generally the MAPPER extracts data and 
-performs a transformation / manipulation. The REDUCER operates on the output 
-from the MAPPER to produce a consolidated result (e.g., the sum or mean). 
-When the REDUCER is not supplied the results are returned directly from
-the MAPPER. Both MAPPER and REDUCER are executed in the distributed step 
-on the same worker.
+\Rpackage{GenomicFiles} provides infrastructure to manipulate and combine
+data by range (across files) or by file (within files). Files or ranges are 
+sent to workers with MAPPER and REDUCER functions. Generally the MAPPER 
+performs and extranction and transformation / manipulation. The REDUCER 
+operates on output from the MAPPER to produce a consolidated result 
+(e.g., sum, mean, etc.). When REDUCER is not supplied the results are 
+returned directly from the MAPPER. Both MAPPER and REDUCER are executed 
+in a distributed step on the same worker.
 
 In this section we use the same files and ranges to compare the
 output from \Rcode{reduceByFile} and \Rcode{reduceByRange}. To highlight
@@ -212,6 +212,7 @@ a number of files, here passing along a variable which specifies
 which files belong to which experimental group. This allows for 
 operations such as a basepair-level $t$-test on coverage. 
 
+%% TODO: tile across files
 Define ranges of interest:
 <<groupfiles-ranges>>=
 grp_gr <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963,
@@ -275,15 +276,13 @@ head(grp_gr)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Packing ranges for optimal file queries}
+\section{Functions to summarize results -> SummarizedExperment}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% TODO: pack large number of small variants
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Summarizing data -> SummarizedExperment}
+\section{GenomicFiles Class}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

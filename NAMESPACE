@@ -11,7 +11,7 @@ importMethodsFrom(GenomicAlignments, summarizeOverlaps)
 export(
     fileList, "fileList<-", fileSample, "fileSample<-", 
     fileRange, "fileRange<-", fileExperiment, "fileExperiment<-",
-    reduceByFile, reduceByRange,
+    reduceByFile, reduceByRange, pack, unpack,
     BamFileViews, BigWigFileViews, FaFileViews, 
     reduceByRange, reduceByFile,
     .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType
@@ -23,7 +23,7 @@ exportClasses(
 
 exportMethods(
     "[", dim, names, show, yieldSize,
-    reduceByFile, reduceByRange,
+    reduceByFile, reduceByRange, pack, unpack,
     BamFileViews, countBam, scanBam, summarizeOverlaps, 
     BigWigFileViews, coverage, summary,
     FaFileViews
