@@ -145,12 +145,12 @@
 }
 
 \examples{
-  fl <- system.file("extdata", "ex1.bam", package="Rsamtools",
-                    mustWork=TRUE) 
-  bfv <- BamFileViews(fl, fileRange = GRanges("seq1", IRanges(1, 10)))
-  showClass(class(bfv))
+fl <- system.file("extdata", "ex1.bam", package="Rsamtools",
+                  mustWork=TRUE) 
+bfv <- BamFileViews(fl, fileRange = GRanges("seq1", IRanges(1, 10)))
+showClass(class(bfv))
  
-  ## See ?BamFileViews, ?BigWigFileViews, ?reduceBy for additional examples.
+## See ?BamFileViews, ?BigWigFileViews, ?reduceBy for additional examples.
 }
 
 \keyword{classes}

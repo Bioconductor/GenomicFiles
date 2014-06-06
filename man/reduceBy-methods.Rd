@@ -2,78 +2,101 @@
 
 \alias{reduceBy}
 \alias{reduceByFile}
-\alias{reduceByFile,GenomicFileViews-method}
+\alias{reduceByFile,GRanges-method}
+\alias{reduceByFile,GRangesList-method}
 \alias{reduceByRange}
-\alias{reduceByRange,GenomicFileViews-method}
+\alias{reduceByRange,GRanges-method}
+\alias{reduceByRange,GRangesList-method}
 
-\title{Distribute parallel computations across files}
+\title{Parallel computations across files or ranges}
 
 \description{
-  Distribute parallel computations across files with
-  the option to provide MAP and REDUCE functions
-  across ranges and / or files. 
+  Computations are distributed across files or ranges 
+  with the option to iteratively combine results.
 }
 
 \usage{
-\S4method{reduceByFile}{GenomicFileViews}(X, MAP, REDUCE, ..., 
-    init, ITERATE=FALSE)
+\S4method{reduceByFile}{GRanges}(ranges, files, MAPPER, 
+    REDUCER, iterate=FALSE, ..., init)
+\S4method{reduceByFile}{GRangesList}(ranges, files, MAPPER, 
+    REDUCER, iterate=FALSE, ..., init)
 
-\S4method{reduceByRange}{GenomicFileViews}(X, MAP, REDUCE, ..., 
-    init, ITERATE=FALSE)
+\S4method{reduceByRange}{GRanges}(ranges, files, MAPPER, 
+    REDUCER, iterate=FALSE, ..., init)
+\S4method{reduceByRange}{GRangesList}(ranges, files, MAPPER, 
+    REDUCER, iterate=FALSE, ..., init)
 }
 
 \arguments{
-  \item{X}{
-    A \code{GenomicFileViews} object.
+  \item{ranges}{
+    A \code{GRanges} or \code{GrangesList} object.
   }
-  \item{MAP}{
-    A function applied to the files in \code{fileList} or ranges in 
-    \code{fileRange}. \code{MAP} should have (at minimum) the two 
-    arguments \code{RANGE} and \code{FILE}. Signature is as follows:
-
-    \code{MAP = function(FILE, RANGE, ...)}
-
-    \code{MAP} can be used without a \code{REDUCE} function.
-    In this case results from \code{reduceByRange} and 
-    \code{reduceByFile} are the same but returned in different order 
-    with different geometry (lists and list elements are different 
-    lengths).
+  \item{files}{
+    A \code{character} vector or \code{List} of filenames.
   }
-  \item{REDUCE}{
-    A function applied to the output of \code{MAP} which (usually)
-    performs an aggregation. The function signature of 
-    \code{REDUCE} depends on when aggregation occurs. When
-    \code{ITERATE} is FALSE \code{REDUCE} is applied after the mapping 
-    step is complete; the signature requires a single argument
-    (\code{MAPPED} below). When \code{ITERATE} is TRUE data are
-    aggregated while \code{MAP} iterates through the files or ranges;
-    the signature requires two arguments (\code{X} and \code{Y} below). 
+  \item{MAPPER}{
+    A function executed on each worker. The signature must 
+    contain two arguments; the first represents the range(s) 
+    and the second the file(s). There is no restriction on 
+    the argument names and additional arguments may be
+    provided.
+
+    \code{MAPPER = function(range, file, ...)}
+  }
+  \item{REDUCER}{
+    An optional function that combines (reduces) output from the
+    \code{MAPPER}. The reduction is performed in the distributed 
+    step and combines data from a single worker. The value of 
+    \code{iterate} affects when the \code{REDUCER} is applied and 
+    the expected function signature. See details below.
+
+    If no \code{REDUCER} is provided no reduction is performed.
+    Results are the output directly from the \code{MAPPER}.
 
     \itemize{
-      \item{ITERATE = FALSE :}{
-        MAPPED is the complete output from \code{MAP}.
+      \item{reduce with iteration}{
+        When \code{iterate=TRUE} the first argument to
+        \code{REDUCER} is the accumulation of past results 
+        and the second argument is the current result. There 
+        is no restriction on argument names and additional 
+        arguments may be supplied.
 
-        \code{REDUCE = function(MAPPED, ...)}
+        \code{REDUCER = function(last, current, ...)}
+
+        The \code{REDUCER} is applied after the \code{MAPPER}
+        has processed each record or element.
       }
-      \item{ITERATE = TRUE :}{
-        X is the result from the last reduce step and Y is the 
-        most recent yield from \code{MAP}.
+      \item{reduce without iteration}{
+        When \code{iterate=FALSE} the first argument of
+        \code{REDUCER} is the list of all output from
+        the \code{MAPPER}. There is no restriction on the
+        argument name and additional arguments may be supplied.
 
-        \code{REDUCE = function(X, Y, ...)}
+        \code{REDUCER = function(mapped, ...)}
+
+        The \code{REDUCER} is applied after the \code{MAPPER}
+        has processed all records or elements.
       }
     }
   }
-  \item{init}{
-    An (optional) initial value for \code{REDUCE}. Applicable when
-    \code{ITERATE = TRUE}. \code{init} must be an object of the same 
-    type as the elements returned from \code{MAP}. \code{REDUCE} 
-    logically adds \code{init} to the start (when proceeding left 
-    to right) or end of results obtained with \code{MAP}. 
-    See ?\code{Reduce} for details. 
+  \item{iterate}{
+    A logical indicating if the \code{REDUCER} function
+    should be applied iteratively to the output of 
+    \code{MAPPER}.
+
+    Collapsing results iteratively is useful when the number of
+    records to be procssed is large (maybe complete files) but
+    the end result is a much reduced representation of all records.
+    Iteratively applying \code{REDUCER} reduces the amount of
+    data on each worker at any one time and can substantially
+    reduce the memory footprint.
   }
-  \item{ITERATE}{
-    A \code{logical} specifying if reduction should be
-    performed during the mapping step (TRUE) or after (FALSE).
+  \item{init}{
+    An (optional) initial value for \code{REDUCER}. Applicable when
+    \code{iterate=TRUE}. \code{init} must be an object of the same 
+    type as the elements returned from \code{MAPPER}. \code{REDUCER} 
+    logically adds \code{init} to the start (when proceeding left 
+    to right) or end of results obtained with \code{MAPPER}. 
   }
   \item{\dots}{
     Arguments passed to other methods.
@@ -81,61 +104,17 @@
 }
 
 \details{
-  Computations are distributed in parallel by file or by range by
-  specifying \code{reduceByFile} or \code{reduceByRange}. In the
-  distributed step, both \code{reduceByFile} and \code{reduceByRange} 
-  use MAP and REDUCE functions to further process and combine the data. 
-  \code{MAP} and \code{REDUCE} are based on the list-processing combinators 
-  from functional programming in the same spirit as \code{Map} and 
-  \code{Reduce} in \code{base} R. The all-caps designation of \code{MAP} 
-  and \code{REDUCE} is used to distinguish the functions in 
-  \code{GenomicFileViews}.
+  \code{reduceByFile} enables the extraction, manipulation and
+  combination of ranges from a file. Data are combined within a
+  file not across files. 
 
-  In the case of \code{reduceByRange} the mapping occurs between a 
-  single range and all files. The reduce step combines the results
-  across files within the single range. With \code{reduceByFile} the 
-  mapping occurs between a single file and all ranges. The reduce step 
-  combines results across ranges within a single file.
+  \code{reduceByRanges} enables the extraction, manipulation and
+  combination of a group of ranges across files. Data are combined
+  across files not within a file.
 
-  The \code{ITERATE} argument controls when the \code{REDUCE}
-  function is applied. When \code{TRUE}, \code{REDUCE} is applied 
-  while \code{MAP} iterates through the files or ranges; when 
-  \code{FALSE}, \code{REDUCE} is applied after \code{MAP} has 
-  processed all files or ranges. 
-
-  \itemize{
-    \item{reduceByRange}{
-      Computations are distributed in parallel over the ranges in
-      \code{fileRange}. Each worker lapply()s the \code{MAP} function 
-      to a single range over all files. The output is a list the 
-      length of \code{fileRange} with each list element the length of 
-      \code{fileList}.
-
-      \code{ITERATE = FALSE}:
-      Each worker applies \code{REDUCE} to \code{MAP} output from 
-      a single range, across all files; independent combination 
-      across files.
-
-      \code{ITERATE = TRUE}:
-      Each worker applies \code{REDUCE} as \code{MAP} iterates through 
-      each file, single range; dependent combination across files.
-    }
-    \item{reduceByFile}{
-      Computations are distributed in parallel by file. Each worker 
-      lapply()s the \code{MAP} function over all ranges in a single 
-      file. The output is a list the length of \code{fileList} with 
-      each list element the length of \code{fileRange}.
-
-      \code{ITERATE = FALSE}:
-      Each worker applies \code{REDUCE} to \code{MAP} output from 
-      a single file, across all ranges; independent combination 
-      across ranges.
-
-      \code{ITERATE = TRUE}:
-      Each worker applies \code{REDUCE} as \code{MAP} iterates through 
-      each range, a single file; dependent combination across ranges.
-    }
-  }
+  Both \code{MAPPER} and \code{REDUCER} are applied in a distributed 
+  step. Currently there is no 'built-in' ability to combine results 
+  from different workers.
 }
 
 \value{
@@ -145,8 +124,6 @@
 \seealso{
   \itemize{
     \item \link{GenomicFileViews-class}
-    \item \link{Map}
-    \item \link{Reduce}
   }
 }
 
@@ -156,102 +133,121 @@
 }
 
 \examples{
-if (.Platform$OS.type != "windows") {
 
-  bw <- system.file("tests", "test.bw", package = "rtracklayer")
- 
-  ## -----------------------------------------------------------------------
-  ## MAP only:
-  ## -----------------------------------------------------------------------
-  gr <- GRanges(c("chr2", "chr19", "chr19"),
-                IRanges(c(1, 1400, 1700), width=10))
-  bwfv <- BigWigFileViews(c(bw, bw), fileRange=gr)
-  MAP = function(FILE, RANGE, ...) {
-      import(FILE, selection=RANGE, as="NumericList")
-  }
+library(RNAseqData.HNRNPC.bam.chr14)
+fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES  ## 8 bam files
 
-  ## reduceByRange(): 
-  ## List length is the number of ranges, list element lengths are 
-  ## the number of files.
-  reduceByRange(bwfv, MAP)
- 
-  ## reduceByFile(): 
-  ## List length is the number of files, list element lengths are 
-  ## the number of ranges.
-  reduceByFile(bwfv, MAP)
+## -----------------------------------------------------------------------
+## Basics of reduceByFile() and reduceByRange():
+## -----------------------------------------------------------------------
 
-  ## -----------------------------------------------------------------------
-  ## MAP, REDUCE and ITERATE:
-  ## -----------------------------------------------------------------------
-  ## This simple example demonstrates the use of ITERATE to
-  ## control when output from MAP is aggregated.
+## This first example uses a MAPPER function only (no REDUCER). 
 
-  gr <- tileGenome(seqlengths(BigWigFile(bw)), 
-                   tilewidth = 1e7,
-                   cut.last.tile.in.chrom = TRUE)
-  bwv <- BigWigFileViews(c(bw, bw), fileRange = gr)
-  MAP = function(FILE, RANGE, ...) TRUE
- 
-  ## REDUCE is applied after MAP is complete.
-  REDUCE = function(MAPPED, ...) sum(unlist(MAPPED))
-  result1 <- reduceByRange(bwv, MAP, REDUCE)
- 
-  ## REDUCE is applied while MAP iterates though each file.
-  REDUCE = function(X, Y, ...) X + Y
-  result2 <- reduceByRange(bwv, MAP, REDUCE, ITERATE = TRUE)
- 
-  stopifnot(identical(result1, result2))
- 
-  ## -----------------------------------------------------------------------
-  ## t-test at point locations across files:
-  ## -----------------------------------------------------------------------
- 
-  library(genefilter)
-  gr <- tileGenome(seqlengths(BigWigFile(bw)), 
-                   tilewidth = 1e7,
-                   cut.last.tile.in.chrom=TRUE)
-  bwv <- BigWigFileViews(c(bw, bw, bw, bw), fileRange = gr)
-  grp <- factor(c(1, 2, 2, 1))
- 
-  MAP = function(FILE, RANGE, ...) {
-      stopifnot(length(RANGE) == 1)
-      v <- Views(import(FILE, selection = RANGE, asRle = TRUE),
-                 as(RANGE, "RangesList"))
-      as.vector(Filter(length, v)[[1]][[1]])
-  }
-  REDUCE = function(MAPPED, ..., grp) {
-      m <- simplify2array(MAPPED)
-      idx <- which(rowSums(m) != 0)
-      df <- rowttests(m[idx,], grp)
-      cbind(offset=idx - 1, df)
-  }
-  result3 <- reduceByRange(bwv, MAP, REDUCE, grp = grp)
- 
-  ## Each list element contains the data.frame output
-  ## from rowttests():
-  result3[[1]]
- 
-  ## -----------------------------------------------------------------------
-  ## mean per-file:
-  ## -----------------------------------------------------------------------
- 
-  gr <- GRanges(c("chr2", "chr19", "chr19"),
-                IRanges(c(1, 1400, 1700), width = 1000))
-  bwv <- BigWigFileViews(c(bw, bw, bw), fileRange = gr)
- 
-  MAP = function(FILE, RANGE, ...) {
-      v <- Filter(length, {
-          Views(import(FILE, selection=RANGE, asRle = TRUE),
-                as(RANGE, "RangesList"))
-      })
-      c(n = as.numeric(sum(unlist(width(v)))),
-        sum = as.numeric(sum(sapply(v, sum))))
-  }
-  REDUCE = function(X, Y, ..., FILE)
-      c(n = X[["n"]] + Y[["n"]], sum = X[["sum"]] + Y[["sum"]])
- 
-  result4 <- reduceByFile(bwv, MAP, REDUCE, ITERATE = TRUE)
+## Ranges of interest.
+gr <- GRanges("chr14", IRanges(c(19100000, 106000000), width=1e7))
+
+## The MAPPER function counts the number of junctions in each range
+## (i.e., 'N' operations in the CIGAR).
+MAPPER <- function(range, file, ...) {
+    library(GenomicAlignments)
+    param = ScanBamParam(which=range)
+    gal = readGAlignments(file, param=param)
+              table(njunc(gal))
+} 
+
+## reduceByFile() works within each file.
+rbf <- reduceByFile(gr, fls, MAPPER)
+
+## Output length matches the number of files and elementLengths 
+## correspond to the number of ranges.
+length(rbf)          ## 8 files
+elementLengths(rbf)  ## 2 ranges
+
+## Each list element contains a table of counts, one for each range.
+rbf[[1]]
+
+## In contrast, reduceByRange() extracts data across files.
+rbr <- reduceByRange(gr, fls, MAPPER)
+
+## Output length corresponds to the number of ranges.
+length(rbr)          ## 2 ranges
+elementLengths(rbr)  ## 8 files
+
+## Each list element contains a table of counts, one for each file.
+do.call(rbind, rbr[[1]])
+
+## -----------------------------------------------------------------------
+## Using a REDUCER:
+## -----------------------------------------------------------------------
+
+## The REDUCER function operates on the output of the MAPPER. It
+## can be applied iteratively (after each step of the MAPPER) or 
+## non-iteratively (after MAPPER is done). 
+
+## In this example we compute coverage for a group of ranges across
+## all files. The output of a call to coverage() is an RleList
+## one is produced each time MAPPER is called and these RleLists
+## accumulate on the worker. If the REDUCER is called 
+## iteratively the 'current' result is collapsed with the 'last'
+## resulting in a maximum of 2 RleLists on a worker at a time.
+
+## Regions of interest.
+gr <- GRanges("chr14", IRanges(c(62262735, 63121531, 63980327),
+              width=214700))
+
+## The MAPPER computes the pileups ...
+MAPPER <- function(range, file, ...) {
+    library(GenomicRanges)
+    param = ScanBamParam(which=range)
+    coverage(file, param=param)
+} 
+
+## and the REDUCER adds the results. When the REDUCER is applied
+## iteratively the first 2 function arguments correspond to the
+## 'last' and 'current' results from MAPPER.
+REDUCER1 <- function(last, current, ...)
+    c(last, current)
+
+## The goal is to sum coverage across files we call reduceByRange().
+cov1 <- reduceByFile(gr, fls, MAPPER, REDUCER1, iterate=TRUE)
+cov1[[1]]
+
+## If memory use is not a concern the REDUCER can be applied
+## non-iteratively. A non-iterative REDUCER must take the
+## MAPPED output as the first argument.
+REDUCER2 <- function(mapped, ...)
+    do.call(c, mapped)
+
+## Call reduceByFile() with 'iterate=FALSE'.
+cov2 <- reduceByFile(gr, fls, MAPPER, REDUCER2, iterate=FALSE)
+
+## Results are the same as the with the iterative REDUCER.
+cov2[[1]]
+
+## -----------------------------------------------------------------------
+## mean coverage per-file:
+## -----------------------------------------------------------------------
+
+## FIXME: better BigWig data
+fl <- system.file("tests", "test.bw", package = "rtracklayer")
+fls <- c(fl, fl, fl)
+gr <- GRanges(c("chr2", "chr19", "chr19"),
+              IRanges(c(1, 1400, 1700), width = 1000))
+
+## MAPPER returns total coverage and counts (width) for each range.
+MAPPER = function(range, file, ...) {
+    rle <- import(file, selection=range, as="RleList")
+    dat <- Filter(length, Views(rle, as(range, "RangesList")))
+
+    c(n = as.numeric(sum(unlist(width(dat)))),
+      sum = as.numeric(sum(sapply(dat, sum))))
 }
+
+## REDUCER sums coverage and counts for all ranges.
+REDUCER = function(X, Y, ...)
+    c(n = X[["n"]] + Y[["n"]], sum = X[["sum"]] + Y[["sum"]])
+
+res <- reduceByFile(gr, fls, MAPPER, REDUCER, iterate=TRUE)
 }
 
 \keyword{methods}

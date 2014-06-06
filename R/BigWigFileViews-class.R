@@ -70,7 +70,7 @@ setMethod(BigWigFileViews, "character",
 setMethod(coverage, "BigWigFileViews",
     function(x, ..., by="file", summarize=TRUE, as="RleList")
 {
-    MAP <- function(FILE, RANGE, ...) {
+    MAPPER <- function(RANGE, FILE, ...) {
         if (as == "RleList") 
             import(FILE, which=RANGE, as=as)[RANGE]
         else 
@@ -86,25 +86,27 @@ setMethod(coverage, "BigWigFileViews",
     ##       coverage method 'by=range' and 'by=file' give the
     ##       same results. Choose 'by=file' which is faster.
     if (summarize) { 
-        REDUCE <- function(MAPPED, ...) { MAPPED } 
-        .summarizeView(x, MAP, REDUCE, .., BY="file", as=as)
+        REDUCER <- function(mapped, ...) { mapped } 
+        .summarizeView(x, MAPPER, REDUCER, ..., BY="file", as=as)
     } else {
-        REDUCE <- function(MAPPED, ...) do.call(c, MAPPED)
-        .reduce(x, MAP, REDUCE, ..., BY=by, as=as)
+        REDUCER <- function(mapped, ...) do.call(c, mapped)
+        .reduce(fileRange(x), fileList(x), MAPPER, REDUCER, 
+                ..., BY=by, as=as)
     }
 })
 
 setMethod(summary, "BigWigFileViews",
     function(object, ..., by="file", summarize=TRUE) 
 {
-    MAP <- function(FILE, RANGE, ...) {
-        sumres <- summary(FILE, which=RANGE, asRangedData=TRUE, ...)
+    MAPPER <- function(range, file, ...) {
+        sumres <- summary(file, which=range, asRangedData=TRUE, ...)
         do.call(c, sumres)$score
     }
-    REDUCE <- function(MAPPED, ...) do.call(c, MAPPED)
+    REDUCER <- function(mapped, ...) do.call(c, mapped)
 
     if (summarize) 
-        .summarizeView(object, MAP, REDUCE, ..., BY=by)
+        .summarizeView(object, MAPPER, REDUCER, ..., BY=by)
     else 
-        .reduce(object, MAP, REDUCE, ..., BY=by)
+        .reduce(fileRange(object), fileList(object), 
+                MAPPER, REDUCER, ..., BY=by)
 })

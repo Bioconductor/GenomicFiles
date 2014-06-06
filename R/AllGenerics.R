@@ -65,13 +65,15 @@ setGeneric("BigWigFileViews",
 ### reduceByFile and reduceByRange
 ###
 
-setGeneric("reduceByRange", function(X, MAP, REDUCE, ...)
+setGeneric("reduceByRange", 
+    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, ..., init)
     standardGeneric("reduceByRange"),
-    signature="X")
+    signature="ranges")
 
-setGeneric("reduceByFile", function(X, MAP, REDUCE, ...)
+setGeneric("reduceByFile", 
+    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, ..., init)
     standardGeneric("reduceByFile"),
-    signature="X")
+    signature="ranges")
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### base::mean is an S3 generic

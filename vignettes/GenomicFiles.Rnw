@@ -11,7 +11,7 @@ BiocStyle::latex()
 
 \title{Introduction to GenomicFiles}
 \author{Valerie Obenchain, Michael Love, Martin Morgan}
-\date{Last modified: April 2014; Compiled: \today}
+\date{Last modified: June 2014; Compiled: \today}
 
 \begin{document}
 
@@ -27,12 +27,15 @@ BiocStyle::latex()
 
 This vignette illustrates how to use the \Biocpkg{GenomicFiles} package
 for distributed computations across files. The package introduces the
-\Rcode{GenomicFileViews} class infrastructure for defining and executing 
-genomic queries. \Rcode{reduceByFile} and \Rcode{reduceByRange}
-functions distribute computations in parallel by file or by range. 
-MAP and REDUCE functions, similar in spirit to \Rcode{Map} and 
-\Rcode{Reduce} in \Rpackage{base} \R{}, provide a flexible interface to 
-manipulate and combine data across workers.
+\Rcode{reduceByFile} and \Rcode{reduceByRange} functions for computing
+on data in a by file or by range dimension. 
+
+Two user-supplied functions, MAPPER and REDUCER, are similar in spirit 
+to \Rcode{Map} and \Rcode{Reduce} in \Rpackage{base} \R{}. Together
+they provide a flexible interface to extract, manipulate and combine data.
+Both functions are executed on a single worker which means results
+are combined from a single worker, not across workers. We plan to add
+methods for combining data across workers in a future version.
 
 We assume the reader has some previous experience with \R{} and
 with basic manipulation of ranges objects such as \Rcode{GRanges} and
@@ -42,7 +45,7 @@ with basic manipulation of ranges objects such as \Rcode{GRanges} and
 and \Biocpkg{rtracklayer} for an introduction to these classes.
 
 The \Rpackage{GenomicFiles} package is available at bioconductor.org
-and can be downloaded via \Rfunction{biocLite}:
+and can be downloaded via \Rcode{biocLite}:
 
 <<biocLite, eval=FALSE>>=
 source("http://bioconductor.org/biocLite.R")
@@ -51,358 +54,238 @@ biocLite("GenomicFiles")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Constructing a *FileViews class}
+\section{Overview of \Rcode{reduceByRange} and \Rcode{reduceByFile}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Rpackage{GenomicFiles} provides infrastructure to enables computing by 
+file or by range. Either the files or ranges are sent to workers along 
+with MAPPER and REDUCER functions. Generally the MAPPER extracts data and 
+performs a transformation / manipulation. The REDUCER operates on the output 
+from the MAPPER to produce a consolidated result (e.g., the sum or mean). 
+When the REDUCER is not supplied the results are returned directly from
+the MAPPER. Both MAPPER and REDUCER are executed in the distributed step 
+on the same worker.
+
+In this section we use the same files and ranges to compare the
+output from \Rcode{reduceByFile} and \Rcode{reduceByRange}. To highlight
+the difference in output geometry we apply a MAPPER with no REDUCER.
 
 <<class-load-package, results=hide>>=
 library(GenomicFiles)
 @
 
-Each file type (e.g., Bam, BigWig, Fasta) has a corresponding 
-\Rcode{*FileViews} class. Here we construct a \Rclass{BamFileViews} with
-Bam files from a transcription profiling experiment available in the
-\Rpackage{RNAseqData.HNRNPC.bam.chr14} package.
+Sample data are bam files from a transcription profiling experiment 
+available in the \Rpackage{RNAseqData.HNRNPC.bam.chr14} package.
 
 <<class-bam-data>>=
 library(RNAseqData.HNRNPC.bam.chr14)
 fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
-bfv <- BamFileViews(fls)
-bfv
 @
 
-The class can hold files, ranges, a list for experimental data
-and a yield size parameter.
-
-<<class-slots>>=
-getSlots("BamFileViews")
+Define ranges of interest.
+<<intro-ranges>>=
+gr <- GRanges("chr14", IRanges(c(19100000, 106000000), width=1e7))
 @
 
-Data are added to slots with accessors of the same name.
-<<class-slots>>=
-fileRange(bfv) <- GRanges("chr14", IRanges(c(1.9e7, 2e7), width = 900000))
+This MAPPER counts the number of junctions in each range
+(i.e., 'N' operations in the CIGAR).
+<<intro-MAPPER>>=
+MAPPER <- function(range, file, ...) {
+              library(GenomicAlignments) ## for readGAlignments()
+              param = ScanBamParam(which=range)
+              gal = readGAlignments(file, param=param)
+              table(njunc(gal))
+          } 
+@
+
+\subsection{\Rcode{reduceByRange}}
+
+Individual elements of \Rcode{ranges} are sent to workers along with a 
+list of all files. The MAPPER extracts the ranges from all files and 
+REDUCER collapses these data. This range reduction can be thought 
+of as an `across-file` operation.
+
+<<intro-rbr>>=
+rbr <- reduceByRange(gr, fls, MAPPER)
+@
+
+The output length corresponds to the number of ranges and elementLengths
+to the number of files.
+
+<<intro-rbr-lengths>>=
+length(rbr)          ## 2 ranges
+elementLengths(rbr)  ## 8 files
+@
+
+Each list element contains a table of counts, one for each file.
+
+<<intro-rbr-output>>=
+do.call(rbind, rbr[[1]])
+@
+
+\subsection{\Rcode{reduceByFile}}
+
+Individual files are sent to workers along with all ranges. The MAPPER 
+extracts all ranges from the file and REDUCER collapses these data. 
+This file reduction can be thought of as an `within-file` operation.
+
+<<intro-rbf>>=
+rbf <- reduceByFile(gr, fls, MAPPER)
+@
+
+Output length matches the number of files and elementLengths 
+correspond to the number of ranges.
+
+<<intro-rbf>>=
+length(rbf)          ## 8 files
+elementLengths(rbf)  ## 2 ranges
+@
+
+Each list element contains a table of counts, one for each range.
+<<intro-rbf-output>>=
+rbf[[1]]
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Division of labor}
+\section{Queries across files: \Rcode{reduceByRange}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Computations with \Rpackage{GenomicFiles} are distributed in
-parallel by file or by range. The files in \Rcode{fileList} or ranges 
-in \Rcode{fileRange} are sent to workers along with functions to 
-perform map and reduce steps. The map step directives are specified in a 
-\Rcode{MAP} function and the reduce directives in a \Rcode{REDUCE} function.
+\subsection{Pileup summaries with \Rcode{bam2R}}
 
-The map and reduce steps used by \Rpackage{GenomicFiles} follow the 
-list-processing combinators from functional programming (i.e., 
-\Rfunction{Map} and \Rfunction{Reduce} in \Rpackage{base} \R{}). We use 
-the all-caps designation of \Rfunction{MAP} and \Rfunction{REDUCE} to 
-represent the functions in \Rpackage{GenomicFiles}. 
+In this example we summarize nucleotide counts (pileups) across a
+group of files. The end goal is to sum pileups for the same ranges 
+from different files so we use \Rcode{reduceByRange}.
 
-Note that the map and reduce directives both occur within the distributed step,
-which is slightly different than the typical map-reduce framework, where the 
-map directive occurs in parallel, while the reduce step gathers and summarizes 
-the results from the distributed workers. In \Rpackage{GenomicFileview}, if the
-computations are distributed in parallel over ranges, for a given range, the 
-map function will apply to each file and the reduce function will combine 
-results across files \emph{within that range}. If the computations are 
-distributed in parallel over files, then for a given file, the map function 
-will apply to each range and the reduce function will combine results across 
-the ranges \emph{within that file}.
-
-\subsection{\Rfunction{reduceByRange}}
-
-Returns a list the same length as the number of ranges.
-
-\begin{itemize}
-  \item ranges in \Rcode{fileRange} are sent to workers
-  \item \Rcode{MAP} function is applied all files, single range
-  \item \Rcode{REDUCE} function is applied to the output of \Rcode{MAP}
-\end{itemize}
-
-This approach is best suited for 
-applications that need the same range of data from many files together 
-for an operation. 
-
-\subsection{\Rfunction{reduceByFile}}
-
-Returns a list the same length as the number of files.
-
-\begin{itemize}
-  \item files in \Rcode{fileList} are sent to workers
-  \item \Rcode{MAP} function is applied to all ranges, single file
-  \item \Rcode{REDUCE} function is applied to the output of \Rcode{MAP}
-\end{itemize}
-
-This approach is best suited for 
-applications that need ranges from the same file together for an 
-operation.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Summary statistics with \Rfunction{bam2R}} 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-In this example we compute statistics across Bam files and summarize
-by file and by range. This simple use case introduces the use of
-\Rfunction{MAP} and \Rfunction{REDUCE} in the conjunction with 
-\Rfunction{reduceByFile} and \Rfunction{reduceByRange}.
-
-We use \Rfunction{bam2R} from the \Rpackage{deepSNV} package
-to compute the statistics.
-
-\subsection{\Rfunction{reduceByRange}} \label{sec:reduceByRange}
-
-The motivating example is to summarize nucleotide counts (pileups)
-by range for a group of files.
-
-Create a \Rclass{BamFileViews} object:
-
+Create a \Rclass{GRanges} with regions of interest:
 <<pileups-new-ranges>>=
-ranges1 <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963, 
-                   105613740), width = 20))
-bfv1 <- BamFileViews(fls, fileRange = ranges1)
+gr <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963, 
+              105613740), width = 20))
 @
 
-The map step invokes \Rfunction{bam2R} and retains only the
-nucleotide counts (see ?\Rcode{bam2R} for other output fields). 
-Counts from the reference strand are uppercase and counts from
-the complement are lowercase.
+The \Rcode{bam2R} function from the \Rpackage{deepSNV} package
+is used to compute the statistics. The MAPPER invokes \Rcode{bam2R} 
+and retains only the nucleotide counts (see ?\Rcode{bam2R} for other 
+output fields). Counts from the reference strand are uppercase and counts 
+from the complement are lowercase.
 
-<<pileups-MAP1>>=
-MAP1 <- function(FILE, RANGE, ...) {
+We are not explicitly passing the \Rcode{bam2R} function through the
+MAPPER so \Rcode{deepSNV} must be loaded on each worker so the
+function can be found.
+
+<<pileups-MAPPER>>=
+MAPPER <- function(range, file, ...) {
     require(deepSNV)
-    ct <- bam2R(path(FILE), seqlevels(RANGE), start(RANGE), end(RANGE), q=0)
+    ct <- bam2R(file, seqlevels(range), start(range), end(range), q=0)
     ct[, c("A", "T", "C", "G", "a", "t", "c", "g")]
 }
 @
 
-It is necessary to \Rcode{require(deepSNV)} to allow the \Rfunction{MAP1} 
-function to be run on nodes or in processes that have not yet loaded the 
-package. The reduce step sums the counts by position.
-
-<<pileups-REDUCE1>>=
-REDUCE1 <- function(MAPPED, ...) {
-    Reduce("+", MAPPED)
+The REDUCER sums the counts by position.
+<<pileups-REDUCER>>=
+REDUCER <- function(mapped, ...) {
+    Reduce("+", mapped)
 }
 @
  
-\Rfunction{reduceByRange} returns a list the same length as the number
+\Rcode{reduceByRange} returns a list the same length as the number
 of ranges. 
 
 <<pileups-reduceByRange>>=
-res1 <- reduceByRange(bfv1, MAP1, REDUCE1) 
-length(res1)
+res <- reduceByRange(gr, fls, MAPPER, REDUCER) 
+length(res)
 @
 
 Each element is a matrix of counts (position by nucleotide)
 summed over the 8 files.
-
-<<pileups-res1>>=
-res1[[1]]
+<<pileups-res>>=
+head(res[[1]])
 @
 
-\subsection{\Rfunction{reduceByFile}}
+\subsection{ttest with case / control groups}
 
-To demonstrate a `by file' operation we look for the presence of
-insertions / deletions in a group of ranges in each file.
+In this section we show a slightly more complicated example of 
+using \Rpackage{GenomicFiles} to stream along the genome and process 
+a number of files, here passing along a variable which specifies 
+which files belong to which experimental group. This allows for 
+operations such as a basepair-level $t$-test on coverage. 
 
-Create a new object with expanded ranges to cover more interesting 
-regions containing insertions and deletions:
-
-<<pileups-BamFileViews2>>=
-ranges2 <- GRanges("chr14", 
-               IRanges(c(19411677, 19659063, 105421963, 105613740),
-                       c(19411747, 19659135, 105422990, 105614142)))
-bfv2 <- BamFileViews(fls, fileRange = ranges2)
+Define ranges of interest:
+<<groupfiles-ranges>>=
+grp_gr <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963,
+                   105613740), width = 20))
 @
 
-The map step computes the number of insertions and deletions.
-
-<<pileups-MAP2>>=
-MAP2 <- function(FILE, RANGE, ...) {
-    require(deepSNV)
-    ct <- bam2R(path(FILE), seqlevels(RANGE), start(RANGE), end(RANGE), q=0)
-    ct[, c("INS", "DEL", "ins", "del")]
-}
-@
-
-The reducer sums counts across all ranges in a single file.
-
-<<pileups-REDUCE2>>=
-REDUCE2 <- function(MAPPED, ...) {
-    sapply(MAPPED, colSums)
-}
-@
-
-\Rfunction{reduceByFile} computes the number of insertions and
-deletions present in all ranges for each file. The return value 
-is a list the same length as the number of files.
-
-<<pileups-reduceByFile>>=
-res2 <- reduceByFile(bfv2, MAP2, REDUCE2) 
-length(res2)
-@
-
-The first element of `res2' contains insertion / deletion counts for 
-the first file summarized across all ranges.
-
-<<pileups-res2>>=
-res2[[1]]
-@
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{\Rfunction{coverage} and  \Rfunction{summary} 
-         for \Rclass{BigWigFileViews}}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-The \Rfunction{coverage} and \Rfunction{summary} methods defined for 
-\Rclass{BigWigFileViews} objects use functions from \Biocpkg{rtracklayer} 
-to efficiently query a \Rclass{BigWigFile}. Internally, these functions 
-are fairly simple calls using map and reduce directives, as described in 
-the previous sections. Here we will use a BigWig and build a 
-\Rclass{BigWigFileViews} object over 6 ranges and pointing to the same file 
-twice to test iteration over multiple files. 
-
-<<prebuilt-intro>>=
-fl <- system.file("tests", "test.bw", package = "rtracklayer")
-gr <- GRanges(Rle(c("chr2", "chr19"), c(4, 2)),
-              IRanges(1 + c(200, 250, 500, 550, 1450, 1750), width=100))
-bwfv <- BigWigFileViews(c(fl, fl), fileRange=gr)
-@ 
-
-The \Rfunction{coverage} method imports the BigWig coverage over the
-given ranges as an \Rclass{RleList} and, if the argument
-\Robject{summarize=TRUE} (the default), packages these
-\Rclass{RleList} objects into a \Rclass{SummarizedExperiment} object,
-which is the same dimension as the \Rclass{BigWigFileViews}. The
-individual elements of the \Rclass{matrix} returned by
-\Rfunction{assay} are \Rclass{RleList} objects of the coverage of a
-given range for a given file.
-
-<<prebuilt-coverage, eval=FALSE>>=
-covSE <- coverage(bwfv)
-@ 
-
-\begin{verbatim}
-> covSE
-class: SummarizedExperiment 
-dim: 6 2 
-exptData(0):
-assays(1): ''
-rownames: NULL
-rowData metadata column names(0):
-colnames: NULL
-colData names(1): filePath
-
-> assay(covSE)[6,1]
-[[1]]
-RleList of length 1
-$chr19
-numeric-Rle of length 100 with 2 runs
-  Lengths:   50   50
-  Values : 0.25  0.5
-\end{verbatim}
-
-Likewise, the \Rfunction{summary} function produces a
-\Rclass{SummarizedExperiment} by default, which contains the specific
-summary statistic as queried by the \Rfunction{summary} method for
-\Rclass{BigWigFile} objects in the \Biocpkg{rtracklayer} packages.
-These are specified by the \Robject{type} argument which is passed
-through.  Supported types are described in the manual page for
-\Rclass{BigWigFile}.
-
-<<prebuilt-summary, eval=FALSE>>=
-sumSE <- summary(bwfv, type="mean")
-@
-
-\begin{verbatim}
-> sumSE
-class: SummarizedExperiment 
-dim: 6 2 
-exptData(0):
-assays(1): ''
-rownames: NULL
-rowData metadata column names(0):
-colnames: NULL
-colData names(1): filePath
-
-> assay(sumSE)
-       [,1]   [,2]
-[1,] -1.000 -1.000
-[2,] -0.875 -0.875
-[3,] -0.750 -0.750
-[4,] -0.625 -0.625
-[5,]  0.250  0.250
-[6,]  0.375  0.375
-\end{verbatim}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Case / control example (file grouping)}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-In Section~\ref{sec:reduceByRange}, an example of streaming along the
-genome was shown in which the nucleotide counts for a range were
-summed over a series of files. In this section we show a slightly more
-complicated example of using \Rpackage{GenomicFiles} to stream
-along the genome and process a number of files, here passing along a
-variable which specifies which files belong to which experimental
-group. This allows for operations such as a basepair-level $t$-test on
-coverage. 
-
-First we define arbitrary groups for the files in \Robject{bfv1}:
-
+First we define arbitrary groups for the files:
 <<groupfiles-group>>=
-grp <- factor(rep(c("A","B"), each=ncol(bfv1)/2))
+grp <- factor(rep(c("A","B"), each=length(fls)/2))
 @ 
 
-The map function will read in alignments from each BAM file and
+The map function will read in alignments from each bam file and
 convert into a numeric vector of coverage. Note: this is not the most
 efficient way to import coverage, however the code is just for
 demontration of the principle of grouping files.
 
 <<groupfiles-map>>=
-MAP <- function(RANGE, FILE, ...) {
-    require(GenomicAlignments)
-    stopifnot(length(RANGE) == 1)
-    param <- ScanBamParam(which=RANGE)
-    algns <- readGAlignments(path(FILE), param=param)
-    as.numeric(coverage(algns)[RANGE][[1]])
+MAPPER <- function(range, file, ...) {
+    require(GenomicAlignments)  ## for readGAlignments()
+    stopifnot(length(range) == 1)
+    param <- ScanBamParam(which=range)
+    algns <- readGAlignments(file, param=param)
+    as.numeric(coverage(algns)[range][[1]])
 }
 @ 
 
-The reduce function then combines the numeric coverage vector into a
-matrix, identifies those rows which have all zeros, and then performs
-row-wise $t$-testing using the \Biocpkg{genefilter} package. The index
+The REDUCER combines the numeric coverage vector into a matrix, 
+identifies rows which have all zeros, and performs row-wise 
+$t$-testing using the \Biocpkg{genefilter} package. The index
 of which rows correspond to which basepair of the original range is
 stored as a column \Robject{offset}.
 
 <<groupfiles-reduce>>=
-REDUCE <- function(MAPPED, ..., grp) {
-    m <- simplify2array(MAPPED)
+REDUCER <- function(mapped, ..., grp) {
+    m <- simplify2array(mapped)
     idx <- which(rowSums(m) != 0)
     df <- genefilter::rowttests(m[idx,], grp)
     cbind(offset=idx - 1, df)
 }
 @ 
 
-The call to \Rfunction{reduceByRange} produces a list as long as the
-number of ranges of the \Rclass{GenomicFileViews} object. We can
-assign this result as a metadata column on the \Robject{fileRange}.
-Each element is then a table of basepair-level $t$-test results.
+The call to \Rcode{reduceByRange} produces a list the same length
+as the number of ranges. We can assign this result as a metadata column 
+on the ranges. Each element is then a table of basepair-level $t$-test 
+results.
 
-<<groupfile-reduce>>=
-fileRange(bfv1)$result <- reduceByRange(bfv1, MAP, REDUCE, grp=grp)
-fileRange(bfv1)
-head(fileRange(bfv1)$result[[1]])
+<<groupfile-results>>=
+res <- reduceByRange(grp_gr, fls, MAPPER, REDUCER, grp=grp)
+mcols(grp_gr)$result <- res
+head(grp_gr)
 @ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Queries within files: \Rcode{reduceByFile}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{coverage - iterate}
+\subsection{tile across chroms cn.mops - no iterate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Packing ranges for optimal file queries}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% TODO: pack large number of small variants
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summarizing data -> SummarizedExperment}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

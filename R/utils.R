@@ -1,8 +1,21 @@
-.summarizeView <-
-    function(X, MAP, REDUCE, ..., BY=c("range", "file"))
+
+.reduce <-
+    function(..., BY=c("range", "file"))
 {
     BY <- match.arg(BY)
-    assay <- .reduce(X, MAP, REDUCE, ..., BY=BY)
+    if (BY == "range")
+        reduceByRange(...)
+    else
+        reduceByFile(...)
+}
+
+## TODO: promote to generic / methods
+.summarizeView <-
+    function(X, MAPPER, REDUCER, ..., BY=c("range", "file"))
+{
+    BY <- match.arg(BY)
+    assay <- .reduce(fileRange(X), fileList(X), 
+                     MAPPER, REDUCER, ..., BY=BY)
     if (BY == "range") {
         ## reformat list structure
         if (is(assay, "list")) {

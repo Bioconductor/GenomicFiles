@@ -146,18 +146,10 @@
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## FaFileView Objects
-  ## ---------------------------------------------------------------------
-
-  fa <- system.file("extdata", "ce2dict1.fa", package="Rsamtools",
-                    mustWork=TRUE)
-  ffv <- FaFileViews(c(fa, fa), fileRange=scanFaIndex(fa))
-  MAP <- function(FILE, RANGE, ...) {
-      require(Rsamtools) 
-      scanFa(FILE, RANGE) 
-  }
-  reduceByRange(ffv, MAP)
+fa <- system.file("extdata", "ce2dict1.fa", package="Rsamtools",
+                  mustWork=TRUE)
+ffv <- FaFileViews(c(fa, fa), fileRange=scanFaIndex(fa))
+ffv
 }
 
 \keyword{classes}

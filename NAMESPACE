@@ -4,7 +4,9 @@ import(Rsamtools)
 import(BiocParallel)
 import(rtracklayer)
 import(IRanges)
-import(GenomicAlignments)
+
+importFrom(GenomicAlignments, summarizeOverlaps)
+importMethodsFrom(GenomicAlignments, summarizeOverlaps)
 
 export(
     fileList, "fileList<-", fileSample, "fileSample<-", 
@@ -21,6 +23,7 @@ exportClasses(
 
 exportMethods(
     "[", dim, names, show, yieldSize,
+    reduceByFile, reduceByRange,
     BamFileViews, countBam, scanBam, summarizeOverlaps, 
     BigWigFileViews, coverage, summary,
     FaFileViews

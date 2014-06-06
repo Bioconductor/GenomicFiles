@@ -225,27 +225,7 @@ if (.Platform$OS.type != "windows") {
 
   sm1 <- summary(bwfv, type = "mean", by = "file", summarize = TRUE) 
   sm2 <- summary(bwfv, type = "max", by = "range", summarize = FALSE) 
- 
-  ## ---------------------------------------------------------------------
-  ## reduceByRange() and reduceByFile() 
-  ## ---------------------------------------------------------------------
-  ## reduceByRange() and reduceByFile() allow detailed control of how 
-  ## data are extracted and combined through the use of MAP and REDUCE 
-  ## functions.
-
-  ## In this example a summary operation 'FUN' is applied to the 
-  ## coverage from each range.
-  coverage_summary <- function(X, MAP, REDUCE, FUN = mean, ...) {
-      MAP <- function(FILE, RANGE, ...) {
-          FUN(import(FILE, selection=RANGE, as="NumericList"))
-      }
-      REDUCE <- function(MAPPED, ...) unlist(MAPPED)
-      reduceByRange(X, MAP, REDUCE)
-  }
-
-  coverage_summary(bwfv, MAP, REDUCE)
-  coverage_summary(bwfv, MAP, REDUCE, FUN = median)
-}
+} 
 }
 
 \keyword{classes}

@@ -170,67 +170,16 @@
 }
 
 \examples{
-if (.Platform$OS.type != "windows") {
-  ## ---------------------------------------------------------------------
-  ## BamFileView Objects
-  ## ---------------------------------------------------------------------
-  library(RNAseqData.HNRNPC.bam.chr14)
-  fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
-  gr <- GRanges("chr14", IRanges(1:10*5, width = 2))
-  bfv <- BamFileViews(fls, fileRange = gr)
- 
-  ## Dimensions of the object are ranges by samples (files).
-  bfv 
-  bfv[1:5,]
-  fileList(bfv)
-  fileRange(bfv)
- 
-  ## ---------------------------------------------------------------------
-  ## Identify unique junctions (gaps in CIGAR) across files
-  ## ---------------------------------------------------------------------
+library(RNAseqData.HNRNPC.bam.chr14)
+fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
+gr <- GRanges("chr14", IRanges(1:10*5, width = 2))
+bfv <- BamFileViews(fls, fileRange = gr)
 
-  fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
-  gr <- GRanges("chr14", IRanges(c(1.9e7, 2e7), width = 900000))
-  bfv <- BamFileViews(fls, fileRange=gr)
-  param <- ScanBamParam()
- 
-  MAP = function(FILE, RANGE, ..., param) {
-      require(GenomicAlignments)
-      bamWhich(param) <- RANGE
-      readGAlignmentPairs(FILE, param = param)
-  }
-  REDUCE = function(MAPPED, ...) {
-      summarizeJunctions(do.call(c, unname(MAPPED)))
-  }
-  reduceByRange(bfv, MAP, REDUCE, param=param)
- 
-  ## ---------------------------------------------------------------------
-  ## countBam(), scanBam(), summarizeOverlaps()
-  ## ---------------------------------------------------------------------
-  ## countBam(), scanBam() and summarizeOverlaps() are implemented 
-  ## for BamFileViews objects as a convenience. These do not use the 
-  ## 'reduceBy*' and MAP/REDUCE functions but simply apply the function in 
-  ## parallel to each file in 'fileList' defined by the ranges in 'fileRange'.
- 
-  ## summarizeOverlaps()
-  library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-  tx <- transcripts(TxDb.Hsapiens.UCSC.hg19.knownGene)
- 
-  fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
-  gr <- GRanges("chr14", IRanges(c(24656731, 104160127, 104160241), 
-                                 width = 200))
-  bfv <- BamFileViews(fls, fileRange=gr)
- 
-  res = summarizeOverlaps(tx, bfv, singleEnd = FALSE, inter.feature = FALSE)
-  colSums(assays(res)$counts)
- 
-  ## countBam()
-  head(countBam(bfv))
- 
-  ## scanBam()
-  scn <- scanBam(bfv)
-  lapply(scn[[1]], names)
-}
+## Dimensions of the object are ranges by samples (files).
+bfv 
+bfv[1:5,]
+fileList(bfv)
+fileRange(bfv)
 }
 
 \keyword{classes}
