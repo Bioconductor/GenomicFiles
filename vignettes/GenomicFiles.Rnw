@@ -271,7 +271,51 @@ head(grp_gr)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{coverage - iterate}
+\subsection{coverage}
+
+In this example coverage is computed for each sample file. The 
+\Rcode{tileGenome} function from the \Biocpkg{GenomicRanges} package 
+is used to create a continuous sequence of ranges (tiles) across 
+chromosome 14. The seqlength argument is extracted from the seqinfo 
+object by calling \Rcode{seqinfo} on the BamFile.
+<<coverage-create_tiles>>=
+sl <- seqlengths(seqinfo(BamFile(fls[[1]]))["chr14"])
+tiles <- tileGenome(sl, ntile=5)
+@
+
+\Rcode{tiles} is a GRangesList of length \Rcode{ntile}.
+<<coverage-tiles>>=
+tiles
+@
+
+The MAPPER computes coverage as an RleList and sums the coverage and 
+number of positions (width) for each range.
+<<coverage-MAPPER>>=
+MAPPER = function(range, file, ...) {
+    rle <- coverage(file, param=ScanBamParam(which=range))[range]
+    view <- Views(rle, as(range, "RangesList"))
+    c(n = as.numeric(sum(unlist(width(view)))),
+      sum = as.numeric(sum(sapply(view, sum))))
+}
+@
+
+REDUCER sums the coverage and counts across all ranges. We will
+apply the reduction iteratively (after MAPPER is done with each range) 
+so the function must take 2 arguments representing the `current` 
+and `last` results from MAPPER.
+
+<<coverage-REDUCER>>=
+REDUCER = function(X, Y, ...) {
+    c(n = X[["n"]] + Y[["n"]], sum = X[["sum"]] + Y[["sum"]])
+}
+@
+
+Compute coverage for all 8 files.
+<<coverage-results>>=
+cvg <- reduceByFile(tiles, fls, MAPPER, REDUCER, iterate=TRUE)
+head(cvg)
+@
+
 \subsection{tile across chroms cn.mops - no iterate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

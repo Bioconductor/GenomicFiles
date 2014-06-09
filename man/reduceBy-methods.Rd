@@ -199,7 +199,7 @@ gr <- GRanges("chr14", IRanges(c(62262735, 63121531, 63980327),
 MAPPER <- function(range, file, ...) {
     library(GenomicRanges)
     param = ScanBamParam(which=range)
-    coverage(file, param=param)
+    coverage(file, param=param)[range]
 } 
 
 ## and the REDUCER adds the results. When the REDUCER is applied
@@ -221,33 +221,8 @@ REDUCER2 <- function(mapped, ...)
 ## Call reduceByFile() with 'iterate=FALSE'.
 cov2 <- reduceByFile(gr, fls, MAPPER, REDUCER2, iterate=FALSE)
 
-## Results are the same as the with the iterative REDUCER.
+## Results match those obtained with the iterative REDUCER.
 cov2[[1]]
-
-## -----------------------------------------------------------------------
-## mean coverage per-file:
-## -----------------------------------------------------------------------
-
-## FIXME: better BigWig data
-fl <- system.file("tests", "test.bw", package = "rtracklayer")
-fls <- c(fl, fl, fl)
-gr <- GRanges(c("chr2", "chr19", "chr19"),
-              IRanges(c(1, 1400, 1700), width = 1000))
-
-## MAPPER returns total coverage and counts (width) for each range.
-MAPPER = function(range, file, ...) {
-    rle <- import(file, selection=range, as="RleList")
-    dat <- Filter(length, Views(rle, as(range, "RangesList")))
-
-    c(n = as.numeric(sum(unlist(width(dat)))),
-      sum = as.numeric(sum(sapply(dat, sum))))
-}
-
-## REDUCER sums coverage and counts for all ranges.
-REDUCER = function(X, Y, ...)
-    c(n = X[["n"]] + Y[["n"]], sum = X[["sum"]] + Y[["sum"]])
-
-res <- reduceByFile(gr, fls, MAPPER, REDUCER, iterate=TRUE)
 }
 
 \keyword{methods}

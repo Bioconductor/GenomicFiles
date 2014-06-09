@@ -5,7 +5,7 @@ import(BiocParallel)
 import(rtracklayer)
 import(IRanges)
 
-importFrom(GenomicAlignments, summarizeOverlaps)
+importFrom(GenomicAlignments, summarizeOverlaps, Union)
 importMethodsFrom(GenomicAlignments, summarizeOverlaps)
 
 export(
