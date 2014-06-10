@@ -4,10 +4,10 @@ Description: This package provides infrastructure for parallel
 	queries distributed 'by file' or 'by range'. User defined
 	map and reduce functions provide added flexibility for
 	data combination and manipulation.
-Version: 1.1.6
+Version: 1.1.7
 Author: Valerie Obenchain, Michael Love, Martin Morgan 
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
-biocViews: Infrastructure, DataImport
+biocViews: Infrastructure, DataImport, Sequencing
 Depends: R (>= 3.1.0), methods, BiocGenerics, BiocParallel, Rsamtools, 
          rtracklayer (>= 1.23.16)
 Imports:  GenomicAlignments, IRanges
