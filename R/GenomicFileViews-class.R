@@ -2,6 +2,19 @@
 ### GenomicFileViews (VIRTUAL) 
 ### =========================================================================
 
+setClass("GenomicFileViews",
+    representation("VIRTUAL",
+        fileList="List",
+        fileSample="DataFrame",
+        fileRange="GRanges",
+        fileExperiment="list",
+        yieldSize="integer",
+        .views_on_file="environment"),
+    prototype(
+        fileList=List(),
+        yieldSize=NA_integer_),
+    validity=.validity)
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity 
 ###

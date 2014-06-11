@@ -1,7 +1,21 @@
 ### =========================================================================
-### pack and unpack methods
+### Packing ranges for optimal file queries
 ### =========================================================================
  
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helpers
+###
+
+isPacked <- function(x, ...)
+{
+    if (!is(x, "GRangesList"))
+        stop("'x' must be a GRangesList object")
+    if (is(x@partitioning, "PartitioningMap"))
+        TRUE 
+    else
+        FALSE 
+}
+
 .pack <- function(x, range_len, inter_range_len) 
 {
     if (length(x) == 0)
@@ -33,36 +47,16 @@
     x_grl
 }
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Generic and methods
+###
+
+setGeneric("pack", function(x, ...)
+    standardGeneric("pack"),
+    signature="x")
+
 setMethod("pack", "GRanges",
     function(x, ..., range_len=1e9, inter_range_len=1e7)
         .pack(x, range_len=range_len, inter_range_len=inter_range_len)
 )
 
-isPacked <- function(x, ...)
-{
-    if (!is(x, "GRangesList"))
-        stop("'x' must be a GRangesList object")
-    if (is(x@partitioning, "PartitioningMap"))
-        TRUE 
-    else
-        FALSE 
-}
-
-## handle results from *lapply()
-setMethod("unpack", c("list", "GRangesList"),
-    function(flesh, skeleton, ...)
-        unpack(List(flesh), skeleton, ...)
-) 
-
-setMethod("unpack", c("List", "GRangesList"),
-    function(flesh, skeleton, ...) 
-{
-    if (!isPacked(skeleton))
-        stop("'flesh' must be a packed object")
-
-    mo <- mapOrder(skeleton@partitioning)
-    if (is(flesh, "RleList"))
-        do.call(c, flesh)[mo]
-    else
-        unlist(flesh, use.names=FALSE)[mo]
-})

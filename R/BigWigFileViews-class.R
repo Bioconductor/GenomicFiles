@@ -2,6 +2,8 @@
 ### BigWigFileViews methods
 ### =========================================================================
 
+setClass("BigWigFileViews", contains="GenomicFileViews")
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity
 ###
@@ -14,6 +16,21 @@ setMethod(.validity, "BigWigFileViews",
         if (is.null(msg)) TRUE else msg
     }
 )
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Generic 
+###
+
+setGeneric("BigWigFileViews",
+           function(fileList,
+                    fileSample=DataFrame(row.names=
+                      make.unique(basename(fileList))),
+                    fileRange=GRanges(),
+                    fileExperiment=list(), 
+                    yieldSize="NA_integer_",
+                   .views_on_file="environment", ...)
+           standardGeneric("BigWigFileViews"),
+           signature="fileList")
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors 
@@ -62,6 +79,13 @@ setMethod(BigWigFileViews, "character",
         fileExperiment=fileExperiment, yieldSize=yieldSize, 
         .views_on_file=.views_on_file)
 })
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### base::mean is an S3 generic
+###
+
+## Needed for summary(..., type=mean)
+setGeneric("mean", signature="x")
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### coverage() and summary() methods

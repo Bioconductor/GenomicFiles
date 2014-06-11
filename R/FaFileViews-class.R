@@ -2,6 +2,23 @@
 ### FaFileViews methods
 ### =========================================================================
 
+setClass("FaFileViews", contains="GenomicFileViews")
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Generic 
+###
+
+setGeneric("FaFileViews",
+           function(fileList,
+                    fileSample=DataFrame(row.names=
+                      make.unique(basename(fileList))),
+                    fileRange=GRanges(),
+                    fileExperiment=list(),
+                    yieldSize="NA_integer_",
+                   .views_on_file="environment", ...)
+           standardGeneric("FaFileViews"),
+           signature="fileList")
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors
 ###

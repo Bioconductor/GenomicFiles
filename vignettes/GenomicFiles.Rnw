@@ -9,7 +9,7 @@
 BiocStyle::latex()
 @
 
-\title{Introduction to GenomicFiles}
+\title{Introduction to \Biocpkg{GenomicFiles}}
 \author{Valerie Obenchain, Michael Love, Martin Morgan}
 \date{Last modified: June 2014; Compiled: \today}
 
@@ -316,7 +316,7 @@ cvg <- reduceByFile(tiles, fls, MAPPER, REDUCER, iterate=TRUE)
 head(cvg)
 @
 
-\subsection{tile across chroms cn.mops - no iterate}
+\subsection{copy number analysis with \Biocpkg{cn.mops}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

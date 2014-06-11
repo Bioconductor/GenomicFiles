@@ -1,30 +1,70 @@
 import(methods)
 import(BiocGenerics)
 import(Rsamtools)
-import(BiocParallel)
 import(rtracklayer)
-import(IRanges)
+import(GenomicRanges)
+import(BiocParallel)
 
+importFrom(IRanges, coverage)
 importFrom(GenomicAlignments, summarizeOverlaps, Union)
 importMethodsFrom(GenomicAlignments, summarizeOverlaps)
 
-export(
-    fileList, "fileList<-", fileSample, "fileSample<-", 
-    fileRange, "fileRange<-", fileExperiment, "fileExperiment<-",
-    reduceByFile, reduceByRange, pack, unpack,
-    BamFileViews, BigWigFileViews, FaFileViews, 
-    reduceByRange, reduceByFile,
-    .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType
-)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 classes
+###
 
 exportClasses(
-    GenomicFileViews, BamFileViews, FaFileViews, BigWigFileViews
+    GenomicFiles, 
+    GenomicFileViews, 
+    BamFileViews, 
+    FaFileViews, 
+    BigWigFileViews
+)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 methods for generics not defined in GenomicFiles
+###
+
+exportMethods(
+    "[", dim, names, show, yieldSize, 
+    colData, 'colData<-', rowData, 'rowData', exptData,'exptData',
+    countBam, scanBam, summarizeOverlaps,
+    coverage, summary
+)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 generics & methods for generics defined in GenomicFiles
+###
+
+export(
+    ## GenomicFileViews class:
+    BamFileViews, BigWigFileViews, FaFileViews, 
+
+    ## GenomicFiles class:
+    GenomicFiles, files, 'files<-',
+
+    reduceByFile, reduceByRange, pack, unpack
 )
 
 exportMethods(
-    "[", dim, names, show, yieldSize,
-    reduceByFile, reduceByRange, pack, unpack,
-    BamFileViews, countBam, scanBam, summarizeOverlaps, 
-    BigWigFileViews, coverage, summary,
-    FaFileViews
+    ## GenomicFileViews class:
+    BamFileViews, BigWigFileViews, FaFileViews,
+
+    ## GenomicFiles class
+    GenomicFiles, files, 'files<-', 
+
+    reduceByFile, reduceByRange, pack, unpack
+)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export non-generic functions
+###
+
+export(
+    ## GenomicFileViews class:
+    fileList, "fileList<-", fileSample, "fileSample<-", 
+    fileRange, "fileRange<-", fileExperiment, "fileExperiment<-",
+
+    ## file registry:
+    .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType
 )

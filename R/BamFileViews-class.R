@@ -2,6 +2,8 @@
 ### BamFileViews methods
 ### =========================================================================
 
+setClass("BamFileViews", contains="GenomicFileViews")
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity
 ###
@@ -14,6 +16,22 @@ setMethod(.validity, "BamFileViews",
         if (is.null(msg)) TRUE else msg
     }
 )
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Generic 
+###
+
+setGeneric("BamFileViews",
+           function(fileList,
+                    fileSample=DataFrame(row.names=
+                      make.unique(basename(fileList))),
+                    fileRange=GRanges(),
+                    fileExperiment=list(), 
+                    yieldSize="NA_integer_",
+                   .views_on_file="environment", ...)
+           standardGeneric("BamFileViews"),
+           signature="fileList")
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors 
