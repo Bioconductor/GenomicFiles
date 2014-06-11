@@ -27,7 +27,8 @@
 % Methods:
 \alias{dim,GenomicFiles-method}
 \alias{dimnames,GenomicFiles-method}
-\alias{dimnames<-,GenomicFiles,ANY-method}
+\alias{dimnames<-,GenomicFiles,NULL-method}
+\alias{dimnames<-,GenomicFiles,list-method}
 \alias{[,GenomicFiles,ANY,missing-method}
 \alias{[,GenomicFiles,missing,ANY-method}
 \alias{[,GenomicFiles,ANY,ANY-method}
