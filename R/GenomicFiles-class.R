@@ -42,14 +42,22 @@ setGeneric("GenomicFiles",
 ### Constructors 
 ###
 
+## FIXME: problems with DataFrame as rowData
+## - how to handle rownames, should be on both GRanges and DF?
+## - currently names are lost if GRanges is extracted from DF
+## - should DF have a single column, if not how to interpret
+## - should DF allow indices and ranges
+
 setMethod(GenomicFiles, c("DataFrame", "character"),
    function(rowData, files, colData=DataFrame(), exptData=SimpleList(), ...)
 {
     if (length(files)) {
+        if (is.null(nms <- names(files)))
+            nms <- basename(files)
         if (missing(colData))
-            colData <- DataFrame(row.names=files)
+            colData <- DataFrame(row.names=nms)
         else
-            rownames(colData) <- files
+            rownames(colData) <- nms 
     }
     new("GenomicFiles", rowData=rowData, files=files, 
         colData=colData, exptData=exptData)
@@ -58,12 +66,15 @@ setMethod(GenomicFiles, c("DataFrame", "character"),
 setMethod(GenomicFiles, c("DataFrame", "List"),
    function(rowData, files, colData=DataFrame(), exptData=SimpleList(), ...)
 {
-    if (!is.null(nms <- names(files))) {
+    if (length(files)) {
+        if (is.null(nms <- names(files)))
+            stop("'List' of files must have names")
+
         if (missing(colData))
-            colData <- DataFrame(row.names=nms)
+            colData <- DataFrame(row.names=basename(nms))
         else
-            rownames(colData) <- nms
-    } 
+            rownames(colData) <- basename(nms)
+    }
     new("GenomicFiles", rowData=rowData, files=files, 
         colData=colData, exptData=exptData)
 })
@@ -77,19 +88,49 @@ setMethod(GenomicFiles, c("DataFrame", "list"),
 setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "character"),
     function(rowData, files, ...)
 {
-    GenomicFiles(as(rowData, "DataFrame"), files, ...)
+    if (!is.null(nms <- names(rowData)))
+        names(rowData) <- NULL 
+    rd <- as(rowData, "DataFrame")
+    rownames(rd) <- nms
+    GenomicFiles(rd, files, ...)
 })
 
 setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "List"),
     function(rowData, files, ...)
 {
-    GenomicFiles(as(rowData, "DataFrame"), files, ...)
+    if (!is.null(nms <- names(rowData)))
+        names(rowData) <- NULL 
+    rd <- as(rowData, "DataFrame")
+    rownames(rd) <- nms
+    GenomicFiles(rd, files, ...)
 })
 
 setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "list"),
     function(rowData, files, ...)
 {
-    GenomicFiles(as(rowData, "DataFrame"), as(files, "List"), ...)
+    if (!is.null(nms <- names(rowData)))
+        names(rowData) <- NULL 
+    rd <- as(rowData, "DataFrame")
+    rownames(rd) <- nms
+    GenomicFiles(rd, as(files, "List"), ...)
+})
+
+setMethod(GenomicFiles, c("missing", "character"),
+    function(rowData, files, ...)
+{
+    GenomicFiles(DataFrame(), files, ...)
+})
+
+setMethod(GenomicFiles, c("missing", "List"),
+    function(rowData, files, ...)
+{
+    GenomicFiles(DataFrame(), files, ...)
+})
+
+setMethod(GenomicFiles, c("missing", "list"),
+    function(rowData, files, ...)
+{
+    GenomicFiles(DataFrame(), as(files, "List"), ...)
 })
 
 setMethod(GenomicFiles, c("missing", "missing"),
@@ -186,17 +227,18 @@ setMethod(dim, "GenomicFiles",
 setMethod(dimnames, "GenomicFiles",
     function(x)
 {
-    list(names(rowData(x)), rownames(colData(x)))
+    list(rownames(rowData(x)), rownames(colData(x)))
 })
 
 setReplaceMethod("dimnames", c("GenomicFiles", "list"),
     function(x, value)
 {
+
     rowData <- rowData(x)
-    names(rowData) <- value[[1]]
+    rownames(rowData) <- value[[1]]
+    slot(x, "rowData") <- rowData
     colData <- colData(x)
     rownames(colData) <- value[[2]]
-    slot(x, "rowData") <- rowData
     slot(x, "colData") <- colData
 })
 

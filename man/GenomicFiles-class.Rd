@@ -13,6 +13,9 @@
 \alias{GenomicFiles,GenomicRangesORGRangesList,character-method}
 \alias{GenomicFiles,GenomicRangesORGRangesList,List-method}
 \alias{GenomicFiles,GenomicRangesORGRangesList,list-method}
+\alias{GenomicFiles,missing,character-method}
+\alias{GenomicFiles,missing,List-method}
+\alias{GenomicFiles,missing,list-method}
 \alias{GenomicFiles,missing,missing-method}
 
 % Accessors:
@@ -68,16 +71,16 @@
   In the code below, \code{x} is a GenomicFiles object.
 
   \describe{
-    item{files(x), files(x) <- value}{
-      Get or set the files on \code{x}. \code{value} can be 
-      a character() of file paths or a List of file objects
-      such as BamFile, BigWigFile etc.
-    }
     \item{rowData, rowData(x) <- value}{
       Get or set the rowData on \code{x}. \code{value} can be
       a \code{DataFrame}, \code{GRanges} or \code{GRangesList}
       representing ranges or indices defined on the spaces (position)
       of the files.
+    }
+    item{files(x), files(x) <- value}{
+      Get or set the files on \code{x}. \code{value} can be 
+      a character() of file paths or a List of file objects
+      such as BamFile, BigWigFile etc.
     }
     \item{colData, colData(x) <- value}{
       Get or set the colData on \code{x}. \code{value} must be
@@ -133,11 +136,14 @@
 \examples{
 library(RNAseqData.HNRNPC.bam.chr14)
 fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
+gr <- GRanges("chr14", IRanges(2e5*1:3, width=1e5, names=LETTERS[1:3]))
 colData <- DataFrame(method=rep("RNASeq", length(fls)), 
                      format=rep("bam", length(fls)))
-rowData <- DataFrame(GRanges("chr14", IRanges(2e5*1:3, width=1e5)))
-gf <- GenomicFiles(rowData, fls, colData=colData)
-gf 
+gf <- GenomicFiles(gr, fls, colData=colData)
+gf
+
+dimnames(gf)
+dim(gf[1, 5:8]) 
 }
 
 \keyword{classes}
