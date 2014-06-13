@@ -42,13 +42,39 @@
 
 setGeneric("reduceByFile", 
     function(ranges, files, MAPPER, REDUCER, iterate=FALSE, ..., init)
-    standardGeneric("reduceByFile"),
-    signature="ranges")
+        standardGeneric("reduceByFile"),
+    signature=c("ranges", "files")
+)
 
-setMethod(reduceByFile, "GRangesList", .reduceByFile) 
-
-setMethod(reduceByFile, "GRanges", 
-    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, ..., init)
-        .reduceByFile(as(ranges, "List"), files, MAPPER, 
-                      REDUCER, iterate, ..., init=init)
+setMethod(reduceByFile, c("GRangesList", "ANY"), 
+    function(ranges, files, MAPPER, REDUCER, iterate=FALSE,
+             summarize=FALSE, ..., init) {
+        lst <- .reduceByFile(ranges, files, MAPPER, REDUCER, iterate, 
+                             ..., init)
+        if(summarize)
+            SummarizedExperiment(simplify2array(lst), rowData=ranges,
+                                 colData=DataFrame(filePath=files))
+        else
+            lst
+    }
 ) 
+
+setMethod(reduceByFile, c("GRanges", "ANY"), 
+    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
+             summarize=FALSE, ..., init) {
+        lst <- .reduceByFile(as(ranges, "List"), files, MAPPER, REDUCER,
+                             iterate, ..., init=init)
+        if(summarize)
+            SummarizedExperiment(simplify2array(lst), rowData=ranges,
+                                 colData=DataFrame(filePath=files))
+        else
+            lst
+    }
+) 
+
+setMethod(reduceByFile, c("GenomicFiles", "missing"), 
+    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
+             summarize=FALSE, ..., init)
+        reduceByFile(rowData(ranges)[[1]], GenomicFiles::files(ranges),
+                     MAPPER, REDUCER, iterate, summarize, ..., init=init)
+)

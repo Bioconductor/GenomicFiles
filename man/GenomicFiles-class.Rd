@@ -7,16 +7,20 @@
 \alias{GenomicFiles-class}
 
 % Constructors:
-\alias{GenomicFiles,character-method}
-\alias{GenomicFiles,list-method}
-\alias{GenomicFiles,List-method}
-\alias{GenomicFiles,missing-method}
+\alias{GenomicFiles,DataFrame,character-method}
+\alias{GenomicFiles,DataFrame,List-method}
+\alias{GenomicFiles,DataFrame,list-method}
+\alias{GenomicFiles,GenomicRangesORGRangesList,character-method}
+\alias{GenomicFiles,GenomicRangesORGRangesList,List-method}
+\alias{GenomicFiles,GenomicRangesORGRangesList,list-method}
+\alias{GenomicFiles,missing,missing-method}
 
 % Accessors:
 \alias{files}
 \alias{files<-}
 \alias{files,GenomicFiles-method}
-\alias{files<-,GenomicFiles,ANY-method}
+\alias{files<-,GenomicFiles,character-method}
+\alias{files<-,GenomicFiles,List-method}
 \alias{colData,GenomicFiles-method}
 \alias{colData<-,GenomicFiles,DataFrame-method}
 \alias{rowData,GenomicFiles-method}
@@ -49,16 +53,12 @@
   \code{SummarizedExperiment}, \code{GenomicFiles} does not contain an 
   \code{assays} slot and the \code{rowData} is a \code{DataFrame} 
   instead of a \code{GenomicRanges}. 
-
-  Methods set on \code{GenomicFiles} return a \code{SummarizedExperiment}
-  where data from \code{rowData}, \code{colData} and \code{exptData}
-  are transferred from one class to the other.
 }
 
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{GenomicFiles(files, rowData=DataFrame(), colData=DataFrame(),
+      \code{GenomicFiles(rowData, files, colData=DataFrame(),
                          exptData=SimpleList(), ...)}:
     }
   }
@@ -74,9 +74,10 @@
       such as BamFile, BigWigFile etc.
     }
     \item{rowData, rowData(x) <- value}{
-      Get or set the rowData on \code{x}. \code{value} must be
-      a \code{DataFrame} instance with ranges or indices defined 
-      on the spaces (genomic position) of the files.
+      Get or set the rowData on \code{x}. \code{value} can be
+      a \code{DataFrame}, \code{GRanges} or \code{GRangesList}
+      representing ranges or indices defined on the spaces (position)
+      of the files.
     }
     \item{colData, colData(x) <- value}{
       Get or set the colData on \code{x}. \code{value} must be
@@ -105,16 +106,16 @@
     \item{show}{
       Compactly display the object.
     }
-%    \item{reduceByFile}{
-%      Parallel computations are distributed by files in \code{fileList}
-%      with the option to provide MAP and REDUCE functions across ranges 
-%      and / or files.
-%    }
-%    \item{reduceByRange}{
-%      Parallel computations are distributed by ranges in \code{fileRange}
-%      with the option to provide MAP and REDUCE functions across ranges 
-%      and / or files.
-%    }
+    \item{reduceByFile}{
+     Extract, manipulate and combine data defined in \code{rowData} 
+     within the files specified in \code{files}. See ?\code{reduceByFile} 
+     for details.
+    }
+    \item{reduceByRange}{
+     Extract, manipulate and combine data defined in \code{rowData} 
+     across the files specified in \code{files}. See ?\code{reduceByRange} 
+     for details.
+    }
   }
 }
 
@@ -125,6 +126,7 @@
 }
 
 \author{
+  Martin Morgan <mtmorgan@fhcrc.org> and 
   Valerie Obenchain <vobencha@fhcrc.org>
 }
 
@@ -134,7 +136,7 @@ fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
 colData <- DataFrame(method=rep("RNASeq", length(fls)), 
                      format=rep("bam", length(fls)))
 rowData <- DataFrame(GRanges("chr14", IRanges(2e5*1:3, width=1e5)))
-gf <- GenomicFiles(fls, rowData=rowData, colData=colData)
+gf <- GenomicFiles(rowData, fls, colData=colData)
 gf 
 }
 

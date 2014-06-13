@@ -34,18 +34,16 @@ setMethod(.validity, "GenomicFiles",
 ###
 
 setGeneric("GenomicFiles",
-    function(files, rowData=DataFrame(), colData=DataFrame(),
-             exptData="SimpleList", ...) 
+    function(rowData, files, ...) 
         standardGeneric("GenomicFiles"),
-    signature="files")
+    signature=c("rowData", "files"))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors 
 ###
 
-setMethod(GenomicFiles, "character",
-   function(files, rowData=DataFrame(), colData=DataFrame(),
-            exptData=SimpleList(), ...)
+setMethod(GenomicFiles, c("DataFrame", "character"),
+   function(rowData, files, colData=DataFrame(), exptData=SimpleList(), ...)
 {
     if (length(files)) {
         if (missing(colData))
@@ -53,35 +51,51 @@ setMethod(GenomicFiles, "character",
         else
             rownames(colData) <- files
     }
-    new("GenomicFiles", files=files, rowData=rowData, 
-        colData=colData, exptData=exptData, ...)
+    new("GenomicFiles", rowData=rowData, files=files, 
+        colData=colData, exptData=exptData)
 })
 
-setMethod(GenomicFiles, "List",
-   function(files, rowData=DataFrame(), colData=DataFrame(),
-            exptData=SimpleList(), ...)
+setMethod(GenomicFiles, c("DataFrame", "List"),
+   function(rowData, files, colData=DataFrame(), exptData=SimpleList(), ...)
 {
-    ## FIXME: require List be named?
     if (!is.null(nms <- names(files))) {
         if (missing(colData))
             colData <- DataFrame(row.names=nms)
         else
             rownames(colData) <- nms
     } 
-    new("GenomicFiles", files=files, rowData=rowData, 
-        colData=colData, exptData=exptData, ...)
+    new("GenomicFiles", rowData=rowData, files=files, 
+        colData=colData, exptData=exptData)
 })
 
-setMethod(GenomicFiles, "list",
-    function(files, ...)
+setMethod(GenomicFiles, c("DataFrame", "list"),
+    function(rowData, files, ...)
 {
-    GenomicFiles(as(files, "List"), ...)
+    GenomicFiles(rowData, as(files, "List"), ...)
 })
 
-setMethod(GenomicFiles, "missing",
-    function(files, ...)
+setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "character"),
+    function(rowData, files, ...)
 {
-    GenomicFiles(character(), ...)
+    GenomicFiles(as(rowData, "DataFrame"), files, ...)
+})
+
+setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "List"),
+    function(rowData, files, ...)
+{
+    GenomicFiles(as(rowData, "DataFrame"), files, ...)
+})
+
+setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "list"),
+    function(rowData, files, ...)
+{
+    GenomicFiles(as(rowData, "DataFrame"), as(files, "List"), ...)
+})
+
+setMethod(GenomicFiles, c("missing", "missing"),
+    function(rowData, files, ...)
+{
+    GenomicFiles(DataFrame(), character(), ...)
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,14 +111,19 @@ setMethod("files", "GenomicFiles",
 
 setGeneric("files<-",
     function(x, ..., value) standardGeneric("files<-"))
-setReplaceMethod("files", c("GenomicFiles", "ANY"),
+setReplaceMethod("files", c("GenomicFiles", "character"),
     function(x, ..., value)
 {
-    if (!is(value, "character") && !is(value, "List") && !is(value, "list"))
-        stop("'value' must be a 'character' or 'List'")
- 
-    if (is(value, "list"))
-        value <- as(value, "List")
+    if (is.null(nms <- names(value)))
+        nms <- value
+    rownames(colData(x)) <- nms 
+    slot(x, "files") <- value
+    x 
+})
+
+setReplaceMethod("files", c("GenomicFiles", "List"),
+    function(x, ..., value)
+{
     if (is.null(nms <- names(value)))
         nms <- value
     rownames(colData(x)) <- nms 
@@ -194,7 +213,7 @@ setReplaceMethod("dimnames", c("GenomicFiles", "NULL"),
 
 setMethod("[", c("GenomicFiles", "ANY", "missing"),
     function(x, i, j, ..., drop=TRUE)
-        initialize(x, rowData=rowData(x)[i,])
+        initialize(x, as(rowData(x)[i,], "DataFrame"))
 )
 
 setMethod("[", c("GenomicFiles", "missing", "ANY"),
@@ -205,8 +224,8 @@ setMethod("[", c("GenomicFiles", "missing", "ANY"),
     if (any(is.na(j)))
         stop("subscript 'j' out of bounds")
     initialize(x, 
-               rowData=rowData(x)[j],
-               files=files(x)[j,,drop=FALSE])
+               colData=colData(x)[j,,drop=FALSE],
+               files=files(x)[j])
 })
 
 setMethod("[", c("GenomicFiles", "ANY", "ANY"),
@@ -221,9 +240,9 @@ setMethod("[", c("GenomicFiles", "ANY", "ANY"),
     if (any(is.na(j)))
         stop("subscript 'j' out of bounds")
     initialize(x, 
-        fileRange=fileRange(x)[i,],
-        fileList=fileList(x)[j],
-        fileSample=fileSample(x)[j,,drop=FALSE])
+        files=files(x)[j],
+        rowData=as(rowData(x)[i,], "DataFrame"),
+        colData=colData(x)[j,,drop=FALSE])
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

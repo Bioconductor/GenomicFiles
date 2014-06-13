@@ -41,13 +41,45 @@
 
 setGeneric("reduceByRange", 
     function(ranges, files, MAPPER, REDUCER, iterate=FALSE, ..., init)
-    standardGeneric("reduceByRange"),
-    signature="ranges")
+        standardGeneric("reduceByRange"),
+    signature=c("ranges", "files")
+)
 
-setMethod(reduceByRange, "GRangesList", .reduceByRange) 
+setMethod(reduceByRange, c("GRangesList", "ANY"), 
+    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
+             summarize=FALSE, ..., init) {
+        lst <- .reduceByRange(ranges, files, MAPPER, REDUCER, iterate,
+                              ..., init=init)
+        if(summarize) {
+            lst <- bplapply(seq_along(files), 
+                function(i) sapply(lst, "[", i))
+            SummarizedExperiment(simplify2array(lst), rowData=ranges,
+                                 colData=DataFrame(filePath=files))
+        } else {
+            lst
+        }
+    }
+)
 
-setMethod(reduceByRange, "GRanges", 
-    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, ..., init)
-        .reduceByRange(as(ranges, "List"), files, MAPPER, 
-                       REDUCER, iterate, ..., init=init)
+setMethod(reduceByRange, c("GRanges", "ANY"), 
+    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
+             summarize=FALSE, ..., init) {
+        lst <- .reduceByRange(as(ranges, "List"), files, MAPPER,
+                              REDUCER, iterate, ..., init=init) 
+        if(summarize) {
+            lst <- bplapply(seq_along(files), 
+                function(i) sapply(lst, "[", i))
+            SummarizedExperiment(simplify2array(lst), rowData=ranges,
+                                 colData=DataFrame(filePath=files))
+        } else {
+            lst
+        }
+    }
 ) 
+
+setMethod(reduceByRange, c("GenomicFiles", "missing"), 
+    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
+             summarize=FALSE, ..., init)
+        reduceByRange(rowData(ranges)[[1]], GenomicFiles::files(ranges),
+                      MAPPER, REDUCER, iterate, summarize, ..., init=init)
+)

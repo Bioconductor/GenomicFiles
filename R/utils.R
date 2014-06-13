@@ -1,3 +1,4 @@
+## Used with GenomicFileViews class 
 
 .reduce <-
     function(..., BY=c("range", "file"))
@@ -9,7 +10,6 @@
         reduceByFile(...)
 }
 
-## TODO: promote to generic / methods
 .summarizeView <-
     function(X, MAPPER, REDUCER, ..., BY=c("range", "file"))
 {

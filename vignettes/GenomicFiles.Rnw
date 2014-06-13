@@ -54,9 +54,96 @@ biocLite("GenomicFiles")
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Computing by range or by file}
+\section{Quick Start}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Rpackage{GenomicFiles} provides infrastructure to manipulate and combine
+data by range (across files) or by file (within files). A MAPPER 
+function extracts and manipulates chunks of data. The REDUCER 
+operates on the output of the MAPPER to produce a consolidated result 
+(e.g., sum, mean, etc.). The REDUCER is optional; when none is supplied
+results are returned directly from the MAPPER.
+
+<<quick_start-load-package, results=hide>>=
+library(GenomicFiles)
+@
+
+File paths can be a character vector or a list of file classes
+such as \Rcode{BamFile}, \Rcode{BigWigFile} etc. 
+<<class-bam-data>>=
+library(RNAseqData.HNRNPC.bam.chr14)
+fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES[1:3]
+@
+
+Define ranges of interest as a \Rcode{GRanges} or \Rcode{GRangesList}.
+<<quick-start-ranges>>=
+gr <- GRanges("chr14", IRanges(c(19100000, 106000000), width=1e7))
+@
+
+This MAPPER produces a summary table of pileups.
+<<quick-start-MAPPER>>=
+MAPPER <- function(range, file, ...) {
+    library(Rsamtools)
+    pup <- pileup(file, scanBamParam=ScanBamParam(which=range))
+    table(pup[c("nucleotide", "count")])
+}
+@
+
+\Rcode{reduceByFile} computes pileups for the ranges in each
+file separately. When \Rcode{summarize=TRUE} results are returned 
+as a \Rcode{SummarizedExperiment}.
+<<quick-start-reduceByFile>>=
+se <- reduceByFile(gr, fls, MAPPER, summarize=TRUE)
+se
+@
+
+Results are stored in the \Rcode{assays} slot.
+<<quick-start-assays>>=
+assays(se)
+@
+
+To compute across files instead of within files use 
+\Rcode{reduceByRange}. First define a REDCUCER that adds the 
+pileup summary tables.
+<<quick-start-REDUCER>>=
+REDUCER <- function(mapped, ...) {
+    Reduce("+", mapped)
+}
+@
+
+%% TODO: sum over position
+Call \Rcode{reduceByRange}.
+<<quick-start-reduceByRange>>=
+#se <- reduceByRange(gr, fls, MAPPER, REDUCER, summarize=TRUE)
+#se
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview of classes and functions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\Rcode{GenomicFiles} class}
+
+The \Rcode{GenomicFiles} class is a matrix-like container where rows
+represent ranges of interest and columns represent files. The class 
+can be thought of as a precursor to the \code{SummarizedExperiment} 
+class.
+
+\code{GenomicFiles} has slots for \code{files}, \code{rowData}, 
+\code{colData} and \code{exptData}. In contrast to 
+\code{SummarizedExperiment}, \code{GenomicFiles} does not contain an 
+\code{assays} slot and the \code{rowData} is a \code{DataFrame} 
+instead of a \code{GenomicRanges}.
+
+The class can be subset on files and / or ranges to perform different
+experimental runs. When a \Rcode{GenomicFiles} is given as the 
+\Rcode{ranges} argument to the reduceBy* functions and \Rcode{summarize}
+is TRUE, data from the common slots are transferred to the resulting 
+\Rcode{SummarizedExperiment}.
+
+\subsection{\Rcode{reduceByFile} and \Rcode{reduceByRange} functions}
 
 \Rpackage{GenomicFiles} provides infrastructure to manipulate and combine
 data by range (across files) or by file (within files). Files or ranges are 
@@ -66,6 +153,7 @@ operates on output from the MAPPER to produce a consolidated result
 (e.g., sum, mean, etc.). When REDUCER is not supplied the results are 
 returned directly from the MAPPER. Both MAPPER and REDUCER are executed 
 in a distributed step on the same worker.
+
 
 In this section we use the same files and ranges to compare the
 output from \Rcode{reduceByFile} and \Rcode{reduceByRange}. To highlight
@@ -99,8 +187,6 @@ MAPPER <- function(range, file, ...) {
           } 
 @
 
-\subsection{\Rcode{reduceByRange}}
-
 Individual elements of \Rcode{ranges} are sent to workers along with a 
 list of all files. The MAPPER extracts the ranges from all files and 
 REDUCER collapses these data. This range reduction can be thought 
@@ -124,11 +210,10 @@ Each list element contains a table of counts, one for each file.
 do.call(rbind, rbr[[1]])
 @
 
-\subsection{\Rcode{reduceByFile}}
-
-Individual files are sent to workers along with all ranges. The MAPPER 
-extracts all ranges from the file and REDUCER collapses these data. 
-This file reduction can be thought of as an `within-file` operation.
+In the case of \Rcode{reduceByFiles}, the files are sent to workers 
+along with all ranges. The MAPPER  extracts all ranges from the file 
+and the REDUCER collapses the data. This file reduction can be thought 
+of as an `within-file` operation.
 
 <<intro-rbf>>=
 rbf <- reduceByFile(gr, fls, MAPPER)
@@ -149,15 +234,14 @@ rbf[[1]]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Queries across files: \Rcode{reduceByRange}}
+\section{Queries across files with \Rcode{reduceByRange}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Pileup summaries with \Rcode{bam2R}}
 
-In this example we summarize nucleotide counts (pileups) across a
-group of files. The end goal is to sum pileups for the same ranges 
-from different files so we use \Rcode{reduceByRange}.
+In this example we summarize nucleotide counts (pileups) for the
+same ranges across files.
 
 Create a \Rclass{GRanges} with regions of interest:
 <<pileups-new-ranges>>=
@@ -267,7 +351,7 @@ head(grp_gr)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Queries within files: \Rcode{reduceByFile}}
+\section{Queries within files with \Rcode{reduceByFile}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -318,17 +402,26 @@ head(cvg)
 
 \subsection{copy number analysis with \Biocpkg{cn.mops}}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Functions to summarize results -> SummarizedExperment}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{GenomicFiles Class}
+\section{Data access / storage}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% TODO:
+\subsection{parallel chunking vs streaming}
+\subsection{distributed data}
+
+%Processing chunks of data can be done with parallelization or streaming.
+%- splitting data is expensive (parallel)
+%- cannot have all data at once (streaming)
+%
+%R has no explicit API for this
+%- use connections to read from HDSF(hadoop) or rhdf5
+%- leverage distributed storage, compute where data are stored
+%  (RDFS, Hadoop)
+%- iterators focus on inner code chunk processing
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
