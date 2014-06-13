@@ -128,14 +128,14 @@ Call \Rcode{reduceByRange}.
 
 The \Rcode{GenomicFiles} class is a matrix-like container where rows
 represent ranges of interest and columns represent files. The class 
-can be thought of as a precursor to the \code{SummarizedExperiment} 
+can be thought of as a precursor to the \Rcode{SummarizedExperiment} 
 class.
 
-\code{GenomicFiles} has slots for \code{files}, \code{rowData}, 
-\code{colData} and \code{exptData}. In contrast to 
-\code{SummarizedExperiment}, \code{GenomicFiles} does not contain an 
-\code{assays} slot and the \code{rowData} is a \code{DataFrame} 
-instead of a \code{GenomicRanges}.
+\Rcode{GenomicFiles} has slots for \Rcode{files}, \Rcode{rowData}, 
+\Rcode{colData} and \Rcode{exptData}. In contrast to 
+\Rcode{SummarizedExperiment}, \Rcode{GenomicFiles} does not contain an 
+\Rcode{assays} slot and the \Rcode{rowData} is a \Rcode{DataFrame} 
+instead of a \Rcode{GenomicRanges}.
 
 The class can be subset on files and / or ranges to perform different
 experimental runs. When a \Rcode{GenomicFiles} is given as the 
