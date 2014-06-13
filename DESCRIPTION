@@ -1,9 +1,9 @@
 Package: GenomicFiles
-Title: Parallel queries distributed by file or by range
+Title: Distributed computing by file or by range
 Description: This package provides infrastructure for parallel 
-	queries distributed 'by file' or 'by range'. User defined
-	map and reduce functions provide added flexibility for
-	data combination and manipulation.
+	computations distributed 'by file' or 'by range'. User 
+	defined MAPPER and REDUCER functions provide added 
+	flexibility for data combination and manipulation.
 Version: 1.1.9
 Author: Valerie Obenchain, Michael Love, Martin Morgan 
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
