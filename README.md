@@ -1,4 +1,5 @@
 GenomicFiles
 =========
 
-Parallel queries distributed by file or by range.
+Distributed computing by file or by range
+
