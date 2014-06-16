@@ -48,6 +48,8 @@ setGeneric("reduceByRange",
 setMethod(reduceByRange, c("GRangesList", "ANY"), 
     function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
              summarize=FALSE, ..., init) {
+        if (summarize && !missing(REDUCER))
+            stop("'summarize' must be FALSE when REDUCER is provided")
         lst <- .reduceByRange(ranges, files, MAPPER, REDUCER, iterate,
                               ..., init=init)
         if(summarize) {
@@ -64,6 +66,8 @@ setMethod(reduceByRange, c("GRangesList", "ANY"),
 setMethod(reduceByRange, c("GRanges", "ANY"), 
     function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
              summarize=FALSE, ..., init) {
+        if (summarize && !missing(REDUCER))
+            stop("'summarize' must be FALSE when REDUCER is provided")
         lst <- .reduceByRange(as(ranges, "List"), files, MAPPER,
                               REDUCER, iterate, ..., init=init) 
         if(summarize) {
@@ -79,7 +83,10 @@ setMethod(reduceByRange, c("GRanges", "ANY"),
 
 setMethod(reduceByRange, c("GenomicFiles", "missing"), 
     function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
-             summarize=FALSE, ..., init)
+             summarize=FALSE, ..., init) {
+        if (summarize && !missing(REDUCER))
+            stop("'summarize' must be FALSE when REDUCER is provided")
         reduceByRange(rowData(ranges)[[1]], GenomicFiles::files(ranges),
                       MAPPER, REDUCER, iterate, summarize, ..., init=init)
+    }
 )

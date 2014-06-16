@@ -105,6 +105,10 @@
   \item{summarize}{
     A logical indicating if results should be returned as a
     \code{SummarizedExperiment} object instead of a list.
+    Because \code{SummarizedExperiment} requires that
+    dimensions of the data in \code{assays} match the rows
+    and columns of the class a REDUCER cannot be used when
+    \code{summarize=TRUE}.
   }
   \item{init}{
     An (optional) initial value for \code{REDUCER}. Applicable when
@@ -264,8 +268,7 @@ dim(gf)
 gf_sub <- gf[2, 3:4]
 dim(gf_sub)
 
-## When summarize = TRUE the reduceBy* functions return a 
-## SummarizedExperiment instead of a list. 
+## When summarize = TRUE the output is a SummarizedExperiment. 
 se <- reduceByFile(gf, MAPPER=MAPPER, summarize=TRUE)
 se
 
