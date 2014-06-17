@@ -34,8 +34,7 @@ Two user-supplied functions, MAPPER and REDUCER, are similar in spirit
 to \Rcode{Map} and \Rcode{Reduce} in \Rpackage{base} \R{}. Together
 they provide a flexible interface to extract, manipulate and combine data.
 Both functions are executed on a single worker which means results
-are combined from a single worker, not across workers. We plan to add
-methods for combining data across workers in a future version.
+are combined from a single worker, not across workers.
 
 We assume the reader has some previous experience with \R{} and
 with basic manipulation of ranges objects such as \Rcode{GRanges} and
@@ -137,21 +136,21 @@ head(lst[[1]], 3)
 \subsection{\Rcode{GenomicFiles} class}
 
 The \Rcode{GenomicFiles} class is a matrix-like container where rows
-represent ranges of interest and columns represent files. The class 
-can be thought of as a precursor to the \Rcode{SummarizedExperiment} 
-class.
+represent ranges of interest and columns represent files. The object
+can be subset on files and / or ranges to perform different
+experimental runs.
 
-\Rcode{GenomicFiles} has slots for \Rcode{files}, \Rcode{rowData}, 
-\Rcode{colData} and \Rcode{exptData}. In contrast to 
-\Rcode{SummarizedExperiment}, \Rcode{GenomicFiles} does not contain an 
-\Rcode{assays} slot and the \Rcode{rowData} is a \Rcode{DataFrame} 
-instead of a \Rcode{GenomicRanges}.
+The class can be thought of as a precursor to the \Rcode{SummarizedExperiment} 
+class. It has slots for \Rcode{files}, \Rcode{rowData}, \Rcode{colData} 
+and \Rcode{exptData} but does not contain the \Rcode{assays} slot. The
+\Rcode{rowData} is a \Rcode{DataFrame} instead of a \Rcode{GenomicRanges}.
 
-The class can be subset on files and / or ranges to perform different
-experimental runs. When a \Rcode{GenomicFiles} is given as the 
-\Rcode{ranges} argument to the reduceBy* functions and \Rcode{summarize}
-is TRUE, data from the common slots are transferred to the resulting 
-\Rcode{SummarizedExperiment}.
+A \Rcode{GenomicFiles} can be used as the \Rcode{ranges} argument to the 
+reduceBy* functions. When \Rcode{summarize} is TRUE, data from the common 
+slots are transferred to the \Rcode{SummarizedExperiment} result. 
+NOTE: Results can only be put into a \Rcode{SummarizedExperiment} when no 
+reduction is performed because of the matching dimensions requirement 
+(i.e., a REDUCER collapses the results in one dimension).
 
 \subsection{\Rcode{reduceByFile} and \Rcode{reduceByRange} functions}
 
@@ -166,7 +165,7 @@ in a distributed step on the same worker.
 
 In this section we use the same files and ranges to compare the
 output from \Rcode{reduceByFile} and \Rcode{reduceByRange}. To highlight
-the difference in output geometry we apply a MAPPER with no REDUCER.
+the difference in output geometry a MAPPER is applied with no REDUCER.
 
 <<class-load-package, results=hide>>=
 library(GenomicFiles)
