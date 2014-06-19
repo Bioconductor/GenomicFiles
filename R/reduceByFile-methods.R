@@ -10,8 +10,8 @@
 {
     if (!is(files, "character") && !is(files, "List"))
         stop("'files' must be character vector or List of filenames")
-    if (missing(REDUCER) && iterate==TRUE)
-        stop("when 'iterate=TRUE' 'REDUCER' must be specified")
+    if (missing(REDUCER) && iterate)
+        iterate <- FALSE
 
     NO_REDUCER <- missing(REDUCER)
     ## files sent to workers
@@ -23,7 +23,7 @@
                 else init
             for (i in seq_along(ranges)[-1]) {
                 mapped <- MAPPER(ranges[[i]], file, ...)
-                result <- REDUCER(result, mapped, ...)
+                result <- REDUCER(list(result, mapped), ...)
             }
             result
         } else {
@@ -41,19 +41,17 @@
 ###
 
 setGeneric("reduceByFile", 
-    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, ..., init)
+    function(ranges, files, MAPPER, REDUCER, iterate=TRUE, ..., init)
         standardGeneric("reduceByFile"),
     signature=c("ranges", "files")
 )
 
 setMethod(reduceByFile, c("GRangesList", "ANY"), 
-    function(ranges, files, MAPPER, REDUCER, iterate=FALSE,
+    function(ranges, files, MAPPER, REDUCER, iterate=TRUE,
              summarize=FALSE, ..., init) {
-        if (summarize && !missing(REDUCER))
-            stop("'summarize' must be FALSE when REDUCER is provided")
         lst <- .reduceByFile(ranges, files, MAPPER, REDUCER, iterate, 
                              ..., init)
-        if(summarize)
+        if (summarize && missing(REDUCER))
             SummarizedExperiment(simplify2array(lst), rowData=ranges,
                                  colData=DataFrame(filePath=files))
         else
@@ -62,13 +60,11 @@ setMethod(reduceByFile, c("GRangesList", "ANY"),
 ) 
 
 setMethod(reduceByFile, c("GRanges", "ANY"), 
-    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
+    function(ranges, files, MAPPER, REDUCER, iterate=TRUE, 
              summarize=FALSE, ..., init) {
-        if (summarize && !missing(REDUCER))
-            stop("'summarize' must be FALSE when REDUCER is provided")
         lst <- .reduceByFile(as(ranges, "List"), files, MAPPER, REDUCER,
                              iterate, ..., init=init)
-        if(summarize)
+        if (summarize && missing(REDUCER))
             SummarizedExperiment(simplify2array(lst), rowData=ranges,
                                  colData=DataFrame(filePath=files))
         else
@@ -77,10 +73,8 @@ setMethod(reduceByFile, c("GRanges", "ANY"),
 ) 
 
 setMethod(reduceByFile, c("GenomicFiles", "missing"), 
-    function(ranges, files, MAPPER, REDUCER, iterate=FALSE, 
+    function(ranges, files, MAPPER, REDUCER, iterate=TRUE, 
              summarize=FALSE, ..., init) {
-        if (summarize && !missing(REDUCER))
-            stop("'summarize' must be FALSE when REDUCER is provided")
         reduceByFile(rowData(ranges)[[1]], GenomicFiles::files(ranges),
                      MAPPER, REDUCER, iterate, summarize, ..., init=init)
     }

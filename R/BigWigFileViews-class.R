@@ -110,12 +110,9 @@ setMethod(coverage, "BigWigFileViews",
     ##       coverage method 'by=range' and 'by=file' give the
     ##       same results. Choose 'by=file' which is faster.
     if (summarize) { 
-        REDUCER <- function(mapped, ...) { mapped } 
-        .summarizeView(x, MAPPER, REDUCER, ..., BY="file", as=as)
+        .summarizeView(x, MAPPER, ..., BY="file", as=as)
     } else {
-        REDUCER <- function(mapped, ...) do.call(c, mapped)
-        .reduce(fileRange(x), fileList(x), MAPPER, REDUCER, 
-                ..., BY=by, as=as)
+        .reduce(fileRange(x), fileList(x), MAPPER, ..., BY=by, as=as)
     }
 })
 
@@ -126,11 +123,9 @@ setMethod(summary, "BigWigFileViews",
         sumres <- summary(file, which=range, asRangedData=TRUE, ...)
         do.call(c, sumres)$score
     }
-    REDUCER <- function(mapped, ...) do.call(c, mapped)
-
     if (summarize) 
-        .summarizeView(object, MAPPER, REDUCER, ..., BY=by)
+        .summarizeView(object, MAPPER, ..., BY=by)
     else 
         .reduce(fileRange(object), fileList(object), 
-                MAPPER, REDUCER, ..., BY=by)
+                MAPPER, ..., BY=by)
 })

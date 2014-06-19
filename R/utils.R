@@ -11,11 +11,11 @@
 }
 
 .summarizeView <-
-    function(X, MAPPER, REDUCER, ..., BY=c("range", "file"))
+    function(X, MAPPER, ..., BY=c("range", "file"))
 {
     BY <- match.arg(BY)
     assay <- .reduce(fileRange(X), fileList(X), 
-                     MAPPER, REDUCER, ..., BY=BY)
+                     MAPPER, ..., BY=BY)
     if (BY == "range") {
         ## reformat list structure
         if (is(assay, "list")) {

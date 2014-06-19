@@ -105,26 +105,19 @@ dim(assays(se)[[1]])
 
 To compute across files instead of within use \Rcode{reduceByRange}.
 In this dimension we can compute a combined pileup count for each 
-range. The MAPPER coumputes counts for each range across files and 
-the REDUCER combines them before creating the summary table. 
+range. We use the same MAPPER and a REDUCER that combines the counts.
 <<quick-start-MAPPER-REDUCER-reduceByRange>>=
-MAPPER <- function(range, file, ...) {
-    library(Rsamtools)
-    pileup(file, scanBamParam=ScanBamParam(which=range))
-}
-
-REDUCER <- function(mapped, ...) {
-    cmb <- do.call(rbind, mapped)
-    xtabs(count ~ pos + nucleotide, cmb)
-}
+##REDUCER <- function(mapped, ...) {
+##  TODO: merge by position
+#}
 @
 
 When \Rcode{summarize=FALSE} a list is returned. The result
 contains one summary table for each range. 
 <<quick-start-reduceByRange>>=
-lst <- reduceByRange(gr, fls, MAPPER, REDUCER)
-length(lst)
-head(lst[[1]], 3)
+#lst <- reduceByRange(gr, fls, MAPPER, REDUCER)
+#length(lst)
+#head(lst[[1]], 3)
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -167,10 +160,6 @@ In this section we use the same files and ranges to compare the
 output from \Rcode{reduceByFile} and \Rcode{reduceByRange}. To highlight
 the difference in output geometry a MAPPER is applied with no REDUCER.
 
-<<class-load-package, results=hide>>=
-library(GenomicFiles)
-@
-
 Sample data are bam files from a transcription profiling experiment 
 available in the \Rpackage{RNAseqData.HNRNPC.bam.chr14} package.
 
@@ -192,7 +181,7 @@ MAPPER <- function(range, file, ...) {
               param = ScanBamParam(which=range)
               gal = readGAlignments(file, param=param)
               table(njunc(gal))
-          } 
+} 
 @
 
 Individual elements of \Rcode{ranges} are sent to workers along with a 
@@ -351,7 +340,7 @@ on the ranges. Each element is then a table of basepair-level $t$-test
 results.
 
 <<groupfile-results>>=
-res <- reduceByRange(grp_gr, fls, MAPPER, REDUCER, grp=grp)
+res <- reduceByRange(grp_gr, fls, MAPPER, REDUCER, iterate=FALSE, grp=grp)
 mcols(grp_gr)$result <- res
 head(grp_gr)
 @ 
@@ -391,13 +380,12 @@ MAPPER = function(range, file, ...) {
 @
 
 REDUCER sums the coverage and counts across all ranges. We will
-apply the reduction iteratively (after MAPPER is done with each range) 
-so the function must take 2 arguments representing the `current` 
-and `last` results from MAPPER.
+apply the reduction iteratively (after MAPPER is done with 
+each range). 
 
 <<coverage-REDUCER>>=
-REDUCER = function(X, Y, ...) {
-    c(n = X[["n"]] + Y[["n"]], sum = X[["sum"]] + Y[["sum"]])
+REDUCER = function(mapped, ...) {
+    Reduce(function(i, j) Map("+", i, j), mapped)
 }
 @
 
