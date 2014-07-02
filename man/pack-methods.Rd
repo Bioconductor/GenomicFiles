@@ -10,8 +10,7 @@
 
 \description{
   Given a \code{GRanges} object, \code{pack} produces a \code{GRangesList}
-  by grouping and/or concatenating ranges that meet criteria such as 
-  density, distance between ranges and max length. 
+  of the same ranges grouped and re-ordered.
 }
 
 \usage{
@@ -36,9 +35,9 @@
 \details{
   \subsection{Packing ranges}{
     The \code{pack} method attempts to re-package ranges in optimal
-    form for making file queries (i.e., data extraction). Ranges
-    are not modified (made shorter or longer) but re-ordered and / or
-    re-grouped according to the following criteria. 
+    form for extracting data from files. Ranges are not modified (made 
+    shorter or longer) but re-ordered and / or re-grouped according 
+    to the following criteria. 
 
     \itemize{
       \item order: Ranges are ordered by genomic position within
@@ -75,20 +74,20 @@
 }
 
 \examples{
-  ## Ranges are ordered by position within chromosome.
-  gr1 <- GRanges("chr1", IRanges(5:1*5, width = 3)) 
-  pack(gr1)
- 
-  ## Ranges separated by > inter_range_len are grouped 
-  ## into chunks defined by endpoints of the gap.
-  gr2 <- GRanges("chr2", IRanges(c(1:3, 30000:30003), width = 1000))
-  pack(gr2, inter_range_len = 20000)
- 
-  ## Ranges exceeding 'range_len' are sent as a single range
-  ## query vs grouped with other ranges.
-  gr3 <- GRanges("chr3", IRanges(c(1:4), width=c(45, 1e8, 45, 45)))
-  width(gr3)
-  pack(gr3, range_len = 1e7)
+## Ranges are ordered by position within chromosome.
+gr1 <- GRanges("chr1", IRanges(5:1*5, width = 3)) 
+pack(gr1)
+
+## Ranges separated by > inter_range_len are partitioned
+## into groups defined by the endpoints of the gap.
+gr2 <- GRanges("chr2", IRanges(c(1:3, 30000:30003), width = 1000))
+pack(gr2, inter_range_len = 20000)
+
+## Ranges exceeding 'range_len' are isolated in a single element
+## of the GRangesList.
+gr3 <- GRanges("chr3", IRanges(c(1:4), width=c(45, 1e8, 45, 45)))
+width(gr3)
+pack(gr3, range_len = 1e7)
 }
 
 \keyword{methods}

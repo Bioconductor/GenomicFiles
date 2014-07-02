@@ -1,7 +1,20 @@
 ### =========================================================================
-### Packing ranges for optimal file queries
+### pack methods 
 ### =========================================================================
  
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Generic and methods
+###
+
+setGeneric("pack", function(x, ...)
+    standardGeneric("pack"),
+    signature="x")
+
+setMethod("pack", "GRanges",
+    function(x, ..., range_len=1e9, inter_range_len=1e7)
+        .pack(x, range_len=range_len, inter_range_len=inter_range_len)
+)
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helpers
 ###
@@ -23,10 +36,11 @@ isPacked <- function(x, ...)
 
     ## order
     o <- order(x)
+    as.character(seqnames(x))
     if (is.unsorted(o))
-        x_grl <- split(x[o], as.character(seqnames(x)[o]))
+        x_grl <- splitAsList(x[o], as.numeric(seqnames(x)[o]))
     else
-        x_grl <- split(x, as.character(seqnames(x))) 
+        x_grl <- splitAsList(x, as.numeric(seqnames(x))) 
 
     ## identify 'long' and 'distant'
     long <- which(width(unlist(x_grl, use.names=FALSE)) > range_len)
@@ -46,17 +60,4 @@ isPacked <- function(x, ...)
     x_grl@partitioning <- PartitioningMap(x=sort(unique(ends)), order(o)) 
     x_grl
 }
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Generic and methods
-###
-
-setGeneric("pack", function(x, ...)
-    standardGeneric("pack"),
-    signature="x")
-
-setMethod("pack", "GRanges",
-    function(x, ..., range_len=1e9, inter_range_len=1e7)
-        .pack(x, range_len=range_len, inter_range_len=inter_range_len)
-)
 

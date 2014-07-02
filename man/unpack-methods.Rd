@@ -8,7 +8,7 @@
 
 \description{
   \code{unpack} returns results obtained with pack()ed ranges
-  back to the geometry of the original (unpacked) ranges.
+  to the geometry of the original, unpacked ranges.
 }
 
 \usage{
@@ -18,10 +18,11 @@
 
 \arguments{
   \item{flesh}{
-    A \code{List} object obtained from querying a file with \code{skeleton}.
+    A \code{List} object to be unpacked; the result from
+    querying a file with \code{skeleton}.
   }
   \item{skeleton}{
-    The pack()ed \code{GRangesList} object used to query a file. 
+    The \code{GRangesList} created with `pack(x)`. 
   }
   \item{\dots}{
     Arguments passed to other methods.
@@ -29,8 +30,9 @@
 }
 
 \details{
-    The \code{unpack} method converts results obtained with
-    a group of packed ranges back to original form.
+    \code{unpack} returns a \code{List} obtained with
+    packed ranges to the geometry and order of the original,
+    unpacked ranges. 
 }
 
 \value{
@@ -48,34 +50,24 @@
   gr <- GRanges(c(rep("seq2", 3), "seq1"), 
                 IRanges(c(75, 1, 100, 1), width = 2))
 
-  ## Ranges are packed by order within chromosome.
-  gr
-  pack(gr)
-
-  ## When 'inter_range_len' is specified, ranges are packed in
-  ## groups around the inter-range gap. See ?pack for details. 
+  ## Ranges are packed by order within chromosome and grouped
+  ## around gaps greater than 'inter_range_len'. See ?pack for details.
   pk <- pack(gr, inter_range_len = 25)
-  pk
 
-  ## Create a function to compute coverage.
-  FUN <- function(ranges, fl, param) {
-      bamWhich(param) <- ranges
-      coverage(fl, param=param)[ranges]
+  ## FUN computes coverage for the range passed as 'rng'.
+  FUN <- function(rng, fl, param) {
+      bamWhich(param) <- rng
+      coverage(fl, param=param)[rng]
   } 
 
-  ## Packed ranges are sent to workers to compute coverage.
+  ## Compute coverage on the packed ranges.
   dat <- bplapply(as.list(pk), FUN, fl = fl, param = ScanBamParam())
 
-  ## The result is the same length as the packed ranges.
-  length(dat)
-
-  ## Each list element contains an RleList of coverage for
-  ## the corresponding packed ranges.
-  dat[[1]]
-  pk[[1]]
+  ## The result list contains RleLists of coverage.
+  lapply(dat, class)
 
   ## unpack() transforms the results back to the order of 
-  ## the original ranges (i.e., unpacked 'gr' object).
+  ## the original ranges (i.e., unpacked 'gr').
   unpack(dat, pk)
 }
 
