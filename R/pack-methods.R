@@ -38,9 +38,9 @@ isPacked <- function(x, ...)
     o <- order(x)
     as.character(seqnames(x))
     if (is.unsorted(o))
-        x_grl <- splitAsList(x[o], as.numeric(seqnames(x)[o]))
+        x_grl <- splitAsList(x[o], seqnames(x)[o])
     else
-        x_grl <- splitAsList(x, as.numeric(seqnames(x))) 
+        x_grl <- splitAsList(x, seqnames(x))
 
     ## identify 'long' and 'distant'
     long <- which(width(unlist(x_grl, use.names=FALSE)) > range_len)
