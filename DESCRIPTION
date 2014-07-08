@@ -4,12 +4,12 @@ Description: This package provides infrastructure for parallel
 	computations distributed 'by file' or 'by range'. User 
 	defined MAPPER and REDUCER functions provide added 
 	flexibility for data combination and manipulation.
-Version: 1.1.14
+Version: 1.1.15
 Author: Valerie Obenchain, Michael Love, Martin Morgan 
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Infrastructure, DataImport, Sequencing
 Depends: R (>= 3.1.0), methods, BiocGenerics (>= 0.11.2),
-	Rsamtools (>= 1.17.20), GenomicRanges (>= 1.17.16), 
+	Rsamtools (>= 1.17.29), GenomicRanges (>= 1.17.16), 
 	rtracklayer (>= 1.25.3), BiocParallel (>= 0.7.0)
 Imports: GenomicAlignments, IRanges,
 Suggests: BiocStyle, RUnit, genefilter, deepSNV, 
@@ -23,6 +23,7 @@ Collate: GenomicFiles-class.R
 	utils.R
 	reduceByFile-methods.R
 	reduceByRange-methods.R
+	reduceByYield.R
 	pack-methods.R
 	unpack-methods.R
 	registry.R

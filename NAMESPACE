@@ -66,5 +66,7 @@ export(
     fileRange, "fileRange<-", fileExperiment, "fileExperiment<-",
 
     ## file registry:
-    .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType
+    .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType,
+
+    reduceByYield
 )
