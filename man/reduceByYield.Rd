@@ -75,7 +75,6 @@ reduceByYield(X, MAP, REDUCE, DONE, ..., init, ITERATE = TRUE)
   \itemize{
     \item \code{\link[Rsamtools]{BamFile}} 
     \item \code{\link[Rsamtools]{TabixFile}}
-    \item \code{\link[Rsamtools]{RsamtoolsFile}}
   }
 }
 \examples{
