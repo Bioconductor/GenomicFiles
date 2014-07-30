@@ -111,7 +111,7 @@ REDUCER <- function(mapped, ...) {
 }
 @
 
-When \Rcode{summarize=FALSE} a list is returned. 
+When \Rcode{summarize=FALSE} (the default) a list is returned. 
 <<quick-start-reduceByRange>>=
 lst <- reduceByRange(gr, fls, MAPPER, REDUCER, iterate=FALSE)
 length(lst)
@@ -143,7 +143,7 @@ NOTE: Results can only be put into a \Rcode{SummarizedExperiment} when no
 reduction is performed because of the matching dimensions requirement 
 (i.e., a REDUCER collapses the results in one dimension).
 
-\subsection{\Rcode{reduceByFile} and \Rcode{reduceByRange} functions}
+\subsection{\Rcode{reduceByFile} and \Rcode{reduceByRange}}
 
 \Rpackage{GenomicFiles} provides infrastructure to manipulate and combine
 data by range (across files) or by file (within files). Files or ranges are 
@@ -226,6 +226,15 @@ Each list element contains a table of counts, one for each range.
 <<intro-rbf-output>>=
 rbf[[1]]
 @
+
+\subsection{\Rcode{reduceByYield}}
+
+This function is similar in spirit to a one-dimensional \Rcode{reduceByFile}.
+Data in a BAM file are chunked through and subject to a \Rcode{MAP}
+and \Rcode{REDUCE} function. What sets \Rcode{reduceByYield} apart is the
+dependence on \Rcode{yieldSize} in a \Rcode{BamFile} object which 
+defines the chunk size and the \Rcode{DONE} argument which defines the 
+stop condition.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -393,33 +402,13 @@ cvg <- reduceByFile(tiles, fls, MAPPER, REDUCER, iterate=TRUE)
 head(cvg)
 @
 
-\subsection{Copy number analysis with \Biocpkg{cn.mops}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Chunk and reduce a single file with \Rcode{reduceByYield}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 TODO
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Data access / storage}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Chunking through data: parallelization vs streaming}
-
-TODO
-
-\subsection{Distributed data storage}
-
-TODO
-
-% Processing chunks of data can be done with parallelization or streaming.
-%- splitting data is expensive (parallel)
-%- cannot have all data at once (streaming)
-%
-% R has no explicit API for this
-%- use connections to read from HDSF(hadoop) or rhdf5
-%- leverage distributed storage, compute where data are stored
-%  (RDFS, Hadoop)
-%- iterators focus on inner code chunk processing
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
