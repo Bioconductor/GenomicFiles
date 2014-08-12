@@ -4,7 +4,7 @@ Description: This package provides infrastructure for parallel
 	computations distributed 'by file' or 'by range'. User 
 	defined MAPPER and REDUCER functions provide added 
 	flexibility for data combination and manipulation.
-Version: 1.1.17
+Version: 1.1.18
 Author: Valerie Obenchain, Michael Love, Martin Morgan 
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Infrastructure, DataImport, Sequencing
@@ -28,3 +28,4 @@ Collate: GenomicFiles-class.R
 	unpack-methods.R
 	registry.R
 	zzz.R
+Video: https://www.youtube.com/watch?v=3PK_jx44QTs
