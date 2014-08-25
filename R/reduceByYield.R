@@ -1,61 +1,80 @@
-.reduceByYield_iterate <-
-    function(X, MAP, REDUCE, DONE, ..., init)
-{
-    result <- if (missing(init)) {
-        value <- MAP(X, ...)
-        if (DONE(value))
-            return(list())
-        value
-    } else
-        init
+### =========================================================================
+### Iterate through files in chunks (reduceByYield) 
+### =========================================================================
 
-    repeat {
-        value <- MAP(X, ...)
-        if (DONE(value))
-            break
-        result <- REDUCE(result, value)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helpers 
+###
+
+.reduceByYield_iterate <-
+    function(X, YIELD, MAP, REDUCE, DONE, ..., parallel, init)
+{
+    if (parallel) {
+        ITER <- function() {
+            if(DONE(value <- YIELD(X, ...)))
+                NULL
+            else
+               value
+        }
+        result <- bpiterate(ITER, FUN=MAP, ..., REDUCE=REDUCE)
+    } else {
+        result <- if (missing(init)) {
+            data <- YIELD(X, ...)
+            if (DONE(data))
+                return(list())
+            MAP(data, ...)
+        } else
+            init
+
+        repeat {
+            if(DONE(data <- YIELD(X, ...)))
+                break
+            value <- MAP(data, ...)
+            result <- REDUCE(result, value)
+        }
     }
     result
 }
-
+    
 .reduceByYield_all <-
-    function(X, MAP, REDUCE, DONE, ...)
+    function(X, YIELD, MAP, REDUCE, DONE, ..., parallel)
 {
-    N_GROW <- 100L
-    n <- 0
-    result <- vector("list", n)
-    i <- 0L
-    repeat {
-        value <- MAP(X, ...)
-        if (DONE(value))
-            break
-        i <- i + 1L
-        if (i > n) {
-            n <- n + N_GROW
-            length(result) <- n
+    if (parallel) {
+        ITER <- function() {
+            if(DONE(value <- YIELD(X, ...)))
+                NULL
+            else
+               value
         }
-        result[[i]] <- value
+        result <- bpiterate(ITER, FUN=MAP, ...)
+    } else {
+        result <- bpiterate(ITER, FUN=MAP, ..., BPPARAM=SerialParam())
     }
-    length(result) <- i
     REDUCE(result)
 }
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### main 
+###
+
 reduceByYield <-
-    function(X, MAP, REDUCE, DONE, ..., init, ITERATE=TRUE)
+    function(X, YIELD, MAP, REDUCE, 
+             DONE = function(x) is.null(x) || length(x) == 0L, 
+             ..., parallel=FALSE, iterate=TRUE, init)
 {
-    if (missing(REDUCE)) 
-        REDUCE <- if (ITERATE) c else identity
-    if (missing(DONE))
-        DONE <- function(VALUE) length(VALUE) == 0L
-    if (!ITERATE && !missing(init))
-        warning("'init' ignored when ITERATE==FALSE")
+    if  (missing(REDUCE)) 
+        REDUCE <- if (iterate) c else identity
+    if (!iterate && !missing(init))
+        warning("'init' ignored when iterate==FALSE")
 
     if (!isOpen(X)) {
         open(X)
         on.exit(close(X))
     }
-    if (ITERATE)
-        .reduceByYield_iterate(X, MAP, REDUCE, DONE, ..., init=init)
+    if (iterate)
+        .reduceByYield_iterate(X, YIELD, MAP, REDUCE, DONE, ...,
+                               parallel=parallel, init=init)
     else
-        .reduceByYield_all(X, MAP, REDUCE, DONE, ...)
+        .reduceByYield_all(X, YIELD, MAP, REDUCE, DONE,
+                           ..., parallel=parallel)
 }

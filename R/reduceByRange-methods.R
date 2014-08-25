@@ -1,36 +1,36 @@
 ### =========================================================================
-### Perform queries across files (reduceByRange) 
+### Queries across files (reduceByRange) 
 ### =========================================================================
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helpers 
 ###
 
-.reduceByRange <- function(ranges, files, MAPPER, REDUCER, iterate, ..., init)
+.reduceByRange <- function(ranges, files, MAP, REDUCE, ..., iterate, init)
 {
     if (!is(files, "character") && !is(files, "List"))
         stop("'files' must be character vector or List of filenames")
-    if (missing(REDUCER) && iterate)
+    if (missing(REDUCE) && iterate)
         iterate <- FALSE
 
-    NO_REDUCER <- missing(REDUCER)
+    NO_REDUCE <- missing(REDUCE)
     ## ranges sent to workers
     bplapply(ranges, function(elt, ..., init) {
         if (iterate) {
             result <- if (missing(init)) {
-                MAPPER(elt, files[[1]], ...)
+                MAP(elt, files[[1]], ...)
             } else init
             for (i in seq_along(files)[-1]) {
-                mapped <- MAPPER(elt, files[[i]], ...)
-                result <- REDUCER(list(result, mapped), ...)
+                mapped <- MAP(elt, files[[i]], ...)
+                result <- REDUCE(list(result, mapped), ...)
             }
             result
         } else {
-            mapped <- lapply(files, function(f) MAPPER(elt, f, ...))
-            if (NO_REDUCER)
+            mapped <- lapply(files, function(f) MAP(elt, f, ...))
+            if (NO_REDUCE)
                 mapped
             else
-                REDUCER(mapped, ...)
+                REDUCE(mapped, ...)
         }
     }, ...)
 }
@@ -40,17 +40,17 @@
 ###
 
 setGeneric("reduceByRange", 
-    function(ranges, files, MAPPER, REDUCER, iterate=TRUE, ..., init)
+    function(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init)
         standardGeneric("reduceByRange"),
     signature=c("ranges", "files")
 )
 
 setMethod(reduceByRange, c("GRangesList", "ANY"), 
-    function(ranges, files, MAPPER, REDUCER, iterate=TRUE, 
-             summarize=FALSE, ..., init) {
-        lst <- .reduceByRange(ranges, files, MAPPER, REDUCER, iterate,
-                              ..., init=init)
-        if (summarize && missing(REDUCER)) {
+    function(ranges, files, MAP, REDUCE, ..., summarize=FALSE,
+             iterate=TRUE, init) {
+        lst <- .reduceByRange(ranges, files, MAP, REDUCE, ...,
+                              iterate=iterate, init=init)
+        if (summarize && missing(REDUCE)) {
             lst <- bplapply(seq_along(files), 
                 function(i) sapply(lst, "[", i))
             SummarizedExperiment(simplify2array(lst), rowData=ranges,
@@ -62,11 +62,11 @@ setMethod(reduceByRange, c("GRangesList", "ANY"),
 )
 
 setMethod(reduceByRange, c("GRanges", "ANY"), 
-    function(ranges, files, MAPPER, REDUCER, iterate=TRUE, 
-             summarize=FALSE, ..., init) {
-        lst <- .reduceByRange(as(ranges, "List"), files, MAPPER,
-                              REDUCER, iterate, ..., init=init) 
-        if (summarize && missing(REDUCER)) {
+    function(ranges, files, MAP, REDUCE, ..., summarize=FALSE,
+             iterate=TRUE, init) {
+        lst <- .reduceByRange(as(ranges, "List"), files, MAP, REDUCE,
+                              ..., iterate=iterate, init=init) 
+        if (summarize && missing(REDUCE)) {
             lst <- bplapply(seq_along(files), 
                 function(i) sapply(lst, "[", i))
             SummarizedExperiment(simplify2array(lst), rowData=ranges,
@@ -78,9 +78,10 @@ setMethod(reduceByRange, c("GRanges", "ANY"),
 ) 
 
 setMethod(reduceByRange, c("GenomicFiles", "missing"), 
-    function(ranges, files, MAPPER, REDUCER, iterate=TRUE, 
-             summarize=FALSE, ..., init) {
+    function(ranges, files, MAP, REDUCE, ..., summarize=FALSE,
+             iterate=TRUE, init) {
         reduceByRange(rowData(ranges)[[1]], GenomicFiles::files(ranges),
-                      MAPPER, REDUCER, iterate, summarize, ..., init=init)
+                      MAP, REDUCE, ..., summarize=summarize,
+                      iterate=iterate, init=init)
     }
 )
