@@ -7,15 +7,10 @@
 \alias{GenomicFiles-class}
 
 % Constructors:
-\alias{GenomicFiles,DataFrame,character-method}
-\alias{GenomicFiles,DataFrame,List-method}
-\alias{GenomicFiles,DataFrame,list-method}
 \alias{GenomicFiles,GenomicRangesORGRangesList,character-method}
 \alias{GenomicFiles,GenomicRangesORGRangesList,List-method}
 \alias{GenomicFiles,GenomicRangesORGRangesList,list-method}
-\alias{GenomicFiles,missing,character-method}
-\alias{GenomicFiles,missing,List-method}
-\alias{GenomicFiles,missing,list-method}
+\alias{GenomicFiles,missing,ANY-method}
 \alias{GenomicFiles,missing,missing-method}
 
 % Accessors:
@@ -27,7 +22,7 @@
 \alias{colData,GenomicFiles-method}
 \alias{colData<-,GenomicFiles,DataFrame-method}
 \alias{rowData,GenomicFiles-method}
-\alias{rowData<-,GenomicFiles,DataFrame-method}
+\alias{rowData<-,GenomicFiles,GRangesORGRangesList-method}
 \alias{exptData,GenomicFiles-method}
 \alias{exptData<-,GenomicFiles,DataFrame-method}
 
@@ -73,11 +68,10 @@
   \describe{
     \item{rowData, rowData(x) <- value}{
       Get or set the rowData on \code{x}. \code{value} can be
-      a \code{DataFrame}, \code{GRanges} or \code{GRangesList}
-      representing ranges or indices defined on the spaces (position)
-      of the files.
+      a \code{GRanges} or \code{GRangesList} representing ranges or indices 
+      defined on the spaces (position) of the files.
     }
-    item{files(x), files(x) <- value}{
+    \item{files(x), files(x) <- value}{
       Get or set the files on \code{x}. \code{value} can be 
       a character() of file paths or a List of file objects
       such as BamFile, BigWigFile etc.

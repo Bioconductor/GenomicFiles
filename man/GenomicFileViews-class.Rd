@@ -51,7 +51,7 @@
       List names must include \sQuote{path} and \sQuote{index}.
     }
     \item{fileSample}{
-        A \code{\link[IRanges]{DataFrame}} instance with as many rows as 
+        A \link[S4Vectors]{DataFrame} instance with as many rows as 
         \code{length(fileList)}, containing sample information associated 
         with each path.
     }
@@ -81,7 +81,7 @@
     }
     \item{fileSample, fileSample(x) <- value}{
       Get or set the fileSample on \code{x}. \code{value} must be
-      a \code{\link[IRanges]{DataFrame}} instance with as many rows as 
+      a \link[S4Vectors]{DataFrame} instance with as many rows as 
       \code{length(fileList)}, containing sample information associated 
       with each file.
     }

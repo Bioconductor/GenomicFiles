@@ -97,7 +97,7 @@
     }
     \item{}{
       \code{fileSample}:
-        A \code{\link[IRanges]{DataFrame}} instance with as many rows as 
+        A \link[S4Vectors]{DataFrame} instance with as many rows as 
         \code{length(fileList)}, containing sample information associated 
         with each path.
     }

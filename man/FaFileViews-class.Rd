@@ -68,7 +68,7 @@
     }
     \item{}{
       \code{fileSample}:
-        A \code{\link[IRanges]{DataFrame}} instance with as many rows as 
+        A \link[S4Vectors]{DataFrame} instance with as many rows as 
         \code{length(fileList)}, containing sample information associated 
         with each path.
     }
@@ -86,7 +86,7 @@
       \code{yieldSize}: An integer specifying number of records to process
     }
     \item{}{
-        \code{.views_on_file}: An enviornment; currently under development
+        \code{.views_on_file}: An environment; currently under development
     }
     \item{}{
       \code{...}: Additional arguments.
