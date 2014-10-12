@@ -1,3 +1,35 @@
+CHANGES IN VERSION 1.2.0
+------------------------
+
+NEW FEATURES
+
+    o Add pack / unpack generics and methods
+
+    o Add GenomicFiles class
+
+    o Add reduceByFile / reduceByRange methods for GenomicFiles
+      class that expect 'file' to be character and 'ranges' a GRanges 
+
+    o Move yieldReduce() from Rsamtools to GenomicFiles and
+      rename as reduceByYield()
+
+    o Allow GRange or GRangesList as @rowData in GenomicFiles class
+
+MODIFICATIONS
+
+    o Remove unused .FileList, VCFFileViews and FaFileViews class 
+
+    o Add checks for 'summarize=FALSE' when REDUCER is used
+
+    o Clean up vignette introduction
+
+    o Change REDUCER() signature to single argument reguardless
+      of the value of 'iterate'
+
+    o Rework reduceByYield() arguments for consistency with other
+      reduceBy* functions
+
+
 CHANGES IN VERSION 1.0.0
 ------------------------
 
