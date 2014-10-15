@@ -45,6 +45,9 @@ setMethod(BigWigFileViews, "missing",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
+    msg <- paste0("'BigWigFileViews()' is deprecated. ",
+                  "Use 'GenomicFiles()' instead.")
+    .Deprecated(msg=msg)
     stop("'fileList' must be character() or BigWigFileList")
 })
 
@@ -57,6 +60,9 @@ setMethod(BigWigFileViews, "BigWigFileList",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
+    msg <- paste0("'BigWigFileViews()' is deprecated. ",
+                  "Use 'GenomicFiles()' instead.")
+    .Deprecated(msg=msg)
     new("BigWigFileViews", ..., 
         fileList=fileList,
         fileSample=fileSample, fileRange=fileRange,
@@ -73,6 +79,9 @@ setMethod(BigWigFileViews, "character",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
+    msg <- paste0("'BigWigFileViews()' is deprecated. ",
+                  "Use 'GenomicFiles()' instead.")
+    .Deprecated(msg=msg)
     new("BigWigFileViews", ..., 
         fileList=BigWigFileList(fileList),
         fileSample=fileSample, fileRange=fileRange,

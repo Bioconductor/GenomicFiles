@@ -17,6 +17,7 @@
 \title{Views into a set of BAM files}
 
 \description{
+  This class is deprecated. Use \code{GenomicFiles} instead.
   Use \code{BamFileViews()} to reference a set of disk-based BAM files to be
   processed 
 }

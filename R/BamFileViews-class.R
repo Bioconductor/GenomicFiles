@@ -46,6 +46,9 @@ setMethod(BamFileViews, "missing",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
+    msg <- paste0("'BamFileViews()' is deprecated. ",
+                  "Use 'GenomicFiles()' instead.")
+    .Deprecated(msg=msg)
     stop("'fileList' must be character() or BamFileList")
 })
 
@@ -58,6 +61,9 @@ setMethod(BamFileViews, "BamFileList",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
+    msg <- paste0("'BamFileViews()' is deprecated. ",
+                  "Use 'GenomicFiles()' instead.")
+    .Deprecated(msg=msg)
     new("BamFileViews", ..., 
         fileList=fileList,
         fileSample=fileSample, fileRange=fileRange,
@@ -74,6 +80,9 @@ setMethod(BamFileViews, "character",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
+    msg <- paste0("'BamFileViews()' is deprecated. ",
+                  "Use 'GenomicFiles()' instead.")
+    .Deprecated(msg=msg)
     new("BamFileViews", ..., 
         fileList=BamFileList(lapply(fileList, BamFile, ...)),
         fileSample=fileSample, fileRange=fileRange,

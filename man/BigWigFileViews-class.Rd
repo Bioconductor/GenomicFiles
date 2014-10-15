@@ -15,9 +15,10 @@
 \title{Views into a set of BigWig files}
 
 \description{
-  Use \code{BigWigFileViews()} to reference a set of disk-based BigWig files to be
-  processed (e.g., queried using \code{\link[IRanges]{coverage}}) as a single
-  \sQuote{experiment}.
+  This class is deprecated. Use \code{GenomicFiles} instead.
+  Use \code{BigWigFileViews()} to reference a set of disk-based BigWig files 
+  to be processed (e.g., queried using \code{\link[IRanges]{coverage}}) as 
+  a single \sQuote{experiment}.
 }
 
 \section{Constructor}{

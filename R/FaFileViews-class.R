@@ -32,6 +32,9 @@ setMethod(FaFileViews, "missing",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
+    msg <- paste0("'FaFileViews()' is deprecated. ",
+                  "Use 'GenomicFiles()' instead.")
+    .Deprecated(msg=msg)
     stop("'fileList' must be character() or FaFileList")
 })
 
@@ -44,6 +47,9 @@ setMethod(FaFileViews, "FaFileList",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
+    msg <- paste0("'FaFileViews()' is deprecated. ",
+                  "Use 'GenomicFiles()' instead.")
+    .Deprecated(msg=msg)
     new("FaFileViews", ...,
         fileList=fileList,
         fileSample=fileSample, fileRange=fileRange,
@@ -60,6 +66,9 @@ setMethod(FaFileViews, "character",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
+    msg <- paste0("'FaFileViews()' is deprecated. ",
+                  "Use 'GenomicFiles()' instead.")
+    .Deprecated(msg=msg)
     new("FaFileViews", ...,
         fileList=FaFileList(lapply(fileList, FaFile, ...)),
         fileSample=fileSample, fileRange=fileRange, 

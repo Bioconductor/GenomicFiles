@@ -33,6 +33,7 @@
 \title{Views into a set of files}
 
 \description{
+  This class is deprecated. Use \code{GenomicFiles} instead.
   \code{GenomicFileViews} is a VIRTUAL class used to reference a set of 
   disk-based files to be queried across views (ranges).
 }

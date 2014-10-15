@@ -11,6 +11,7 @@
 \title{Views into a set of Fasta files}
 
 \description{
+  This class is deprecated. Use \code{GenomicFiles} instead.
   Use \code{FaFileViews()} to reference a set of disk-based Fasta files to be
   processed
 }

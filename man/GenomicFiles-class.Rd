@@ -74,7 +74,7 @@
     \item{files(x), files(x) <- value}{
       Get or set the files on \code{x}. \code{value} can be 
       a character() of file paths or a List of file objects
-      such as BamFile, BigWigFile etc.
+      such as BamFile, BigWigFile, FaFile, etc.
     }
     \item{colData, colData(x) <- value}{
       Get or set the colData on \code{x}. \code{value} must be
