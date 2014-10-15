@@ -1,9 +1,9 @@
 ### =========================================================================
-### Queries within files (reduceByFile)
+### reduceByFile
 ### =========================================================================
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helpers 
+### Generic and methods
 ###
 
 .reduceByFile <- function(ranges, files, MAP, REDUCE, ..., iterate, init)
@@ -36,10 +36,6 @@
     }, ...)
 }
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Generic and methods
-###
-
 setGeneric("reduceByFile", 
     function(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init)
         standardGeneric("reduceByFile"),
@@ -51,9 +47,12 @@ setMethod(reduceByFile, c("GRangesList", "ANY"),
              iterate=TRUE, init) {
         lst <- .reduceByFile(ranges, files, MAP, REDUCE, 
                              ..., iterate=iterate, init=init)
+        if (summarize && !missing(REDUCE))
+            warning("'summarize' set to FALSE when REDUCE is provided")
         if (summarize && missing(REDUCE))
-            SummarizedExperiment(simplify2array(lst), rowData=ranges,
-                                 colData=DataFrame(filePath=files))
+            SummarizedExperiment(SimpleList(list(data=simplify2array(lst))), 
+            	                 rowData=ranges, 
+            	                 colData=DataFrame(filePath=files))
         else
             lst
     }
@@ -64,8 +63,11 @@ setMethod(reduceByFile, c("GRanges", "ANY"),
              iterate=TRUE, init) {
         lst <- .reduceByFile(as(ranges, "List"), files, MAP, 
                              REDUCE, ..., iterate=iterate, init=init)
+        if (summarize && !missing(REDUCE))
+            warning("'summarize' set to FALSE when REDUCE is provided")
         if (summarize && missing(REDUCE))
-            SummarizedExperiment(simplify2array(lst), rowData=ranges,
+            SummarizedExperiment(SimpleList(list(data=simplify2array(lst))), 
+            	                 rowData=ranges,
                                  colData=DataFrame(filePath=files))
         else
             lst

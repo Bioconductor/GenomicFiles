@@ -68,5 +68,5 @@ export(
     ## file registry:
     .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType,
 
-    reduceByYield
+    reduceFiles, reduceRanges, reduceByYield
 )

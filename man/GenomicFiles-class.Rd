@@ -128,16 +128,41 @@
 }
 
 \examples{
-library(RNAseqData.HNRNPC.bam.chr14)
-fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
-gr <- GRanges("chr14", IRanges(2e5*1:3, width=1e5, names=LETTERS[1:3]))
-colData <- DataFrame(method=rep("RNASeq", length(fls)), 
-                     format=rep("bam", length(fls)))
-gf <- GenomicFiles(gr, fls, colData=colData)
-gf
+if (require(RNAseqData.HNRNPC.bam.chr14)) { 
+  fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
+  gr <- GRanges("chr14", IRanges(c(62262735, 63121531, 63980327),
+                width=214700))
+  
+  ## The GenomicFiles class is a light-weight form of SummarizedExperiment
+  ## that does not have an 'assays' slot. 
+  colData <- DataFrame(method=rep("RNASeq", length(fls)),
+                       format=rep("bam", length(fls)))
+  gf <- GenomicFiles(files=fls, rowData=gr, colData=colData)
+  gf
 
-dimnames(gf)
-dim(gf[1, 5:8]) 
+  ## The object can be subset on ranges or files for different
+  ## experimental runs.
+  dim(gf)
+  gf_sub <- gf[2, 3:4]
+  dim(gf_sub)
+  
+  ## When summarize = TRUE and no REDUCE is provided the reduceBy* 
+  ## functions output a SummarizedExperiment object.
+  MAP <- function(range, file, ...) {
+      library(GenomicRanges)
+      param = ScanBamParam(which=range)
+      coverage(file, param=param)[range]
+  } 
+  se <- reduceByRange(gf, MAP=MAP, summarize=TRUE)
+  se
+  
+  ## Data from the rowData, colData and exptData slots in the
+  ## GenomicFiles are transferred to the SummarizedExperiment.
+  colData(se)
+  
+  ## Results are in the assays slot.
+  assays(se) 
+}
 }
 
 \keyword{classes}

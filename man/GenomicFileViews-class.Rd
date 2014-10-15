@@ -135,7 +135,8 @@
   \itemize{
     \item \link{BamFileViews-class} class.
     \item \link{BigWigFileViews-class} class.
-    \item \link{reduceByFile} and \link{reduceByRange} methods.
+    \item \link{reduceByFile} and \link{reduceFiles} methods.
+    \item \link{reduceByRange} and \link{reduceRanges} methods.
   }
 }
 
@@ -145,12 +146,24 @@
 }
 
 \examples{
-fl <- system.file("extdata", "ex1.bam", package="Rsamtools",
-                  mustWork=TRUE) 
-bfv <- BamFileViews(fl, fileRange = GRanges("seq1", IRanges(1, 10)))
-showClass(class(bfv))
- 
-## See ?BamFileViews, ?BigWigFileViews, ?reduceBy for additional examples.
+if (require(RNAseqData.HNRNPC.bam.chr14)) { 
+  fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
+  gr <- GRanges("chr14", IRanges(c(62262735, 63121531, 63980327),
+                width=214700))
+  
+  ## The GenomicFiles class is a light-weight form of SummarizedExperiment
+  ## that does not have an 'assays' slot. 
+  colData <- DataFrame(method=rep("RNASeq", length(fls)),
+                       format=rep("bam", length(fls)))
+  gf <- GenomicFiles(files=fls, rowData=gr, colData=colData)
+  gf
+
+  ## The object can be subset on ranges or files for different
+  ## experimental runs.
+  dim(gf)
+  gf_sub <- gf[2, 3:4]
+  dim(gf_sub)
+}
 }
 
 \keyword{classes}

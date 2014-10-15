@@ -2,10 +2,6 @@
 ### Iterate through files in chunks (reduceByYield) 
 ### =========================================================================
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helpers 
-###
-
 .reduceByYield_iterate <-
     function(X, YIELD, MAP, REDUCE, DONE, ..., parallel, init)
 {
@@ -53,10 +49,6 @@
     REDUCE(result)
 }
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### main 
-###
-
 reduceByYield <-
     function(X, YIELD, MAP, REDUCE, 
              DONE = function(x) is.null(x) || length(x) == 0L, 
@@ -65,7 +57,7 @@ reduceByYield <-
     if  (missing(REDUCE)) 
         REDUCE <- if (iterate) c else identity
     if (!iterate && !missing(init))
-        warning("'init' ignored when iterate==FALSE")
+        warning("'init' ignored when iterate == FALSE")
 
     if (!isOpen(X)) {
         open(X)
