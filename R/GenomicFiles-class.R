@@ -205,7 +205,7 @@ setReplaceMethod("dimnames", c("GenomicFiles", "NULL"),
 
 setMethod("[", c("GenomicFiles", "ANY", "missing"),
     function(x, i, j, ..., drop=TRUE)
-        initialize(x, rowData(x)[i,])
+        initialize(x, rowData=rowData(x)[i,])
 )
 
 setMethod("[", c("GenomicFiles", "missing", "ANY"),
@@ -244,10 +244,11 @@ setMethod("[", c("GenomicFiles", "ANY", "ANY"),
 setMethod(show, "GenomicFiles", 
     function(object) 
 {
-    cat(class(object), "dim:",
-        paste(dim(object), c("ranges", "files"), collapse=" x "),
+    cat(class(object), "object with", 
+        paste(dim(object), c("ranges", "files:"), collapse=" and "),
         "\n")
-    cat("names:", BiocGenerics:::selectSome(basename(files(object))), "\n")
+    cat("files:", paste(BiocGenerics:::selectSome(basename(files(object))), 
+        collapse=", "), "\n")
     cat("detail: use files(), rowData(), colData(), ...",
         "\n")
 })
