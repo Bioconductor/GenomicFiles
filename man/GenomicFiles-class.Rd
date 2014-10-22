@@ -132,7 +132,7 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
   gr <- GRanges("chr14", IRanges(c(62262735, 63121531, 63980327),
                 width=214700))
-  
+ 
   ## The GenomicFiles class is a light-weight form of SummarizedExperiment
   ## that does not have an 'assays' slot. 
   colData <- DataFrame(method=rep("RNASeq", length(fls)),
@@ -145,7 +145,7 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   dim(gf)
   gf_sub <- gf[2, 3:4]
   dim(gf_sub)
-  
+ 
   ## When summarize = TRUE and no REDUCE is provided the reduceBy* 
   ## functions output a SummarizedExperiment object.
   MAP <- function(range, file, ...) {
@@ -155,11 +155,11 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   } 
   se <- reduceByRange(gf, MAP=MAP, summarize=TRUE)
   se
-  
+ 
   ## Data from the rowData, colData and exptData slots in the
   ## GenomicFiles are transferred to the SummarizedExperiment.
   colData(se)
-  
+ 
   ## Results are in the assays slot.
   assays(se) 
 }

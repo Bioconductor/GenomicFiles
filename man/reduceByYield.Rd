@@ -63,7 +63,9 @@ reduceByYield(X, YIELD, MAP, REDUCE,
     (\code{iterate=FALSE}).}
 
   \item{parallel}{logical(1) determines if the \code{MAP} step 
-    is run in parallel.}
+    is run in parallel. \code{bpiterate} is used under the hood
+    and is currently supported for Unix (Multicore) only. For
+    non-Unix machines, \code{parallel} is ignored.}
 
   \item{init}{(Optional) Initial value used for \code{REDUCE} when
     \code{iterate=TRUE}.}
@@ -71,7 +73,7 @@ reduceByYield(X, YIELD, MAP, REDUCE,
 }
 
 \details{
-  
+ 
   When \code{iterate=TRUE}, \code{REDUCE} is initially invoked with
   either the \code{init} value and the value of the first call to
   \code{MAP} or, if \code{init} is missing, the values of the first two
@@ -107,45 +109,44 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   ## -----------------------------------------------------------------------
   ## Nucleotide frequency of mapped reads
   ## -----------------------------------------------------------------------
-  
+ 
   ## In this example nucleotide frequency of mapped reads is computed
   ## for a single file. The MAP step is run in parallel and REDUCE 
   ## is iterative.
-  
+ 
   fl <- system.file(package="Rsamtools", "extdata", "ex1.bam")
   bf <- BamFile(fl, yieldSize=500) ## typically, yieldSize=1e6
-  
+
   param <- ScanBamParam(
       flag=scanBamFlag(isUnmappedQuery=FALSE),
       what="seq")
   YIELD <- function(X, ...) scanBam(X, param, ...)[[1]][['seq']]
   MAP <- function(value, ...) 
       alphabetFrequency(value, collapse=TRUE)
-  REDUCE <- `+`        # add successive alphabetFrequency matrices 
+  REDUCE <- `+`        # add successive alphabetFrequency matrices
+
+  ## 'parallel=TRUE' runs the MAP step in parallel.
   reduceByYield(bf, YIELD, MAP, REDUCE, param=param, parallel=TRUE)
-  
+ 
   ## -----------------------------------------------------------------------
   ## Coverage
   ## -----------------------------------------------------------------------
-  
+ 
   ## reduceByYield() can be applied to multiple files by combining it
   ## with bplapply().
-  
-  ## FUN will be run on each worker; it contains the necessary arguments 
+ 
+  ## 'FUN' is run on each worker and contains the arguments 
   ## to reduceByYield() as well as a call to the function itself.
-  ## reduceByYield() could also be run in parallel (parallel=TRUE) 
-  ## but in this example it is not.
   FUN <- function(bf) {
     library(GenomicAlignments)
     library(GenomicFiles)
     YIELD <- `readGAlignments`
     MAP <- function(value, ...) coverage(value)[["chr14"]] 
     REDUCE <- `+`
-    reduceByYield(bf, YIELD, MAP, REDUCE)
+    reduceByYield(bf, YIELD, MAP, REDUCE, parallel=FALSE)
   }
-  
-  ## BAM files are distributed across Snow workers and each worker applies
-  ## reduceByYield().
+ 
+  ## Files are distributed across Snow workers that each call 'FUN'.
   bfl <- BamFileList(RNAseqData.HNRNPC.bam.chr14_BAMFILES[1:3])
   bplapply(bfl, FUN, BPPARAM = SnowParam(3)) 
 }
