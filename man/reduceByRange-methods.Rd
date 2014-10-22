@@ -10,8 +10,9 @@
 \title{Parallel computations by ranges}
 
 \description{
-  Computations are distributed across ranges with the option to
-  iteratively combine results.
+  Computations are distributed in parallel by range. Data subsets are 
+  extracted and manipulated (MAP) and optionally combined (REDUCE)
+  across all files.
 }
 
 \usage{
@@ -22,7 +23,7 @@
 \S4method{reduceByRange}{GenomicFiles,missing}(ranges, files, MAP, 
     REDUCE, ..., summarize=FALSE, iterate=TRUE, init)
 
-reduceRanges(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init)
+reduceRanges(ranges, files, MAP, REDUCE, ..., init)
 }
 
 \arguments{
@@ -76,7 +77,8 @@ reduceRanges(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init)
     A logical indicating if the \code{REDUCE} function
     should be applied iteratively to the output of 
     \code{MAP}. When \code{REDUCE} is missing \code{iterate}
-    is set to FALSE. 
+    is set to FALSE. This argument applies to \code{reduceByRange} only
+    (\code{reduceRanges} calls MAP a single time on each worker).
 
     Collapsing results iteratively is useful when the number of
     records to be processed is large (maybe complete files) but
@@ -170,9 +172,9 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   gr <- GRanges("chr14", IRanges(c(62262735, 63121531, 63980327),
                 width=214700))
   
-  ## The MAP computes the pileups ...
+  ## The MAP computes the coverage ...
   MAP <- function(range, file, ...) {
-      library(GenomicRanges)
+      library(Rsamtools)
       param = ScanBamParam(which=range)
       coverage(file, param=param)[range]
   } 
@@ -204,6 +206,15 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   
   ## Results match those obtained with the iterative REDUCE.
   cov3[[1]]
+
+  ## When 'ranges' is a GRangesList, the list elements are sent to the
+  ## workers instead of a single range as in the case of a GRanges.
+  grl <- GRangesList(gr[1], gr[2:3])
+  grl
+
+  cov4 <- reduceByRange(grl, fls, MAP)
+  length(cov4)          ## length of GRangesList
+  elementLengths(cov4)  ## number of files
 
   ## -----------------------------------------------------------------------
   ## reduceRanges:

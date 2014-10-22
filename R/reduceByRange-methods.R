@@ -12,12 +12,16 @@
         stop("'files' must be character vector or List of filenames")
     if (missing(REDUCE) && iterate)
         iterate <- FALSE
+    if (missing(REDUCE))
+        REDUCE <- NULL
+    if (missing(init))
+        init <- NULL
 
-    NO_REDUCE <- missing(REDUCE)
     ## ranges sent to workers
-    bplapply(ranges, function(elt, ..., init) {
+    bplapply(ranges, function(elt, files, MAP, REDUCE, ..., iterate, init) {
+        require(GenomicRanges)
         if (iterate) {
-            result <- if (missing(init)) {
+            result <- if (is.null(init)) {
                 MAP(elt, files[[1]], ...)
             } else init
             for (i in seq_along(files)[-1]) {
@@ -27,12 +31,12 @@
             result
         } else {
             mapped <- lapply(files, function(f) MAP(elt, f, ...))
-            if (NO_REDUCE)
+            if (is.null(REDUCE))
                 mapped
             else
                 REDUCE(mapped, ...)
         }
-    }, ...)
+    }, ..., files=files, MAP=MAP, REDUCE=REDUCE, iterate=iterate, init=init)
 }
 
 setGeneric("reduceByRange", 
@@ -83,7 +87,6 @@ setMethod(reduceByRange, c("GenomicFiles", "missing"),
     function(ranges, files, MAP, REDUCE, ..., summarize=FALSE,
              iterate=TRUE, init) {
         reduceByRange(rowData(ranges), GenomicFiles::files(ranges),
-                      MAP, REDUCE, ..., summarize=summarize,
-                      iterate=iterate)
+                      MAP, REDUCE, ..., iterate=iterate)
     }
 )

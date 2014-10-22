@@ -10,9 +10,10 @@
 \title{Parallel computations by files}
 
 \description{
-  Computations are distributed across files the with option to
-  iteratively combine results.
-}
+  Computations are distributed in parallel by file. Data subsets are 
+  extracted and manipulated (MAP) and optionally combined (REDUCE)
+  within a single file.
+} 
 
 \usage{
 \S4method{reduceByFile}{GRanges,ANY}(ranges, files, MAP, 
@@ -22,7 +23,7 @@
 \S4method{reduceByFile}{GenomicFiles,missing}(ranges, files, MAP, 
     REDUCE, ..., summarize=FALSE, iterate=TRUE, init)
 
-reduceFiles(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init)
+reduceFiles(ranges, files, MAP, REDUCE, ..., init)
 }
 
 \arguments{
@@ -76,7 +77,8 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init)
     A logical indicating if the \code{REDUCE} function
     should be applied iteratively to the output of 
     \code{MAP}. When \code{REDUCE} is missing \code{iterate}
-    is set to FALSE. 
+    is set to FALSE. This argument applies to \code{reduceByFile} only
+    (\code{reduceFiles} calls MAP a single time on each worker).
 
     Collapsing results iteratively is useful when the number of
     records to be processed is large (maybe complete files) but
@@ -106,17 +108,6 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init)
   }
   \item{\dots}{
     Arguments passed to other methods.
-    \itemize{
-      \item{nchunk}{
-        Integer or NA used to control chunking of ranges in \code{reduceFiles}. 
-        When length(ranges) is greater than 1e5, ranges are broken into chunks 
-        with GenomicFiles:::.chunkIndex(). To override the internal algorithm
-        set \code{nchunk} to desired integer length;to disable chunking 
-        set \code{nchunk} to NA. For example, if length(ranges) is 1e6
-        and \code{nchunk=3}, ranges are broken into 3 groups of approximately 
-        equal length 333334, 333334, and 333332.
-      }
-    }
   }
 }
 
@@ -126,18 +117,13 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init)
   invoked on each file / range combination. This approach allows multiple 
   ranges extracted from a single file to be kept separate or combined with 
   \code{REDUCE}.
-  
+ 
   In contrast, \code{reduceFiles} does not iterate through the individual
   ranges but instead treats them as a group. \code{MAP} is invoked
   once for each file using all ranges as the \code{range} argument.
   In general, \code{REDUCE} does not play a significant role in 
   \code{reduceFiles} because \code{MAP} is only called once on each worker. 
-  The exception is when the number of ranges exceeds 1e5 
-  (i.e., length(ranges) > 1e5). In this case ranges are divided into chunks 
-  and iterated through on each worker. To override the internal chunk 
-  algorithm set \code{nchunk} to the desired (integer) chunk size; to disable 
-  chunking set \code{nchunk=NA}.
-  
+ 
   Both \code{MAP} and \code{REDUCE} are applied in the distributed 
   step (``on the worker``). There is no built-in ability to combine 
   results across workers in the distributed step.
@@ -179,10 +165,10 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init)
 if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
         require(GenomicAlignments))) {
   fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES  ## 8 bam files
-  
+ 
   ## Ranges of interest.
   gr <- GRanges("chr14", IRanges(c(19100000, 106000000), width=1e7))
-  
+ 
   ## MAP outputs a table of junction counts per range.
   MAP <- function(range, file, ...) {
       library(GenomicAlignments)
@@ -195,33 +181,30 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   ## reduceByFile:
   ## -----------------------------------------------------------------------
 
-  ## reduceByFile() with a MAP and no REDUCE returns junction counts for
+  ## reduceByFile() with no REDUCE returns junction counts for
   ## each range / file combination.
   counts1 <- reduceByFile(gr, fls, MAP)
   length(counts1)          ## 8 files
   elementLengths(counts1)  ## 2 ranges each
-  
-  ## Each element contains a table of counts for each range.
+ 
+  ## List elements contain a table of counts for each range.
   counts1[[1]]
 
-  ## This reducer sums the number of records in each range 
-  ## with exactly 1 junction.
+  ## When a REDUCE is added, results are combined on the fly according
+  ## to specific criteria. This reducer sums the number of records in 
+  ## each range with exactly 1 junction.
   REDUCE <- function(mapped, ...)
       sum(sapply(mapped, "[", "1"))
-  
+ 
   reduceByFile(gr, fls, MAP, REDUCE)
 
   ## -----------------------------------------------------------------------
   ## reduceFiles:
   ## -----------------------------------------------------------------------
 
-  ## This function treats all ranges as a group and is useful when 
-  ## differentiating between ranges is not important. In the 
-  ## reduceByFiles() example junctions were counted for each range 
-  ## individually which allowed us to see results for the individual
-  ## ranges and combine them on the fly in a specific way. reduceFiles() 
-  ## counts junctions for all ranges simultaneously. Any further manipulations
-  ## must be done to the result as a whole.
+  ## reduceFiles() treats all ranges as a single group. This is useful
+  ## when distinguishing between ranges is not important.
+ 
   counts2 <- reduceFiles(gr, fls, MAP)
 
   ## reduceFiles() returns counts for all ranges.

@@ -12,13 +12,17 @@
         stop("'files' must be character vector or List of filenames")
     if (missing(REDUCE) && iterate)
         iterate <- FALSE
+    if (missing(REDUCE))
+        REDUCE <- NULL
+    if (missing(init))
+        init <- NULL
 
-    NO_REDUCE <- missing(REDUCE)
     ## files sent to workers
-    bplapply(files, function(file, ..., init) {
+    bplapply(files, function(file, ranges, MAP, REDUCE, ..., iterate, init) {
+        require(GenomicRanges)
         if (iterate) {
             result <- 
-                if (missing(init))
+                if (is.null(init))
                     MAP(ranges[[1]], file, ...)
                 else init
             for (i in seq_along(ranges)[-1]) {
@@ -28,12 +32,12 @@
             result
         } else {
             mapped <- lapply(ranges, MAP, file, ...)
-            if (NO_REDUCE)
+            if (is.null(REDUCE))
                 mapped
             else
                 REDUCE(mapped, ...)
         }
-    }, ...)
+    }, ..., ranges=ranges, MAP=MAP, REDUCE=REDUCE, iterate=iterate, init=init)
 }
 
 setGeneric("reduceByFile", 
@@ -51,8 +55,8 @@ setMethod(reduceByFile, c("GRangesList", "ANY"),
             warning("'summarize' set to FALSE when REDUCE is provided")
         if (summarize && missing(REDUCE))
             SummarizedExperiment(SimpleList(list(data=simplify2array(lst))), 
-            	                 rowData=ranges, 
-            	                 colData=DataFrame(filePath=files))
+                                 rowData=ranges, 
+                                 colData=DataFrame(filePath=files))
         else
             lst
     }
@@ -67,7 +71,7 @@ setMethod(reduceByFile, c("GRanges", "ANY"),
             warning("'summarize' set to FALSE when REDUCE is provided")
         if (summarize && missing(REDUCE))
             SummarizedExperiment(SimpleList(list(data=simplify2array(lst))), 
-            	                 rowData=ranges,
+                                 rowData=ranges,
                                  colData=DataFrame(filePath=files))
         else
             lst

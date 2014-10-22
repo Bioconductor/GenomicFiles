@@ -2,7 +2,7 @@
 ### reduceRanges
 ### =========================================================================
 
-reduceRanges <- function(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init) {
+reduceRanges <- function(ranges, files, MAP, REDUCE, ..., init) {
     if (is(ranges, "GenomicFiles")) {
         files <- GenomicFiles::files(ranges)
         ranges <- rowData(ranges)
@@ -10,6 +10,6 @@ reduceRanges <- function(ranges, files, MAP, REDUCE, ..., iterate=TRUE, init) {
     if (!is(ranges, "GRanges") && !is(ranges, "GRangesList"))
         stop("'ranges' must be GRanges or GRangesList")
 
-    reduceByRange(ranges, list(files), MAP, REDUCE, ..., 
-                  summarize=FALSE, iterate=iterate)
+    .reduceByRange(ranges, list(files), MAP, REDUCE, ..., 
+                  summarize=FALSE, iterate=FALSE)
 }
