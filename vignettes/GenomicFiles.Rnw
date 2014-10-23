@@ -151,7 +151,6 @@ MAP extracts / manipulates data and REDUCE consolidates the results from MAP.
 Both MAP and REDUCE are executed in the distributed step and therefore reduction
 occurs on data from the same worker, not across workers.
 
-\newpage
 The chart in Figure \ref{reduceByFile_flow} represents the division of labor in
 \Rcode{reduceByFile} and \Rcode{reduceFiles} with 3 files and 4 ranges.
 \Rcode{reduceByFile} invokes MAP for each file / range combination then applies
@@ -163,13 +162,11 @@ not important.
 
 \begin{figure}[!h]
   \begin{center}
-    %\includegraphics[width=0.5\textwidth, {reduceByFile_flow.png}
-    \includegraphics[scale=0.90]{reduceByFile_flow.png}
+    \includegraphics{reduceByFile_flow.png}
     \caption{Mechanics of \Rcode{reduceByFile} and \Rcode{reduceFiles}}
     \label{reduceByFile_flow}
   \end{center}
 \end{figure}
-\clearpage
 
 In contrast to the `byFile` approach, \Rcode{reduceByRange} and
 \Rcode{reduceRanges} split the problem by range (Figure
@@ -180,7 +177,7 @@ passes all files as an argument to MAP.
 
 \begin{figure}[!h]
   \begin{center}
-    \includegraphics[scale=0.90]{reduceByRange_flow.png}
+    \includegraphics{reduceByRange_flow.png}
     \caption{Mechanics of \Rcode{reduceByRange} and \Rcode{reduceRanges}}
     \label{reduceByRange_flow}
   \end{center}
@@ -565,6 +562,7 @@ cvg3 <- reduceFiles(unlist(tiles), fls, MAP, REDUCE)
     Values :    0   22   23   19   17   18   17 ...   20   22   21   23   22    0
 \end{verbatim}
 
+\newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Chunk and reduce a single file: \Rcode{reduceByYield}}
