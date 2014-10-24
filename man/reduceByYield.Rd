@@ -113,20 +113,25 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   ## In this example nucleotide frequency of mapped reads is computed
   ## for a single file. The MAP step is run in parallel and REDUCE 
   ## is iterative.
- 
-  fl <- system.file(package="Rsamtools", "extdata", "ex1.bam")
-  bf <- BamFile(fl, yieldSize=500) ## typically, yieldSize=1e6
 
-  param <- ScanBamParam(
-      flag=scanBamFlag(isUnmappedQuery=FALSE),
-      what="seq")
-  YIELD <- function(X, ...) scanBam(X, param, ...)[[1]][['seq']]
+  ## Create a BamFile and set a 'yieldSize'.
+  fl <- system.file(package="Rsamtools", "extdata", "ex1.bam")
+  bf <- BamFile(fl, yieldSize=500)
+
+  ## Define 'YIELD', 'MAP' and 'REDUCE' functions.
+  YIELD <- function(X, ...) {
+      flag = scanBamFlag(isUnmappedQuery=FALSE)
+      param = ScanBamParam(flag=flag, what="seq")
+      scanBam(X, param=param, ...)[[1]][['seq']]
+  }
   MAP <- function(value, ...) 
       alphabetFrequency(value, collapse=TRUE)
   REDUCE <- `+`        # add successive alphabetFrequency matrices
 
-  ## 'parallel=TRUE' runs the MAP step in parallel.
-  reduceByYield(bf, YIELD, MAP, REDUCE, param=param, parallel=TRUE)
+  ## 'parallel=TRUE' runs the MAP step in parallel. 'parallel' is currently
+  ## implemented for Unix only so we use multicore workers.
+  register(MulticoreParam(3))
+  reduceByYield(bf, YIELD, MAP, REDUCE, parallel=TRUE)
  
   ## -----------------------------------------------------------------------
   ## Coverage
@@ -134,22 +139,29 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
  
   ## reduceByYield() can be applied to multiple files by combining it
   ## with bplapply().
- 
-  ## 'FUN' is run on each worker and contains the arguments 
-  ## to reduceByYield() as well as a call to the function itself.
-  FUN <- function(bf, YIELD, MAP, REDUCE, ...) {
-    library(GenomicAlignments)
-    library(GenomicFiles)
-    YIELD <- `readGAlignments`
-    MAP <- function(value, ...) coverage(value)[["chr14"]] 
-    REDUCE <- `+`
-    reduceByYield(bf, YIELD, MAP, REDUCE, parallel=FALSE)
+
+  ## Create a BamFileList with a few sample files and a Snow cluster
+  ## with the same number of workers as files.
+  bfl <- BamFileList(RNAseqData.HNRNPC.bam.chr14_BAMFILES[1:3])
+  bpparam <- SnowParam(length(bfl))
+
+  ## 'FUN' is run on each worker. Because these are Snow workers each
+  ## variable used in 'FUN' must be explicitly passed. (This is not the case
+  ## when using Multicore.)
+  FUN <- function(bf, YIELD, MAP, REDUCE, parallel, ...) {
+    library(GenomicAlignments) ## for readGAlignments()
+    library(GenomicFiles)      ## for reduceByYield()
+    reduceByYield(bf, YIELD, MAP, REDUCE, parallel=parallel)
   }
  
-  ## Files are distributed across Snow workers that each call 'FUN'.
-  bfl <- BamFileList(RNAseqData.HNRNPC.bam.chr14_BAMFILES[1:3])
+  ## Passing parallel=FALSE to reduceByYield() runs the MAP step in serial on 
+  ## each worker. In this example, parallel dispatch is at the file-level 
+  ## only (bplapply()).
+  YIELD <- `readGAlignments`
+  MAP <- function(value, ...) coverage(value)[["chr14"]] 
+  REDUCE <- `+`
   bplapply(bfl, FUN, YIELD=YIELD, MAP=MAP, REDUCE=REDUCE,
-           BPPARAM = SnowParam(3)) 
+           parallel=FALSE, BPPARAM = bpparam) 
 }
 }
 

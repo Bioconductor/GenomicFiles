@@ -12,7 +12,7 @@
             else
                value
         }
-        result <- bpiterate(ITER, FUN=MAP, ..., REDUCE=REDUCE)
+        result <- bpiterate(ITER, FUN=MAP, REDUCE=REDUCE, ...)
     } else {
         result <- if (missing(init)) {
             data <- YIELD(X, ...)

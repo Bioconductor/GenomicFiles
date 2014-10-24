@@ -39,24 +39,27 @@ test_reduceByFile_MAP <- function()
 ## reduceFiles
 test_reduceFiles_MAP <- function()
 {
-    ans <- reduceFiles(gf, MAP=MAP)
-    checkIdentical(length(ans), 2L)
-    checkIdentical(unname(elementLengths(ans)), c(1L, 1L))
+    ## No REDUCE applied, MAP returns 
+    ans0 <- reduceFiles(gf, MAP=MAP)
+    checkIdentical(length(ans0), 2L)
+    checkIdentical(unname(elementLengths(ans0)), c(1L, 1L))
+    elts <- lapply(ans0, elementLengths)
+    checkIdentical(names(elts), c("one", "two"))
+    checkIdentical(unlist(elts, use.names=FALSE), c(3L, 3L))
 
-    ans <- reduceFiles(gr, c(one=fl, two=fl), MAP=MAP)
-    checkIdentical(length(ans), 2L)
-    checkIdentical(unname(elementLengths(ans)), c(1L, 1L))
-
-    ans <- reduceFiles(gr, c(one=fl, two=fl), MAP=MAP, nchunk=2)
-    checkIdentical(length(ans), 2L)
-    checkIdentical(unname(elementLengths(ans)), c(2L, 2L))
+    ans1 <- reduceFiles(gr, c(one=fl, two=fl), MAP=MAP)
+    checkIdentical(ans0, ans1)
+    checkIdentical(length(ans1), 2L)
+    checkIdentical(unname(elementLengths(ans1)), c(1L, 1L))
 }
 
  test_reduceFiles_MAP_REDUCE <- function()
 {
-    REDUCE <- function(mapped) do.call(rbind, mapped)
-    ans <- reduceFiles(gf, MAP=MAP, REDUCE=REDUCE, nchunk=2)
+    ## REDUCE applied single time after MAP, simply unlist
+    REDUCE <- function(mapped, ...) do.call(rbind, mapped)
+
+    ans <- reduceFiles(gf, MAP=MAP, REDUCE=REDUCE)
     checkIdentical(length(ans), 2L)
-    checkIdentical(unname(elementLengths(ans)), c(1L, 1L))
+    checkIdentical(unname(elementLengths(ans)), c(3L, 3L))
 }
 

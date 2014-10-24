@@ -11,5 +11,5 @@ reduceFiles <- function(ranges, files, MAP, REDUCE, ..., init) {
         stop("'ranges' must be GRanges or GRangesList")
 
     .reduceByFile(list(ranges), files, MAP, REDUCE, ...,
-                 summarize=FALSE, iterate=FALSE)
+                  iterate=FALSE)
 }
