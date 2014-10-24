@@ -314,7 +314,7 @@ head(ttest[[1]], 3)
 @
 
 These tables can be added to the \Rcode{roi} GRanges as a metadata column.
-<<ttest-results>>=
+<<ttest-metadatacol>>=
 mcols(roi)$ttest <- ttest 
 head(roi)
 @ 
