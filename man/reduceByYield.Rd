@@ -137,7 +137,7 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
  
   ## 'FUN' is run on each worker and contains the arguments 
   ## to reduceByYield() as well as a call to the function itself.
-  FUN <- function(bf) {
+  FUN <- function(bf, YIELD, MAP, REDUCE, ...) {
     library(GenomicAlignments)
     library(GenomicFiles)
     YIELD <- `readGAlignments`
@@ -148,7 +148,8 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
  
   ## Files are distributed across Snow workers that each call 'FUN'.
   bfl <- BamFileList(RNAseqData.HNRNPC.bam.chr14_BAMFILES[1:3])
-  bplapply(bfl, FUN, BPPARAM = SnowParam(3)) 
+  bplapply(bfl, FUN, YIELD=YIELD, MAP=MAP, REDUCE=REDUCE,
+           BPPARAM = SnowParam(3)) 
 }
 }
 

@@ -618,6 +618,7 @@ The function `FUN` will be run on each worker.
 <<reduceByYield-bplapply>>=
 FUN <- function(file, gr, YIELD, MAP, REDUCE, ...) {
     library(GenomicAlignments)
+    library(GenomicFiles)
     gr <- unlist(tiles, use.names=FALSE)
     bf <- BamFile(file, yieldSize=100000)
     YIELD <- `readGAlignments`
