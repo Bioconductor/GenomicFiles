@@ -602,8 +602,10 @@ the length of records will be 0 and \Rcode{DONE} will evaluate to TRUE.
 DONE <- function(value) length(value) == 0
 @
 
-The MAP step is run in parallel when \Rcode{parallel=TRUE}.
+The MAP step is run in parallel when \Rcode{parallel=TRUE}. `parallel` is
+currently implemented for Unix/Mac only so we use multicore workers.
 <<redcueByYield-result>>=
+register(MulticoreParam(3))
 reduceByYield(bf, YIELD, MAP, REDUCE, DONE, gr=gr, parallel=TRUE)
 @
 

@@ -31,7 +31,7 @@
     }
     result
 }
-    
+ 
 .reduceByYield_all <-
     function(X, YIELD, MAP, REDUCE, DONE, ..., parallel)
 {
@@ -49,6 +49,7 @@
     REDUCE(result)
 }
 
+## REDUCE and init are never NULL; init can be missing
 reduceByYield <-
     function(X, YIELD, MAP, REDUCE, 
              DONE = function(x) is.null(x) || length(x) == 0L, 

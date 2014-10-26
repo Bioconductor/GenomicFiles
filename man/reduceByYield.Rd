@@ -64,8 +64,8 @@ reduceByYield(X, YIELD, MAP, REDUCE,
 
   \item{parallel}{logical(1) determines if the \code{MAP} step 
     is run in parallel. \code{bpiterate} is used under the hood
-    and is currently supported for Unix (Multicore) only. For
-    non-Unix machines, \code{parallel} is ignored.}
+    and is currently supported for Unix/Mac only. For Windows machines, 
+    \code{parallel} is ignored.}
 
   \item{init}{(Optional) Initial value used for \code{REDUCE} when
     \code{iterate=TRUE}.}
@@ -129,7 +129,7 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   REDUCE <- `+`        # add successive alphabetFrequency matrices
 
   ## 'parallel=TRUE' runs the MAP step in parallel. 'parallel' is currently
-  ## implemented for Unix only so we use multicore workers.
+  ## implemented for Unix/Mac only so we use multicore workers.
   register(MulticoreParam(3))
   reduceByYield(bf, YIELD, MAP, REDUCE, parallel=TRUE)
  
