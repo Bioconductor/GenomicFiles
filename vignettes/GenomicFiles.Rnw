@@ -565,9 +565,30 @@ cvg3 <- reduceFiles(unlist(tiles), fls, MAP, REDUCE)
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Chunk and reduce a single file: \Rcode{reduceByYield}}
+\section{Chunking}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Ranges in a file}
+
+Both \Rcode{reduceByFile} and \Rcode{reduceByRange} process \Rcode{ranges} one
+element at a time. When \Rcode{ranges} is a GRanges the element is a single
+range and when it is a GRangesList the element can contain multiple ranges.
+
+If the GRanges is very long (many ranges) working one range at a time can be
+inefficient. Splitting the GRanges into a GRangesList allows
+\Rcode{reduceByFile} and \Rcode{reduceByRange} to work on groups of ranges and
+will gain speed and efficiency in most applications. This approach works as long
+as the analysis does not depend on keeping the ranges separate (i.e., MAP and
+REDUCE can be written to operate on groups of ranges instead of a single range).
+
+For applications that combine data \emph{within} a file, chunking can be done
+with \Rcode{reduceByFile} and a GRangesList.  Similarly, when chunking through
+ranges to combine data \emph{across} files use \Rcode{reduceByRange} with a
+GRangesList.
+
+
+\subsection{Records in a file}
 
 \Rcode{reduceByYield} iterates through records in a single file
 that would otherwise not fit in memory. It is similar to a one dimensional 
@@ -599,7 +620,7 @@ When \Rcode{DONE} evaluates to TRUE, iteration stops. `value` is the
 object returned from calling YIELD on the BAM file. At the end of file
 the length of records will be 0 and \Rcode{DONE} will evaluate to TRUE.
 <<reduceByYield-DONE>>=
-DONE <- function(value) length(value) == 0
+DONE <- function(value) length(value) == 0L
 @
 
 The MAP step is run in parallel when \Rcode{parallel=TRUE}. `parallel` is
