@@ -147,17 +147,32 @@ collapses the results in one dimension).
 Functions in \Rcode{GenomicFiles} manipulate and combine data across or
 within files using the parallel infrastructure provided in \Rcode{BiocParallel}.
 Files and ranges are sent to workers along with MAP and REDUCE functions. The
-MAP extracts / manipulates data and REDUCE consolidates the results from MAP.
+MAP extracts and/or manipulates data and REDUCE consolidates the results from MAP.
 Both MAP and REDUCE are executed in the distributed step and therefore reduction
 occurs on data from the same worker, not across workers.
 
-The chart in Figure \ref{reduceByFile_flow} represents the division of labor in
-\Rcode{reduceByFile} and \Rcode{reduceFiles} with 3 files and 4 ranges.
-\Rcode{reduceByFile} invokes MAP for each file / range combination then applies
-an optional REDUCE. This allows manipulation of data subsets for individual
-ranges in a file. In contrast, \Rcode{reduceFiles} passes all ranges as an
-argument to MAP resulting in a single invocation of MAP on the worker.
-\Rcode{reduceFiles} is a useful approach when distinguishing between ranges is 
+The chart in Figure \ref{reduceByRange_flow} represents the division of labor in
+\Rcode{reduceByRange} and \Rcode{reduceRanges} with 3 files and 4 ranges.  These
+functions split the problem by range which allows subsets (i.e., the same range)
+to be combined across different files.  \Rcode{reduceByRange} invokes MAP for
+each range / file combination whereas \Rcode{reduceRanges} invokes MAP a single
+time with one file and all ranges.  \Rcode{reduceRanges} passes all files as an
+argument to MAP.
+
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics{reduceByRange_flow.png}
+    \caption{Mechanics of \Rcode{reduceByRange} and \Rcode{reduceRanges}}
+    \label{reduceByRange_flow}
+  \end{center}
+\end{figure}
+
+In contrast to the `byRange` approach, \Rcode{reduceByFile} and
+\Rcode{reduceFiles} (Figure \ref{reduceByFile_flow}) split the problem by file.
+This division allows subsets (i.e., multiple ranges) to be combined within the
+same file.  \Rcode{reduceByFile} invokes MAP for each file / range combination
+and \Rcode{reduceFiles} invokes MAP a single time with one range and all files.
+\Rcode{reduceFiles} is a useful approach when distinguishing between ranges is
 not important.
 
 \begin{figure}[!h]
@@ -167,22 +182,6 @@ not important.
     \label{reduceByFile_flow}
   \end{center}
 \end{figure}
-
-In contrast to the `byFile` approach, \Rcode{reduceByRange} and
-\Rcode{reduceRanges} split the problem by range (Figure
-\ref{reduceByRange_flow}. This division allows subsets (i.e., the same range) to
-be combined across different files.  \Rcode{reduceByRange} invokes MAP for each
-range / file combination then applies an optional REDUCE. \Rcode{reduceRanges}
-passes all files as an argument to MAP.
-
-\begin{figure}[!h]
-  \begin{center}
-    \includegraphics{reduceByRange_flow.png}
-    \caption{Mechanics of \Rcode{reduceByRange} and \Rcode{reduceRanges}}
-    \label{reduceByRange_flow}
-  \end{center}
-\end{figure}
-\clearpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,6 +196,7 @@ all files.  The second example computes coverage on a group of ranges for each
 file then performs a basepair-level $t$-test across files. The $t$-test example
 also demonstrates how to use a blocking factor to differentiate files by
 experimental group (e.g., case vs control).
+\pagebreak
 
 \subsection{Pileup summaries}
 
