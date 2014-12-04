@@ -108,14 +108,18 @@ setMethod(BamFileViews, "character",
 }
 
 .so_BFV <- 
-    function(features, reads, mode, ignore.strand=FALSE, ..., 
-             inter.feature=TRUE, singleEnd=TRUE, fragments=FALSE,
-             param=ScanBamParam())
+    function(features, reads, mode=Union,
+             algorithm=c("nclist", "intervaltree"),
+             ignore.strand=FALSE,
+             inter.feature=TRUE, singleEnd=TRUE,
+             fragments=FALSE, param=ScanBamParam(), ...)
 {
     param <- .compare_ranges(reads, param)
-    summarizeOverlaps(features, fileList(reads), mode,
-        ignore.strand=ignore.strand, inter.feature=inter.feature, 
-        singleEnd=singleEnd, fragments=fragments, param=param, ...)
+    summarizeOverlaps(features, fileList(reads), mode=mode,
+        algorithm=match.arg(algorithm),
+        ignore.strand=ignore.strand,
+        inter.feature=inter.feature, singleEnd=singleEnd,
+        fragments=fragments, param=param, ...)
 }
 setMethod("summarizeOverlaps", c("GRanges", "BamFileViews"), .so_BFV)
 setMethod("summarizeOverlaps", c("GRangesList", "BamFileViews"), .so_BFV)
