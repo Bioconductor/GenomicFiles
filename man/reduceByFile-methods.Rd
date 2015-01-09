@@ -160,10 +160,13 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., init)
 }
 
 \examples{
-## This example counts junction reads for ranges of interest in BAM files.
 
 if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
         require(GenomicAlignments))) {
+
+  ## -----------------------------------------------------------------------
+  ## Count junction reads in BAM files
+  ## -----------------------------------------------------------------------
   fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES  ## 8 bam files
  
   ## Ranges of interest.
@@ -171,7 +174,7 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
  
   ## MAP outputs a table of junction counts per range.
   MAP <- function(range, file, ...) {
-      library(GenomicAlignments)
+      library(GenomicAlignments)   ## for readGAlignments(), ScanBamParam()
       param = ScanBamParam(which=range)
       gal = readGAlignments(file, param=param)
       table(njunc(gal))
@@ -179,20 +182,17 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
 
   ## -----------------------------------------------------------------------
   ## reduceByFile:
-  ## -----------------------------------------------------------------------
 
-  ## reduceByFile() with no REDUCE returns junction counts for
-  ## each range / file combination.
+  ## With no REDUCE, counts are computed for each range / file combination.
   counts1 <- reduceByFile(gr, fls, MAP)
   length(counts1)          ## 8 files
   elementLengths(counts1)  ## 2 ranges each
  
-  ## List elements contain a table of counts for each range.
+  ## Tables of counts for each range:
   counts1[[1]]
 
-  ## When a REDUCE is added, results are combined on the fly according
-  ## to specific criteria. This reducer sums the number of records in 
-  ## each range with exactly 1 junction.
+  ## With a REDUCE, results are combined on the fly. This reducer sums the 
+  ## number of records in each range with exactly 1 junction.
   REDUCE <- function(mapped, ...)
       sum(sapply(mapped, "[", "1"))
  
@@ -200,38 +200,34 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
 
   ## -----------------------------------------------------------------------
   ## reduceFiles:
-  ## -----------------------------------------------------------------------
 
-  ## reduceFiles() treats all ranges as a single group. This is useful
-  ## when distinguishing between ranges is not important.
- 
+  ## All ranges are treated as a single group:
   counts2 <- reduceFiles(gr, fls, MAP)
 
-  ## reduceFiles() returns counts for all ranges.
+  ## Counts are for all ranges grouped:
   counts2[[1]]
-  ## reduceByFile() returns counts for each range separately.
+
+  ## Contrast the above with that from reduceByFile() where counts 
+  ## are for each range separately:
   counts1[[1]]
 
   ## -----------------------------------------------------------------------
   ## Methods for the GenomicFiles class:
-  ## -----------------------------------------------------------------------
  
   ## Both reduceByFiles() and reduceFiles() can operate on a GenomicFiles
-  ## object. The class is a light-weight form of SummarizedExperiment
-  ## that does not have an 'assays' slot. 
+  ## object.
   colData <- DataFrame(method=rep("RNASeq", length(fls)),
                        format=rep("bam", length(fls)))
   gf <- GenomicFiles(files=fls, rowData=gr, colData=colData)
   gf
   
-  ## The object can be subset on ranges or files for different
-  ## experimental runs.
+  ## Subset on ranges or files for different experimental runs.
   dim(gf)
   gf_sub <- gf[2, 3:4]
   dim(gf_sub)
   
-  ## When summarize = TRUE and no REDUCE is provided the reduceBy* 
-  ## functions output a SummarizedExperiment object.
+  ## When summarize = TRUE and no REDUCE is given, the output is a 
+  ## SummarizedExperiment object.
   se <- reduceByFile(gf, MAP=MAP, summarize=TRUE)
   se
   

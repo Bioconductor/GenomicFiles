@@ -129,19 +129,17 @@
 
 \examples{
 if (require(RNAseqData.HNRNPC.bam.chr14)) { 
-  fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
-  gr <- GRanges("chr14", IRanges(c(62262735, 63121531, 63980327),
-                width=214700))
- 
-  ## The GenomicFiles class is a light-weight form of SummarizedExperiment
-  ## that does not have an 'assays' slot. 
-  colData <- DataFrame(method=rep("RNASeq", length(fls)),
-                       format=rep("bam", length(fls)))
-  gf <- GenomicFiles(files=fls, rowData=gr, colData=colData)
+  fl <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
+  rd <- GRanges("chr14", 
+                 IRanges(c(62262735, 63121531, 63980327), width=214700))
+  cd <- DataFrame(method=rep("RNASeq", length(fl)),
+                  format=rep("bam", length(fl)))
+
+  ## Construct an instance of the class:
+  gf <- GenomicFiles(files = fl, rowData = rd, colData = cd) 
   gf
 
-  ## The object can be subset on ranges or files for different
-  ## experimental runs.
+  ## Subset on ranges or files for different experimental runs.
   dim(gf)
   gf_sub <- gf[2, 3:4]
   dim(gf_sub)
@@ -149,7 +147,8 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   ## When summarize = TRUE and no REDUCE is provided the reduceBy* 
   ## functions output a SummarizedExperiment object.
   MAP <- function(range, file, ...) {
-      library(GenomicRanges)
+      library(GenomicRanges) ## for coverage()
+      library(Rsamtools)     ## for ScanBamParam()
       param = ScanBamParam(which=range)
       coverage(file, param=param)[range]
   } 

@@ -162,10 +162,13 @@ reduceRanges(ranges, files, MAP, REDUCE, ..., init)
 }
 
 \examples{
-## This example computes coverage for ranges of interest in BAM files.
 
 if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
         require(GenomicAlignments))) {
+
+  ## -----------------------------------------------------------------------
+  ## Compute coverage across BAM files.
+  ## -----------------------------------------------------------------------
   fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES  ## 8 bam files
   
   ## Regions of interest.
@@ -174,7 +177,7 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   
   ## The MAP computes the coverage ...
   MAP <- function(range, file, ...) {
-      library(Rsamtools)
+      library(Rsamtools)  ## for ScanBamParam() and coverage()
       param = ScanBamParam(which=range)
       coverage(file, param=param)[range]
   } 
@@ -185,10 +188,8 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
 
   ## -----------------------------------------------------------------------
   ## reduceByRange:
-  ## -----------------------------------------------------------------------
 
-  ## reduceByRange() with a MAP and no REDUCE returns coverage for
-  ## each range / file combination.
+  ## With no REDUCE, coverage is computed for each range / file combination.
   cov1 <- reduceByRange(gr, fls, MAP)
   cov1[[1]]
   
@@ -218,13 +219,12 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
 
   ## -----------------------------------------------------------------------
   ## reduceRanges:
-  ## -----------------------------------------------------------------------
 
   ## This function passes the character vector of all file names to MAP.
   ## MAP must handle each file separately or invoke a method that operates
   ## on a list of files.
 
-  ## TODO: relevant example
+  ## TODO: example
 }
 }
 

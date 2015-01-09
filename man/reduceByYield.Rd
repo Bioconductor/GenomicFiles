@@ -124,12 +124,14 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
       param = ScanBamParam(flag=flag, what="seq")
       scanBam(X, param=param, ...)[[1]][['seq']]
   }
-  MAP <- function(value, ...) 
+  MAP <- function(value, ...) {
+      library(Biostrings) ## for alphabetFrequency()
       alphabetFrequency(value, collapse=TRUE)
+  }
   REDUCE <- `+`        # add successive alphabetFrequency matrices
 
-  ## 'parallel=TRUE' runs the MAP step in parallel. 'parallel' is currently
-  ## implemented for Unix/Mac only so we use multicore workers.
+  ## 'parallel=TRUE' runs the MAP step in parallel and is currently
+  ## implemented for Unix/Mac only.
   register(MulticoreParam(3))
   reduceByYield(bf, YIELD, MAP, REDUCE, parallel=TRUE)
  
@@ -137,8 +139,9 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   ## Coverage
   ## -----------------------------------------------------------------------
  
-  ## reduceByYield() can be applied to multiple files by combining it
-  ## with bplapply().
+  ## If sufficient resources are available coverage can be computed
+  ## across several large BAM files by combining reduceByYield() with
+  ## bplapply().
 
   ## Create a BamFileList with a few sample files and a Snow cluster
   ## with the same number of workers as files.

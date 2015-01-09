@@ -207,7 +207,7 @@ single table for each range across all files (REDUCE step).
 Create a \Rclass{GRanges} with regions of interest:
 <<pileups-ranges>>=
 gr <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963, 
-              105613740), width = 20))
+              105613740), width=20))
 @
 
 The \Rcode{bam2R} function from the \Rpackage{deepSNV} package
@@ -266,7 +266,7 @@ the $t$-test.
 Define ranges of interest,
 <<ttest-ranges>>=
 roi <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963,
-               105613740), width = 20))
+               105613740), width=20))
 @
 
 and assign the case, control grouping of files. (Grouping is arbitrary in this
@@ -279,7 +279,7 @@ The MAP reads in alignments from each BAM file and computes coverage. Coverage
 is coerced from an RleList to numeric vector for later use in the $t$-test.
 <<ttest-MAP>>=
 MAP <- function(range, file, ...) {
-    require(Rsamtools)
+    library(Rsamtools)
     param <- ScanBamParam(which=range)
     as.numeric(unlist(coverage(file, param=param)[range], use.names=FALSE))
 }
@@ -354,7 +354,7 @@ The MAP produces a table of junction counts (i.e., 'N' operations in the
 CIGAR) for each range.
 <<junctions-MAP>>=
 MAP <- function(range, file, ...) {
-    library(GenomicAlignments) ## for readGAlignments()
+    library(GenomicAlignments) ## for readGAlignments() and ScanBamParam()
     param = ScanBamParam(which=range)
     gal = readGAlignments(file, param=param)
     table(njunc(gal))
@@ -432,6 +432,7 @@ MAP computes coverage for each range. The sum of coverage across all positions
 is recorded along with the width of the range.
 <<coverage1-MAP>>=
 MAP = function(range, file, ...) {
+    library(GenomicAlignments)  ## for ScanBamParam() and coverage()
     param = ScanBamParam(which=range)
     rle = coverage(file, param=param)[range]
     c(width = width(range), sum = sum(runLength(rle) * runValue(rle))) 
@@ -478,6 +479,7 @@ at time.
 This MAP computes coverage on all ranges at once and returns an RleList.
 <<coverage2-MAP>>=
 MAP = function(range, file, ...) {
+    library(GenomicAlignments)  ## for ScanBamParam() and coverage()
     coverage(file, param=ScanBamParam(which=range))[range]
 }
 @
@@ -528,14 +530,16 @@ The data are subset on each worker, coverage is computed and reduced for
 the ranges in the chunk.
 <<coverage3-MAP>>=
 MAP = function(range, file, ...) {
+    library(BiocParallel)  ## for bplapply()
     nranges = 2
     idx = split(seq_along(range), ceiling(seq_along(range)/nranges))
     bplapply(idx, 
         function(i, range, file) {
+            library(GenomicAlignments)  ## for ScanBamParam() and coverage()
             chunk = range[i]
             param = ScanBamParam(which=chunk)
             cvg = coverage(file, param=param)[chunk]
-            Reduce("+", cvg)  ## collapse coverage within chunks
+            Reduce("+", cvg)            ## collapse coverage within chunks
         }, range, file)
 }
 @
@@ -612,7 +616,10 @@ MAP counts overlaps between the reads and a GRanges of interest while REDUCE
 sums counts over the chunks.
 <<reduceByYield-MAP-REDUCE>>=
 gr <- unlist(tiles, use.names=FALSE)
-MAP <- function(value, gr, ...) countOverlaps(gr, value)
+MAP <- function(value, gr, ...) {
+    library(GenomicRanges)  ## for countOverlaps()
+    countOverlaps(gr, value)
+}
 REDUCE <- `+` 
 @
 
@@ -639,13 +646,16 @@ parallel=TRUE)}. This example takes the conservative approach and runs
 
 The function `FUN` will be run on each worker.
 <<reduceByYield-bplapply>>=
-FUN <- function(file, gr, YIELD, MAP, REDUCE, ...) {
-    library(GenomicAlignments)
-    library(GenomicFiles)
+FUN <- function(file, gr, YIELD, MAP, REDUCE, tiles, ...) {
+    library(GenomicAlignments)  ## for BamFile, readGAlignments()
+    library(GenomicFiles)       ## for reduceByYield()
     gr <- unlist(tiles, use.names=FALSE)
     bf <- BamFile(file, yieldSize=100000)
     YIELD <- `readGAlignments`
-    MAP <- function(value, gr, ...) countOverlaps(gr, value)
+    MAP <- function(value, gr, ...) {
+        library(GenomicRanges)  ## for countOverlaps()
+        countOverlaps(gr, value)
+    }
     REDUCE <- `+` 
     reduceByYield(bf, YIELD, MAP, REDUCE, gr=gr, parallel=FALSE)
 }
@@ -655,7 +665,7 @@ FUN <- function(file, gr, YIELD, MAP, REDUCE, ...) {
 \Rcode{reduceByYield} to iteratively count and reduce overlaps in a BAM file.
 
 \begin{verbatim}
-  > bplapply(fls, FUN, gr=gr, YIELD=YIELD, MAP=MAP, REDUCE=REDUCE)
+  > bplapply(fls, FUN, gr=gr, YIELD=YIELD, MAP=MAP, REDUCE=REDUCE, tiles=tiles)
   $ERR127306
   [1]  21465 163154  75498 212593 327785
 

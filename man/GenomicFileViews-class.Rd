@@ -151,9 +151,9 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
   gr <- GRanges("chr14", IRanges(c(62262735, 63121531, 63980327),
                 width=214700))
-  
+ 
   ## The GenomicFiles class is a light-weight form of SummarizedExperiment
-  ## that does not have an 'assays' slot. 
+  ## with no 'assays' slot. 
   colData <- DataFrame(method=rep("RNASeq", length(fls)),
                        format=rep("bam", length(fls)))
   gf <- GenomicFiles(files=fls, rowData=gr, colData=colData)

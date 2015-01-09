@@ -56,8 +56,9 @@
 
   ## FUN computes coverage for the range passed as 'rng'.
   FUN <- function(rng, fl, param) {
+      library(GenomicAlignments) ## for bamWhich() and coverage()
       bamWhich(param) <- rng
-      coverage(fl, param=param)[rng]
+      coverage(BamFile(fl), param=param)[rng]
   } 
 
   ## Compute coverage on the packed ranges.

@@ -4,7 +4,7 @@ Description: This package provides infrastructure for parallel
 	computations distributed 'by file' or 'by range'. User 
 	defined MAPPER and REDUCER functions provide added 
 	flexibility for data combination and manipulation.
-Version: 1.3.9
+Version: 1.3.10
 Author: Valerie Obenchain, Michael Love, Martin Morgan 
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, DataImport, Sequencing, Coverage
@@ -14,7 +14,7 @@ Depends: R (>= 3.1.0), methods, BiocGenerics (>= 0.11.2),
         rtracklayer (>= 1.25.3), BiocParallel (>= 1.1.0)
 Imports: GenomicAlignments
 Suggests: BiocStyle, RUnit, genefilter, deepSNV, 
-	RNAseqData.HNRNPC.bam.chr14
+	RNAseqData.HNRNPC.bam.chr14, Biostrings
 License: Artistic-2.0
 Collate: GenomicFiles-class.R
 	GenomicFileViews-class.R
