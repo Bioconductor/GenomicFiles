@@ -609,7 +609,7 @@ the \Rcode{yieldSize} set in the BamFile.
 <<reduceByYield-YIELD>>=
 library(GenomicAlignments)
 bf <- BamFile(fls[1], yieldSize=100000)
-YIELD <- `readGAlignments`
+YIELD <- function(x, ...) readGAlignments(x)
 @
 
 MAP counts overlaps between the reads and a GRanges of interest while REDUCE 
@@ -632,7 +632,7 @@ DONE <- function(value) length(value) == 0L
 
 The MAP step is run in parallel when \Rcode{parallel=TRUE}. `parallel` is
 currently implemented for Unix/Mac only so we use multicore workers.
-<<redcueByYield-result>>=
+<<reduceByYield-result>>=
 register(MulticoreParam(3))
 reduceByYield(bf, YIELD, MAP, REDUCE, DONE, gr=gr, parallel=TRUE)
 @
@@ -651,7 +651,7 @@ FUN <- function(file, gr, YIELD, MAP, REDUCE, tiles, ...) {
     library(GenomicFiles)       ## for reduceByYield()
     gr <- unlist(tiles, use.names=FALSE)
     bf <- BamFile(file, yieldSize=100000)
-    YIELD <- `readGAlignments`
+    YIELD <- function(x, ...) readGAlignments(x)
     MAP <- function(value, gr, ...) {
         library(GenomicRanges)  ## for countOverlaps()
         countOverlaps(gr, value)

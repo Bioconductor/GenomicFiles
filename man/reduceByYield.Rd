@@ -16,7 +16,7 @@
 }
 
 \usage{
-reduceByYield(X, YIELD, MAP, REDUCE, 
+reduceByYield(X, YIELD,  MAP = identity, REDUCE = `+`, 
               DONE = function(x) is.null(x) || length(x) == 0L, 
               ..., parallel = FALSE, iterate = TRUE, init)
 }
@@ -74,25 +74,26 @@ reduceByYield(X, YIELD, MAP, REDUCE,
 
 \details{
  
-  When \code{iterate=TRUE}, \code{REDUCE} is initially invoked with
-  either the \code{init} value and the value of the first call to
-  \code{MAP} or, if \code{init} is missing, the values of the first two
-  calls to \code{MAP}.
+  When \code{iterate=TRUE}, \code{REDUCE} requires 2 arguments and is
+  invoked with \code{init} and the output from the first call to
+  \code{MAP}. If \code{init} is missing, it operates on the first two
+  outputs from \code{MAP}.
 
-  When \code{iterate=FALSE}, \code{REDUCE} is invoked with a list
-  containing a list with as many elements as there were calls to
-  \code{MAP}.  Each element the result of an invocation of \code{MAP}.
+  When \code{iterate=FALSE}, \code{REDUCE} requires 1 argument and is
+  is invoked with a list containing a list containing all results from
+  \code{MAP}.
 
 }
 \value{
 
-  The return value is the value returned by the final invocation of
-  \code{REDUCE}, or \code{init} if provided and no data were yield'ed,
-  or \code{list()} if \code{init} is missing and no data were yield'ed.
+  The value returned by the final invocation of \code{REDUCE}, or \code{init} 
+  if provided and no data were yield'ed, or \code{list()} if \code{init} is 
+  missing and no data were yield'ed.
 
 }
 
-\author{Martin Morgan \url{mtmorgan@fhcrc.org}}
+\author{Martin Morgan \url{mtmorgan@fhcrc.org} and
+        Valerie Obenchain \url{vobencha@fhcrc.org}}
 
 \seealso{
   \itemize{
