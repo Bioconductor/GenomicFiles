@@ -21,8 +21,8 @@
 \alias{files<-,GenomicFiles,List-method}
 \alias{colData,GenomicFiles-method}
 \alias{colData<-,GenomicFiles,DataFrame-method}
-\alias{rowData,GenomicFiles-method}
-\alias{rowData<-,GenomicFiles,GRangesORGRangesList-method}
+\alias{rowRanges,GenomicFiles-method}
+\alias{rowRanges<-,GenomicFiles,GRangesORGRangesList-method}
 \alias{exptData,GenomicFiles-method}
 \alias{exptData<-,GenomicFiles,DataFrame-method}
 
@@ -47,10 +47,8 @@
   class.
 
   \code{GenomicFiles} has slots for \code{files}, \code{rowData}, 
-  \code{colData} and \code{exptData}. In contrast to 
-  \code{SummarizedExperiment}, \code{GenomicFiles} does not contain an 
-  \code{assays} slot and the \code{rowData} is a \code{DataFrame} 
-  instead of a \code{GenomicRanges}. 
+  \code{colData} and \code{exptData}. Unlike \code{SummarizedExperiment}, 
+  \code{GenomicFiles} does not contain an \code{assays} slot.
 }
 
 \section{Constructor}{
@@ -66,7 +64,7 @@
   In the code below, \code{x} is a GenomicFiles object.
 
   \describe{
-    \item{rowData, rowData(x) <- value}{
+    \item{rowRanges, rowRanges(x) <- value}{
       Get or set the rowData on \code{x}. \code{value} can be
       a \code{GRanges} or \code{GRangesList} representing ranges or indices 
       defined on the spaces (position) of the files.

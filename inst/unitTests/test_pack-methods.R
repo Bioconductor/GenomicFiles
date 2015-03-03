@@ -36,10 +36,6 @@ test_pack_unpack_order <- function()
         IRanges(c(10, 1, 100, 5, 2), width=1))
     pk <- pack(gr)
     checkTrue(length(pk) == 2L)
-    pm <- pk@partitioning
-    checkIdentical(width(pm), c(2L, 3L))
-    checkIdentical(mapOrder(pm), c(4L, 3L, 5L, 2L, 1L))
-
     .unpack(pk, gr)
 }
 

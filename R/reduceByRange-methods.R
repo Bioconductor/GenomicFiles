@@ -86,7 +86,7 @@ setMethod(reduceByRange, c("GRanges", "ANY"),
 setMethod(reduceByRange, c("GenomicFiles", "missing"), 
     function(ranges, files, MAP, REDUCE, ..., summarize=FALSE,
              iterate=TRUE, init) {
-        reduceByRange(rowData(ranges), GenomicFiles::files(ranges),
+        reduceByRange(rowRanges(ranges), GenomicFiles::files(ranges),
                       MAP, REDUCE, ..., summarize=summarize, 
                       iterate=iterate, init=init)
     }

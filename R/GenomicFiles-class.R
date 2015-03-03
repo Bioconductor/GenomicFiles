@@ -124,10 +124,10 @@ setReplaceMethod("files", c("GenomicFiles", "List"),
     x 
 })
 
-setMethod(rowData, "GenomicFiles",
+setMethod(rowRanges, "GenomicFiles",
     function(x, ...) slot(x, "rowData"))
 
-setReplaceMethod("rowData", c("GenomicFiles", "GenomicRangesORGRangesList"),
+setReplaceMethod("rowRanges", c("GenomicFiles", "GenomicRangesORGRangesList"),
     function(x, ..., value)
 {
     slot(x, "rowData") <- value
@@ -173,13 +173,13 @@ setReplaceMethod("exptData", c("GenomicFiles", "list"),
 setMethod(dim, "GenomicFiles",
     function(x)
 {
-    c(length(rowData(x)), nrow(colData(x)))
+    c(length(rowRanges(x)), nrow(colData(x)))
 })
 
 setMethod(dimnames, "GenomicFiles",
     function(x)
 {
-    list(names(rowData(x)), rownames(colData(x)))
+    list(names(rowRanges(x)), rownames(colData(x)))
 })
 
 setReplaceMethod("dimnames", c("GenomicFiles", "list"),
@@ -187,7 +187,7 @@ setReplaceMethod("dimnames", c("GenomicFiles", "list"),
 {
     if (length(value) != 2)
         stop("'value' must be a list of length 2")
-    names(rowData(x)) <- value[[1]]
+    names(rowRanges(x)) <- value[[1]]
     rownames(colData(x)) <- value[[2]]
     x
 })
@@ -205,7 +205,7 @@ setReplaceMethod("dimnames", c("GenomicFiles", "NULL"),
 
 setMethod("[", c("GenomicFiles", "ANY", "missing"),
     function(x, i, j, ..., drop=TRUE)
-        initialize(x, rowData=rowData(x)[i,])
+        initialize(x, rowData=rowRanges(x)[i,])
 )
 
 setMethod("[", c("GenomicFiles", "missing", "ANY"),
@@ -233,7 +233,7 @@ setMethod("[", c("GenomicFiles", "ANY", "ANY"),
         stop("subscript 'j' out of bounds")
     initialize(x, 
         files=files(x)[j],
-        rowData=rowData(x)[i,],
+        rowData=rowRanges(x)[i,],
         colData=colData(x)[j,,drop=FALSE])
 })
 
@@ -249,6 +249,6 @@ setMethod(show, "GenomicFiles",
         "\n")
     cat("files:", paste(BiocGenerics:::selectSome(basename(files(object))), 
         collapse=", "), "\n")
-    cat("detail: use files(), rowData(), colData(), ...",
+    cat("detail: use files(), rowRanges(), colData(), ...",
         "\n")
 })

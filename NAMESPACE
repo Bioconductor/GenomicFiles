@@ -27,7 +27,7 @@ exportClasses(
 
 exportMethods(
     "[", dim, names, show, yieldSize, 
-    colData, 'colData<-', rowData, 'rowData', exptData,'exptData',
+    colData, 'colData<-', rowRanges, 'rowRanges', exptData,'exptData',
     countBam, scanBam, summarizeOverlaps,
     coverage, summary
 )
