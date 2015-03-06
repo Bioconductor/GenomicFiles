@@ -102,10 +102,9 @@ REDUCEsampler(sampleSize=1000000, verbose=FALSE)
       As with any iterative \code{REDUCE} function, \code{x} represents records
       that have been yield'ed and \code{y} is the new chunk of records.
       \code{myfun} samples records from consecutive chunks returned by the
-      \code{YIELD} function.  Sampling (and resampling) takes into consideration
-      the total number of records yield'ed at the time and the size of the new
-      chunk.  The number of sampled records returned is defined by
-      \code{sampleSize}.
+      \code{YIELD} function. (Re)sampling takes into consideration 
+      the total number of records yield'ed, the \code{sampleSize}, and the 
+      size of the new chunk.
     }
   }
 }
@@ -198,14 +197,13 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   ## -----------------------------------------------------------------------
 
   fl <- system.file(package="Rsamtools", "extdata", "ex1.bam")
-  bf <- BamFile(fl, yieldSize=1000000)
+  bf <- BamFile(fl, yieldSize=1000)
 
   yield <- function(x)
-      readGAlignmentsList(x, param=ScanBamParam(what=c( "qwidth", "mapq" ),
-                          tag=c( "NH", "HI")))
+      readGAlignments(x, param=ScanBamParam(what=c( "qwidth", "mapq" )))
   map <- identity
 
-  ## Samples records from successive pairs of aligned reads.
+  ## Samples records from successive chunks of aligned reads.
   reduceByYield(bf, yield, map, REDUCEsampler(1000, TRUE))
 }
 }
