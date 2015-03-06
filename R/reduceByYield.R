@@ -1,5 +1,5 @@
 ### =========================================================================
-### Iterate through files in chunks (reduceByYield) 
+### reduceByYield (iterate through files by chunk)
 ### =========================================================================
 
 .reduceByYield_iterate <-
@@ -70,4 +70,31 @@ reduceByYield <-
     else
         .reduceByYield_all(X, YIELD, MAP, REDUCE, DONE,
                            ..., parallel=parallel)
+}
+
+REDUCEsampler <-
+    function(sampleSize=1000000, verbose=FALSE)
+{
+    tot <- 0L
+    function(x, y, ...) {
+        if (length(x) < sampleSize)
+            stop("expected yield of at least sampleSize=", sampleSize)
+
+        if (tot == 0L) {
+            ## first time through
+            tot <<- length(x)
+            x <- x[sample(length(x), sampleSize)]
+        }
+        yld_n <- length(y)
+        tot <<- tot + yld_n
+
+        if (verbose)
+            message("REDUCEsampler total=", tot)
+
+        keep <- rbinom(1L, min(sampleSize, yld_n), yld_n / tot)
+        i <- sample(sampleSize, keep)
+        j <- sample(yld_n, keep)
+        x[i] <- y[j]
+        x
+    }
 }

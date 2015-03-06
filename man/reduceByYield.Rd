@@ -1,5 +1,6 @@
 \name{reduceByYield}
 \alias{reduceByYield}
+\alias{REDUCEsampler}
 
 \title{
   Iterate through a BAM (or other) file, reducing output to a single result.
@@ -19,6 +20,8 @@
 reduceByYield(X, YIELD,  MAP = identity, REDUCE = `+`, 
               DONE = function(x) is.null(x) || length(x) == 0L, 
               ..., parallel = FALSE, iterate = TRUE, init)
+
+REDUCEsampler(sampleSize=1000000, verbose=FALSE)
 }
 
 \arguments{
@@ -70,19 +73,41 @@ reduceByYield(X, YIELD,  MAP = identity, REDUCE = `+`,
   \item{init}{(Optional) Initial value used for \code{REDUCE} when
     \code{iterate=TRUE}.}
 
+  \item{sampleSize}{Initial value used for \code{REDUCEsampler}.} 
+
+  \item{verbose}{logical(1) determines if total records sampled are
+    reported at each iteration. Applicable to \code{REDUCEsampler} only.}
+
 }
 
 \details{
- 
-  When \code{iterate=TRUE}, \code{REDUCE} requires 2 arguments and is
-  invoked with \code{init} and the output from the first call to
-  \code{MAP}. If \code{init} is missing, it operates on the first two
-  outputs from \code{MAP}.
 
-  When \code{iterate=FALSE}, \code{REDUCE} requires 1 argument and is
-  is invoked with a list containing a list containing all results from
-  \code{MAP}.
+  \describe{
+    \item{\code{reduceByYield}: }{
+      When \code{iterate=TRUE}, \code{REDUCE} requires 2 arguments and is
+      invoked with \code{init} and the output from the first call to
+      \code{MAP}. If \code{init} is missing, it operates on the first two
+      outputs from \code{MAP}.
 
+      When \code{iterate=FALSE}, \code{REDUCE} requires 1 argument and is
+      is invoked with a list containing a list containing all results from
+      \code{MAP}.
+    }
+    \item{\code{REDUCEsampler}:}{
+      \code{REDUCEsampler} creates a function that can be used as the 
+      \code{REDUCE} argument to \code{reduceByYield}.
+
+      Invoking \code{REDUCEsampler} with \code{sampleSize} returns a function
+      (call it \code{myfun}) that takes two arguments, \code{x} and \code{y}.
+      As with any iterative \code{REDUCE} function, \code{x} represents records
+      that have been yield'ed and \code{y} is the new chunk of records.
+      \code{myfun} samples records from consecutive chunks returned by the
+      \code{YIELD} function.  Sampling (and resampling) takes into consideration
+      the total number of records yield'ed at the time and the size of the new
+      chunk.  The number of sampled records returned is defined by
+      \code{sampleSize}.
+    }
+  }
 }
 \value{
 
@@ -166,6 +191,22 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   REDUCE <- `+`
   bplapply(bfl, FUN, YIELD=YIELD, MAP=MAP, REDUCE=REDUCE,
            parallel=FALSE, BPPARAM = bpparam) 
+
+
+  ## -----------------------------------------------------------------------
+  ## Draw a sample from a Bam file
+  ## -----------------------------------------------------------------------
+
+  fl <- system.file(package="Rsamtools", "extdata", "ex1.bam")
+  bf <- BamFile(fl, yieldSize=1000000)
+
+  yield <- function(x)
+      readGAlignmentsList(x, param=ScanBamParam(what=c( "qwidth", "mapq" ),
+                          tag=c( "NH", "HI")))
+  map <- identity
+
+  ## Samples records from successive pairs of aligned reads.
+  reduceByYield(bf, yield, map, REDUCEsampler(1000, TRUE))
 }
 }
 
