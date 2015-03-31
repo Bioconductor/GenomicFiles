@@ -17,7 +17,7 @@
 }
 
 \usage{
-reduceByYield(X, YIELD,  MAP = identity, REDUCE = `+`, 
+reduceByYield(X, YIELD,  MAP = identity, REDUCE = c, 
               DONE = function(x) is.null(x) || length(x) == 0L, 
               ..., parallel = FALSE, iterate = TRUE, init)
 
@@ -46,12 +46,10 @@ REDUCEsampler(sampleSize=1000000, verbose=FALSE)
     }}
 
   \item{REDUCE}{A function of one (\code{iterate=FALSE} or two
-    (\code{iterate=TRUE}) arguments, returning the reduction (e.g.,
-    addition) of the argument(s). If missing, \code{REDUCE} is \code{c}
-    (when \code{iterate=TRUE}) or \code{identity} when
-    (when \code{iterate=FALSE}).
+    (\code{iterate=TRUE}) arguments, returning the reduction (e.g., sum,
+    mean, concatenate) of the arguments.
     \itemize{
-      \item REDUCE(all.mapped, ...) ## iterate=FALSE
+      \item REDUCE(mapped, ...)     ## iterate=FALSE
       \item REDUCE(x, y, ...)       ## iterate=TRUE
     }}
 
@@ -187,13 +185,12 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   ## only (bplapply()).
   YIELD <- `readGAlignments`
   MAP <- function(value, ...) coverage(value)[["chr14"]] 
-  REDUCE <- `+`
-  bplapply(bfl, FUN, YIELD=YIELD, MAP=MAP, REDUCE=REDUCE,
+  bplapply(bfl, FUN, YIELD=YIELD, MAP=MAP, REDUCE=`+`,
            parallel=FALSE, BPPARAM = bpparam) 
 
 
   ## -----------------------------------------------------------------------
-  ## Draw a sample from a Bam file
+  ## Sample records from a Bam file
   ## -----------------------------------------------------------------------
 
   fl <- system.file(package="Rsamtools", "extdata", "ex1.bam")

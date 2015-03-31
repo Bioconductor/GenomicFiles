@@ -51,12 +51,10 @@
 
 ## REDUCE and init are never NULL; init can be missing
 reduceByYield <-
-    function(X, YIELD, MAP = identity, REDUCE = `+`, 
+    function(X, YIELD, MAP = identity, REDUCE = c, 
              DONE = function(x) is.null(x) || length(x) == 0L, 
              ..., parallel=FALSE, iterate=TRUE, init)
 {
-    if  (missing(REDUCE)) 
-        REDUCE <- if (iterate) c else identity
     if (!iterate && !missing(init))
         warning("'init' ignored when iterate == FALSE")
 
