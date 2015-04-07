@@ -17,7 +17,7 @@
 }
 
 \usage{
-reduceByYield(X, YIELD,  MAP = identity, REDUCE = c, 
+reduceByYield(X, YIELD,  MAP = identity, REDUCE = `+`, 
               DONE = function(x) is.null(x) || length(x) == 0L, 
               ..., parallel = FALSE, iterate = TRUE, init)
 

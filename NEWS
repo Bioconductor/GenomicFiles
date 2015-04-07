@@ -1,3 +1,31 @@
+CHANGES IN VERSION 1.4.0
+------------------------
+
+NEW FEATURES
+
+    o Add reduceFiles() and reduceRanges() 
+
+    o Add 'algorithm' argument to summarizeOverlaps methods
+
+    o Add REDUCEsampler() from Martin
+
+MODIFICATIONS
+
+    o Deprecate *FileViews classes
+
+    o Modify show() for GenomicFiles class
+
+    o Add 'Chunking' section to vignette 
+
+    o Update vignette figures
+
+    o Change REDUCE default from `+` to `c` for reduceByYield()
+
+BUG FIXES
+
+    o Bug fix for reduceByRange,GenomicFiles-method 
+
+
 CHANGES IN VERSION 1.2.0
 ------------------------
 
