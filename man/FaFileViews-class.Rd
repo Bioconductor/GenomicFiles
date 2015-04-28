@@ -7,11 +7,12 @@
 \alias{FaFileViews,character-method}
 \alias{FaFileViews,FaFileList-method}
 \alias{FaFileViews,missing-method}
+\alias{FaFileViews,ANY-method}
 
 \title{Views into a set of Fasta files}
 
 \description{
-  This class is deprecated. Use \code{GenomicFiles} instead.
+  This class is defunct. Use \code{GenomicFiles} instead.
   Use \code{FaFileViews()} to reference a set of disk-based Fasta files to be
   processed
 }
@@ -147,10 +148,7 @@
 }
 
 \examples{
-fa <- system.file("extdata", "ce2dict1.fa", package="Rsamtools",
-                  mustWork=TRUE)
-ffv <- FaFileViews(c(fa, fa), fileRange=scanFaIndex(fa))
-ffv
+## See ?GenomicFiles.
 }
 
 \keyword{classes}

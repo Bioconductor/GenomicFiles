@@ -16,20 +16,6 @@ setClass("GenomicFileViews",
     validity=.validity)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity 
-###
-
-setMethod(.validity, "GenomicFileViews", 
-    function(object) 
-{
-        msg <- NULL
-        if (length(fileList(object)) != nrow(fileSample(object)))
-            msg <- c(msg,
-            "length(fileList(object)) != nrow(fileSample(object))")
-        if (is.null(msg)) TRUE else msg
-})
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters and Setters
 ###
 
@@ -101,39 +87,23 @@ setReplaceMethod("dimnames", "GenomicFileViews",
 ### Subsetting
 ###
 
+.msg_GFV <- paste0("'GenomicFileViews' objects are defunct. ",
+              "Use 'GenomicFiles()' instead.")
+
 setMethod("[", c("GenomicFileViews", "ANY", "missing"),
     function(x, i, j, ..., drop=TRUE)
-        initialize(x, fileRange=fileRange(x)[i,])
+        .Defunct(msg=.msg_GFV)
 )
 
 setMethod("[", c("GenomicFileViews", "missing", "ANY"),
     function(x, i, j, ..., drop=TRUE)
-{
-    if (is.character(j))
-        j <- match(j, colnames(x))
-    if (any(is.na(j)))
-        stop("subscript 'j' out of bounds")
-    initialize(x, 
-               fileList=fileList(x)[j],
-               fileSample=fileSample(x)[j,,drop=FALSE])
-})
+        .Defunct(msg=.msg_GFV)
+)
 
 setMethod("[", c("GenomicFileViews", "ANY", "ANY"),
     function(x, i, j, ..., drop=TRUE)
-{
-    if (is.character(i))
-        j <- match(i, rownames(x))
-    if (is.character(j))
-        j <- match(j, colnames(x))
-    if (any(is.na(i)))
-        stop("subscript 'i' out of bounds")
-    if (any(is.na(j)))
-        stop("subscript 'j' out of bounds")
-    initialize(x, 
-        fileRange=fileRange(x)[i,],
-        fileList=fileList(x)[j],
-        fileSample=fileSample(x)[j,,drop=FALSE])
-})
+        .Defunct(msg=.msg_GFV)
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Show
@@ -141,11 +111,5 @@ setMethod("[", c("GenomicFileViews", "ANY", "ANY"),
 
 setMethod(show, "GenomicFileViews", 
     function(object) 
-{
-    cat(class(object), "dim:",
-        paste(dim(object), c("ranges", "samples"), collapse=" x "),
-        "\n")
-    cat("names:", BiocGenerics:::selectSome(names(object)), "\n")
-    cat("detail: use fileList(), fileSample(), fileRange(), ...",
-        "\n")
-})
+        .Defunct(msg=.msg_GFV)
+)

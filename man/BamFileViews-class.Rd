@@ -7,6 +7,7 @@
 \alias{BamFileViews,character-method}
 \alias{BamFileViews,BamFileList-method}
 \alias{BamFileViews,missing-method}
+\alias{BamFileViews,ANY-method}
 
 % Methods:
 \alias{countBam,BamFileViews-method}
@@ -17,7 +18,7 @@
 \title{Views into a set of BAM files}
 
 \description{
-  This class is deprecated. Use \code{GenomicFiles} instead.
+  This class is defunct. Use \code{GenomicFiles} instead.
   Use \code{BamFileViews()} to reference a set of disk-based BAM files to be
   processed 
 }
@@ -171,16 +172,7 @@
 }
 
 \examples{
-library(RNAseqData.HNRNPC.bam.chr14)
-fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
-gr <- GRanges("chr14", IRanges(1:10*5, width = 2))
-bfv <- BamFileViews(fls, fileRange = gr)
-
-## Dimensions of the object are ranges by samples (files).
-bfv 
-bfv[1:5,]
-fileList(bfv)
-fileRange(bfv)
+## See ?GenomicFiles.
 }
 
 \keyword{classes}

@@ -47,14 +47,14 @@
       type register created at load time. The point of the register
       is for discovery of file type (class) by file extension.
       These are List-type classes (e.g., BamFileList) that occupy
-      the \code{fileList} slot of a GenomicFileViews class
+      the \code{fileList} slot of a GenomicFiles class
       (e.g., BamFileViews).
 
       Each List class entry in the register is associated with
       (1) a regular expression that identifies the file extension,
       (2) a class and (3) the package where the class is defined.
       At load time the register is populated with classes known to
-      GenomicFileViews. New classes / file types can be added to
+      GenomicFiles. New classes / file types can be added to
       the register with \code{registerFileType} by providing
       these three pieces of information.
     }
@@ -81,7 +81,7 @@
 \examples{
 
 ## At load time the registry is populated with file types
-## known to GenomicFileViews.
+## known to GenomicFiles.
 sapply(as.list(.fileTypeRegistry), "[", "type")
 
 ## Add a new class to the file register.

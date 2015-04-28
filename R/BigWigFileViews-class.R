@@ -5,19 +5,6 @@
 setClass("BigWigFileViews", contains="GenomicFileViews")
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity
-###
-
-setMethod(.validity, "BigWigFileViews", 
-    function(object) {
-        msg <- NULL
-        if (!is(fileList(object), "BigWigFileList"))
-            msg <- "'fileList' must be a 'BigWigFileList'"
-        if (is.null(msg)) TRUE else msg
-    }
-)
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Generic 
 ###
 
@@ -36,6 +23,9 @@ setGeneric("BigWigFileViews",
 ### Constructors 
 ###
 
+.msg_BWFV <- paste0("'BigWigFileViews' objects are defunct. ",
+                    "Use 'GenomicFiles()' instead.")
+
 setMethod(BigWigFileViews, "missing", 
           function(fileList,
                    fileSample=DataFrame(row.names=
@@ -45,10 +35,7 @@ setMethod(BigWigFileViews, "missing",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
-    msg <- paste0("'BigWigFileViews()' is deprecated. ",
-                  "Use 'GenomicFiles()' instead.")
-    .Deprecated(msg=msg)
-    stop("'fileList' must be character() or BigWigFileList")
+    .Defunct(msg=.msg_BWFV)
 })
 
 setMethod(BigWigFileViews, "BigWigFileList", 
@@ -60,14 +47,7 @@ setMethod(BigWigFileViews, "BigWigFileList",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
-    msg <- paste0("'BigWigFileViews()' is deprecated. ",
-                  "Use 'GenomicFiles()' instead.")
-    .Deprecated(msg=msg)
-    new("BigWigFileViews", ..., 
-        fileList=fileList,
-        fileSample=fileSample, fileRange=fileRange,
-        fileExperiment=fileExperiment, yieldSize=yieldSize, 
-        .views_on_file=.views_on_file)
+    .Defunct(msg=.msg_BWFV)
 })
 
 setMethod(BigWigFileViews, "character", 
@@ -79,14 +59,7 @@ setMethod(BigWigFileViews, "character",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
-    msg <- paste0("'BigWigFileViews()' is deprecated. ",
-                  "Use 'GenomicFiles()' instead.")
-    .Deprecated(msg=msg)
-    new("BigWigFileViews", ..., 
-        fileList=BigWigFileList(fileList),
-        fileSample=fileSample, fileRange=fileRange,
-        fileExperiment=fileExperiment, yieldSize=yieldSize, 
-        .views_on_file=.views_on_file)
+    .Defunct(msg=.msg_BWFV)
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -102,39 +75,10 @@ setGeneric("mean", signature="x")
 
 setMethod(coverage, "BigWigFileViews",
     function(x, ..., by="file", summarize=TRUE, as="RleList")
-{
-    MAPPER <- function(RANGE, FILE, ...) {
-        if (as == "RleList") 
-            import(FILE, which=RANGE, as=as)[RANGE]
-        else 
-            import(FILE, which=RANGE, as=as)
-    }
-
-    ## NOTE: Data in 'assays' of an SE object must be
-    ##       organized as ranges by files. Currently
-    ##       'assays' can hold a matrix of list elements
-    ##       in the proper dimensions of ranges x files.
-    ##       Specifying 'by=range' requires refactoring of
-    ##       the list to fit in 'assays'. For this simple
-    ##       coverage method 'by=range' and 'by=file' give the
-    ##       same results. Choose 'by=file' which is faster.
-    if (summarize) { 
-        .summarizeView(x, MAPPER, ..., BY="file", as=as)
-    } else {
-        .reduce(fileRange(x), fileList(x), MAPPER, ..., BY=by, as=as)
-    }
-})
+        .Defunct(msg=.msg_BWFV)
+)
 
 setMethod(summary, "BigWigFileViews",
     function(object, ..., by="file", summarize=TRUE) 
-{
-    MAPPER <- function(range, file, ...) {
-        sumres <- summary(file, which=range, asRangedData=TRUE, ...)
-        do.call(c, sumres)$score
-    }
-    if (summarize) 
-        .summarizeView(object, MAPPER, ..., BY=by)
-    else 
-        .reduce(fileRange(object), fileList(object), 
-                MAPPER, ..., BY=by)
-})
+        .Defunct(msg=.msg_BWFV)
+)

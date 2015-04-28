@@ -15,7 +15,7 @@
 \title{Views into a set of BigWig files}
 
 \description{
-  This class is deprecated. Use \code{GenomicFiles} instead.
+  This class is defunct. Use \code{GenomicFiles} instead.
   Use \code{BigWigFileViews()} to reference a set of disk-based BigWig files 
   to be processed (e.g., queried using \code{\link[IRanges]{coverage}}) as 
   a single \sQuote{experiment}.
@@ -173,61 +173,8 @@
 
 
 \examples{
-if (.Platform$OS.type != "windows") {
-
-  register(SerialParam())
-
-  ## ---------------------------------------------------------------------
-  ## BigWigFileView Objects
-  ## ---------------------------------------------------------------------
-  fl <- system.file("tests", "test.bw", package = "rtracklayer")
-  gr <- GRanges(Rle(c("chr2", "chr19"), c(4, 2)),
-                IRanges(1 + c(200, 250, 500, 550, 1450, 1750), width=100))
-  bwfv <- BigWigFileViews(c(fl, fl), fileRange=gr)
- 
-  ## Object dimensions are range by sample (files).
-  bwfv 
-  fileList(bwfv)
-  fileRange(bwfv)
- 
-  ## Subset by range(s) or sample(s).
-  bwfv[1:3,]
-  bwfv[1:3,2]
-
-  ## ---------------------------------------------------------------------
-  ## coverage()
-  ## ---------------------------------------------------------------------
-  ## coverage() on a 'BigWigFileViews' object returns coverage for all 
-  ## files in fileList() for the ranges in fileRange().
- 
-  ## When 'summarize = FALSE' results are returned as a list. The
-  ## 'by' argument specifies grouping by range or by file.
-  cv1 <- coverage(bwfv, by = "file", summarize = FALSE)
-  length(cv1)
-  elementLengths(cv1)
- 
-  cv2 <- coverage(bwfv, by = "range", summarize = FALSE)
-  length(cv2)
-  elementLengths(cv2)
- 
-  ## When 'summarize = TRUE' output is a 'SummarizedExperiment'.
-  cv3 <- coverage(bwfv, summarize = TRUE)
-  assays(cv3)
- 
-  ## FIXME: improve show method for 'Lists' in a matrix
-  ## FIXME: assays as 'List' should respect 'withDimnames'
-  assays(cv3, withDimnames=TRUE)[[1]]
- 
-  ## ---------------------------------------------------------------------
-  ## summary() 
-  ## ---------------------------------------------------------------------
-  ## summary() on a 'BigWigFileViews' object returns the 'type' statistic
-  ## for all files in fileList() for the ranges in fileRange().
-
-  sm1 <- summary(bwfv, type = "mean", by = "file", summarize = TRUE) 
-  sm2 <- summary(bwfv, type = "max", by = "range", summarize = FALSE) 
+## See ?GenomicFiles.
 } 
-}
 
 \keyword{classes}
 \keyword{methods}

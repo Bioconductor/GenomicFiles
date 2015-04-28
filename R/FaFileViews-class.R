@@ -23,7 +23,7 @@ setGeneric("FaFileViews",
 ### Constructors
 ###
 
-setMethod(FaFileViews, "missing", 
+setMethod(FaFileViews, "ANY", 
           function(fileList,
                    fileSample=DataFrame(row.names=
                      make.unique(basename(path(fileList)))),
@@ -32,46 +32,7 @@ setMethod(FaFileViews, "missing",
                    yieldSize=NA_integer_,
                    .views_on_file=new.env(parent=emptyenv()), ...)
 {
-    msg <- paste0("'FaFileViews()' is deprecated. ",
+    .msg_FFV <- paste0("'FaFileViews()' is defunct. ",
                   "Use 'GenomicFiles()' instead.")
-    .Deprecated(msg=msg)
-    stop("'fileList' must be character() or FaFileList")
-})
-
-setMethod(FaFileViews, "FaFileList", 
-          function(fileList,
-                   fileSample=DataFrame(row.names=
-                     make.unique(basename(path(fileList)))),
-                   fileRange=GRanges(),
-                   fileExperiment=list(),
-                   yieldSize=NA_integer_,
-                   .views_on_file=new.env(parent=emptyenv()), ...)
-{
-    msg <- paste0("'FaFileViews()' is deprecated. ",
-                  "Use 'GenomicFiles()' instead.")
-    .Deprecated(msg=msg)
-    new("FaFileViews", ...,
-        fileList=fileList,
-        fileSample=fileSample, fileRange=fileRange,
-        fileExperiment=fileExperiment, yieldSize=yieldSize, 
-        .views_on_file=.views_on_file)
-})
-
-setMethod(FaFileViews, "character", 
-          function(fileList,
-                   fileSample=DataFrame(row.names=
-                     make.unique(basename(fileList))),
-                   fileRange=GRanges(),
-                   fileExperiment=list(),
-                   yieldSize=NA_integer_,
-                   .views_on_file=new.env(parent=emptyenv()), ...)
-{
-    msg <- paste0("'FaFileViews()' is deprecated. ",
-                  "Use 'GenomicFiles()' instead.")
-    .Deprecated(msg=msg)
-    new("FaFileViews", ...,
-        fileList=FaFileList(lapply(fileList, FaFile, ...)),
-        fileSample=fileSample, fileRange=fileRange, 
-        fileExperiment=fileExperiment, yieldSize=yieldSize, 
-        .views_on_file=.views_on_file)
+    .Defunct(msg=.msg_FFV)
 })
