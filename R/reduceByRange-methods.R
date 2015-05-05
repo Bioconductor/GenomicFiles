@@ -56,7 +56,7 @@ setMethod(reduceByRange, c("GRangesList", "ANY"),
             lst <- bplapply(seq_along(files), 
                 function(i) sapply(lst, "[", i))
             SummarizedExperiment(SimpleList(list(data=simplify2array(lst))), 
-                                 rowData=ranges,
+                                 rowRanges=ranges,
                                  colData=DataFrame(filePath=files))
         } else {
             lst
@@ -75,7 +75,7 @@ setMethod(reduceByRange, c("GRanges", "ANY"),
             lst <- bplapply(seq_along(files), 
                 function(i) sapply(lst, "[", i))
             SummarizedExperiment(SimpleList(list(data=simplify2array(lst))), 
-                                 rowData=ranges,
+                                 rowRanges=ranges,
                                  colData=DataFrame(filePath=files))
         } else {
             lst

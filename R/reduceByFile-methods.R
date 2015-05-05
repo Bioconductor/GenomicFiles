@@ -55,7 +55,7 @@ setMethod(reduceByFile, c("GRangesList", "ANY"),
             warning("'summarize' set to FALSE when REDUCE is provided")
         if (summarize && missing(REDUCE))
             SummarizedExperiment(SimpleList(list(data=simplify2array(lst))), 
-                                 rowData=ranges, 
+                                 rowRanges=ranges, 
                                  colData=DataFrame(filePath=files))
         else
             lst
@@ -71,7 +71,7 @@ setMethod(reduceByFile, c("GRanges", "ANY"),
             warning("'summarize' set to FALSE when REDUCE is provided")
         if (summarize && missing(REDUCE))
             SummarizedExperiment(SimpleList(list(data=simplify2array(lst))), 
-                                 rowData=ranges,
+                                 rowRanges=ranges,
                                  colData=DataFrame(filePath=files))
         else
             lst

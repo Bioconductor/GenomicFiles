@@ -128,7 +128,7 @@ The \Rcode{GenomicFiles} class is a matrix-like container where rows represent
 ranges of interest and columns represent files. The object can be subset on
 files and / or ranges to perform different experimental runs. The class is a
 lightweight version of the \Rcode{SummarizedExperiment} class. It has slots for
-\Rcode{files}, \Rcode{rowData}, \Rcode{colData} and \Rcode{exptData} but does
+\Rcode{files}, \Rcode{rowRanges}, \Rcode{colData} and \Rcode{exptData} but does
 not contain the \Rcode{assays} slot.
 
 <<overview-GenomicFiles>>=

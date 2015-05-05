@@ -28,6 +28,6 @@
     } else {
         assay <- simplify2array(assay)
     }
-    SummarizedExperiment(assay, rowData=fileRange(X),
+    SummarizedExperiment(assay, rowRanges=fileRange(X),
                          colData=DataFrame(filePath=path(fileList(X))))
 }
