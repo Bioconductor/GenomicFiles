@@ -1,3 +1,10 @@
+CHANGES IN VERSION 1.6.0
+------------------------
+
+BUG FIXES
+
+    o dimnames<- correctly updates dim names
+
 CHANGES IN VERSION 1.4.0
 ------------------------
 

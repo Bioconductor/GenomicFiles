@@ -46,8 +46,10 @@ setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "character"),
    function(rowData, files, colData=DataFrame(), exptData=SimpleList(), ...)
 {
     if (length(files)) {
-        if (is.null(nms <- names(files)))
+        if (is.null(nms <- names(files))) {
             nms <- basename(files)
+            names(files) <- nms
+        }
         if (missing(colData))
             colData <- DataFrame(row.names=nms)
         else
@@ -96,6 +98,7 @@ setMethod(GenomicFiles, c("missing", "missing"),
 ###
 
 setGeneric("files", function(x, ...) standardGeneric("files"))
+
 setMethod("files", "GenomicFiles",
     function(x, ...)
 {
@@ -104,14 +107,15 @@ setMethod("files", "GenomicFiles",
 
 setGeneric("files<-",
     function(x, ..., value) standardGeneric("files<-"))
+
 setReplaceMethod("files", c("GenomicFiles", "character"),
     function(x, ..., value)
 {
     if (is.null(nms <- names(value)))
-        nms <- value
-    rownames(colData(x)) <- nms 
-    slot(x, "files") <- value
-    x 
+        nms <- basename(value)
+    colData <- colData(x)
+    rownames(colData) <- nms
+    initialize(x, colData=colData, files=value)
 })
 
 setReplaceMethod("files", c("GenomicFiles", "List"),
@@ -119,9 +123,9 @@ setReplaceMethod("files", c("GenomicFiles", "List"),
 {
     if (is.null(nms <- names(value)))
         nms <- value
-    rownames(colData(x)) <- nms 
-    slot(x, "files") <- value
-    x 
+    colData <- colData(x)
+    rownames(colData) <- nms
+    initialize(x, colData=colData, files=value)
 })
 
 setMethod(rowRanges, "GenomicFiles",
@@ -130,8 +134,7 @@ setMethod(rowRanges, "GenomicFiles",
 setReplaceMethod("rowRanges", c("GenomicFiles", "GenomicRangesORGRangesList"),
     function(x, ..., value)
 {
-    slot(x, "rowData") <- value
-    x
+    initialize(x, rowData=value)
 })
 
 setMethod(colData, "GenomicFiles",
@@ -142,11 +145,9 @@ setReplaceMethod("colData", c("GenomicFiles", "DataFrame"),
 {
     if (length(files(x)) != nrow(value))
         stop("'length(files(x))' must equal 'nrow(value)'")
-    if (is.null(nms <- names(files(x))))
-        nms <- files(x)
-    rownames(value) <- nms 
-    slot(x, "colData") <- value
-    x
+    files <- files(x)
+    names(files) <- rownames(value)
+    initialize(x, colData=value, files=files)
 })
 
 setMethod(exptData, "GenomicFiles",
@@ -155,15 +156,13 @@ setMethod(exptData, "GenomicFiles",
 setReplaceMethod("exptData", c("GenomicFiles", "SimpleList"),
     function(x, ..., value)
 {
-    slot(x, "exptData") <- value
-    x 
+    initialize(x, exptData=value)
 })
 
 setReplaceMethod("exptData", c("GenomicFiles", "list"),
     function(x, ..., value)
 {
-    slot(x, "exptData") <- SimpleList(value)
-    x 
+    initialize(x, exptData=SimpleList(value))
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,9 +186,14 @@ setReplaceMethod("dimnames", c("GenomicFiles", "list"),
 {
     if (length(value) != 2)
         stop("'value' must be a list of length 2")
-    names(rowRanges(x)) <- value[[1]]
-    rownames(colData(x)) <- value[[2]]
-    x
+
+    rowRanges <- rowRanges(x)
+    colData <- colData(x)
+    files <- files(x)
+
+    names(rowRanges) <- value[[1]]
+    names(files) <- rownames(colData) <- value[[2]]
+    initialize(x, files=files, rowData=rowRanges, colData=colData)
 })
 
 setReplaceMethod("dimnames", c("GenomicFiles", "NULL"),
