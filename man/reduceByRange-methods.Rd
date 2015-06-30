@@ -138,7 +138,7 @@ reduceRanges(ranges, files, MAP, REDUCE, ..., init)
       the value from the final invocation of \code{REDUCE}. When
       \code{summarize=TRUE} output is a \code{SummarizedExperiment}.
       When \code{ranges} is a \code{GenomicFiles} object data from 
-      \code{rowData}, \code{colData} and \code{exptData} are transferred 
+      \code{rowRanges}, \code{colData} and \code{metadata} are transferred 
       to the \code{SummarizedExperiment}.
     }
     \item{reduceRanges:}{

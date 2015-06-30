@@ -95,7 +95,7 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., init)
 
     When \code{REDUCE} is provided \code{summarize} is ignored
     (i.e., set to FALSE). A \code{SummarizedExperiment} requires the number 
-    of rows in \code{rowData} and \code{assays} to match. Because \code{REDUCE} 
+    of rows in \code{rowRanges} and \code{assays} to match. Because \code{REDUCE} 
     collapses the data across ranges, the dimension of the result no longer
     matches that of the original ranges.
   }
@@ -136,7 +136,7 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., init)
       the value from the final invocation of \code{REDUCE}. When
       \code{summarize=TRUE} output is a \code{SummarizedExperiment}.
       When \code{ranges} is a \code{GenomicFiles} object data from 
-      \code{rowData}, \code{colData} and \code{exptData} are transferred 
+      \code{rowRanges}, \code{colData} and \code{metadata} are transferred 
       to the \code{SummarizedExperiment}.
     }
     \item{reduceFiles:}{
@@ -218,7 +218,7 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   ## object.
   colData <- DataFrame(method=rep("RNASeq", length(fls)),
                        format=rep("bam", length(fls)))
-  gf <- GenomicFiles(files=fls, rowData=gr, colData=colData)
+  gf <- GenomicFiles(files=fls, rowRanges=gr, colData=colData)
   gf
   
   ## Subset on ranges or files for different experimental runs.
@@ -231,7 +231,7 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   se <- reduceByFile(gf, MAP=MAP, summarize=TRUE)
   se
   
-  ## Data from the rowData, colData and exptData slots in the
+  ## Data from the rowRanges, colData and metadata slots in the
   ## GenomicFiles are transferred to the SummarizedExperiment.
   colData(se)
   

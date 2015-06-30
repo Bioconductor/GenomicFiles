@@ -5,14 +5,14 @@
 setGeneric(".validity", function(object) standardGeneric(".validity"))
 
 setClass("GenomicFiles",
+    contains="RangedSummarizedExperiment",
     representation(
-        files="ANY",
-        rowData="GenomicRangesORGRangesList",
-        colData="DataFrame",
-        exptData="SimpleList"),
+        files="ANY"
+    ),
     prototype(
         files=character()),
-    validity=.validity)
+    validity=.validity
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,16 +34,20 @@ setMethod(.validity, "GenomicFiles",
 ###
 
 setGeneric("GenomicFiles",
-    function(rowData, files, ...) 
-        standardGeneric("GenomicFiles"),
-    signature=c("rowData", "files"))
+    function(rowRanges, files, ...) standardGeneric("GenomicFiles"),
+    signature=c("rowRanges", "files"))
+
+### Combine the new parallel slots with those of the parent class.
+setMethod("parallelSlotNames", "GenomicFiles",
+    function(x) c("files", callNextMethod())
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors 
 ###
 
 setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "character"),
-   function(rowData, files, colData=DataFrame(), exptData=SimpleList(), ...)
+   function(rowRanges, files, colData=DataFrame(), metadata=list(), ...)
 {
     if (length(files)) {
         if (is.null(nms <- names(files))) {
@@ -55,12 +59,14 @@ setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "character"),
         else
             rownames(colData) <- nms 
     }
-    new("GenomicFiles", rowData=rowData, files=files, 
-        colData=colData, exptData=exptData)
+    new("GenomicFiles", rowRanges=rowRanges, 
+                        files=files, 
+                        colData=colData, 
+                        metadata=metadata, ...)
 })
 
 setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "List"),
-   function(rowData, files, colData=DataFrame(), exptData=SimpleList(), ...)
+   function(rowRanges, files, colData=DataFrame(), metadata=list(), ...)
 {
     if (length(files)) {
         if (is.null(nms <- names(files)))
@@ -71,26 +77,28 @@ setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "List"),
         else
             rownames(colData) <- basename(nms)
     }
-    new("GenomicFiles", rowData=rowData, files=files, 
-        colData=colData, exptData=exptData)
+    new("GenomicFiles", rowRanges=rowRanges, 
+                        files=files, 
+                        colData=colData, 
+                        metadata=metadata, ...)
 })
 
 setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "list"),
-    function(rowData, files, ...)
+    function(rowRanges, files, ...)
 {
-    GenomicFiles(rowData, as(files, "List"), ...)
+    GenomicFiles(rowRanges, as(files, "List"), ...)
 })
 
 setMethod(GenomicFiles, c("missing", "ANY"),
-    function(rowData, files, ...)
+    function(rowRanges, files, ...)
 {
     GenomicFiles(GRanges(), files, ...)
 })
 
 setMethod(GenomicFiles, c("missing", "missing"),
-    function(rowData, files, ...)
+    function(rowRanges, files, ...)
 {
-    GenomicFiles(DataFrame(), character(), ...)
+    GenomicFiles(GRanges(), character(), ...)
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -128,18 +136,6 @@ setReplaceMethod("files", c("GenomicFiles", "List"),
     initialize(x, colData=colData, files=value)
 })
 
-setMethod(rowRanges, "GenomicFiles",
-    function(x, ...) slot(x, "rowData"))
-
-setReplaceMethod("rowRanges", c("GenomicFiles", "GenomicRangesORGRangesList"),
-    function(x, ..., value)
-{
-    initialize(x, rowData=value)
-})
-
-setMethod(colData, "GenomicFiles",
-    function(x, ...) slot(x, "colData"))
-
 setReplaceMethod("colData", c("GenomicFiles", "DataFrame"),
     function(x, ..., value)
 {
@@ -150,66 +146,13 @@ setReplaceMethod("colData", c("GenomicFiles", "DataFrame"),
     initialize(x, colData=value, files=files)
 })
 
-setMethod(exptData, "GenomicFiles",
-    function(x, ...) slot(x, "exptData"))
-
-setReplaceMethod("exptData", c("GenomicFiles", "SimpleList"),
-    function(x, ..., value)
-{
-    initialize(x, exptData=value)
-})
-
-setReplaceMethod("exptData", c("GenomicFiles", "list"),
-    function(x, ..., value)
-{
-    initialize(x, exptData=SimpleList(value))
-})
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### dim, dimnames
-###
-
-setMethod(dim, "GenomicFiles",
-    function(x)
-{
-    c(length(rowRanges(x)), nrow(colData(x)))
-})
-
-setMethod(dimnames, "GenomicFiles",
-    function(x)
-{
-    list(names(rowRanges(x)), rownames(colData(x)))
-})
-
-setReplaceMethod("dimnames", c("GenomicFiles", "list"),
-    function(x, value)
-{
-    if (length(value) != 2)
-        stop("'value' must be a list of length 2")
-
-    rowRanges <- rowRanges(x)
-    colData <- colData(x)
-    files <- files(x)
-
-    names(rowRanges) <- value[[1]]
-    names(files) <- rownames(colData) <- value[[2]]
-    initialize(x, files=files, rowData=rowRanges, colData=colData)
-})
-
-setReplaceMethod("dimnames", c("GenomicFiles", "NULL"),
-    function(x, value)
-{
-    dimnames(x) <- list(NULL, NULL)
-    x
-})
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
 ###
 
 setMethod("[", c("GenomicFiles", "ANY", "missing"),
     function(x, i, j, ..., drop=TRUE)
-        initialize(x, rowData=rowRanges(x)[i,])
+        initialize(x, rowRanges=rowRanges(x)[i,])
 )
 
 setMethod("[", c("GenomicFiles", "missing", "ANY"),
@@ -237,7 +180,7 @@ setMethod("[", c("GenomicFiles", "ANY", "ANY"),
         stop("subscript 'j' out of bounds")
     initialize(x, 
         files=files(x)[j],
-        rowData=rowRanges(x)[i,],
+        rowRanges=rowRanges(x)[i,],
         colData=colData(x)[j,,drop=FALSE])
 })
 

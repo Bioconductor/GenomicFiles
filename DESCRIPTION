@@ -8,12 +8,11 @@ Version: 1.5.3
 Author: Valerie Obenchain, Michael Love, Martin Morgan 
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, DataImport, Sequencing, Coverage
-Depends: R (>= 3.1.0), methods, BiocGenerics (>= 0.11.2),
-        S4Vectors (>= 0.4.0), IRanges(>= 2.0.0), 
-	Rsamtools (>= 1.17.29), GenomicRanges (>= 1.19.43), 
-        rtracklayer (>= 1.25.3), BiocParallel (>= 1.1.0)
-Imports: GenomicAlignments
-Suggests: BiocStyle, RUnit, genefilter, deepSNV, 
+Depends: R (>= 3.1.0), methods, BiocGenerics (>= 0.11.2), GenomicRanges,
+        SummarizedExperiment, BiocParallel (>= 1.1.0),
+	Rsamtools (>= 1.17.29), rtracklayer (>= 1.25.3)
+Imports: GenomicAlignments, IRanges, S4Vectors
+Suggests: BiocStyle, RUnit, genefilter, deepSNV,
 	RNAseqData.HNRNPC.bam.chr14, Biostrings
 License: Artistic-2.0
 Collate: GenomicFiles-class.R

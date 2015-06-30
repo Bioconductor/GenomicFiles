@@ -1,11 +1,12 @@
 import(methods)
 import(BiocGenerics)
-import(S4Vectors)
-import(IRanges)
-import(GenomicRanges)
+import(SummarizedExperiment)
 import(Rsamtools)
 import(rtracklayer)
 import(BiocParallel)
+import(GenomicRanges)
+import(IRanges)
+import(S4Vectors)
 importFrom(GenomicAlignments, summarizeOverlaps, Union)
 importMethodsFrom(GenomicAlignments, summarizeOverlaps)
 
@@ -26,8 +27,7 @@ exportClasses(
 ###
 
 exportMethods(
-    "[", dim, names, show, yieldSize, 
-    colData, 'colData<-', rowRanges, 'rowRanges', exptData,'exptData',
+    "[", dim, names, show, yieldSize, 'colData<-',
     countBam, scanBam, summarizeOverlaps,
     coverage, summary
 )

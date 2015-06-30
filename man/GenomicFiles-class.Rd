@@ -19,18 +19,9 @@
 \alias{files,GenomicFiles-method}
 \alias{files<-,GenomicFiles,character-method}
 \alias{files<-,GenomicFiles,List-method}
-\alias{colData,GenomicFiles-method}
 \alias{colData<-,GenomicFiles,DataFrame-method}
-\alias{rowRanges,GenomicFiles-method}
-\alias{rowRanges<-,GenomicFiles,GRangesORGRangesList-method}
-\alias{exptData,GenomicFiles-method}
-\alias{exptData<-,GenomicFiles,DataFrame-method}
 
 % Methods:
-\alias{dim,GenomicFiles-method}
-\alias{dimnames,GenomicFiles-method}
-\alias{dimnames<-,GenomicFiles,NULL-method}
-\alias{dimnames<-,GenomicFiles,list-method}
 \alias{[,GenomicFiles,ANY,missing-method}
 \alias{[,GenomicFiles,missing,ANY-method}
 \alias{[,GenomicFiles,ANY,ANY-method}
@@ -42,22 +33,23 @@
 \description{
   The \code{GenomicFiles} class is a matrix-like container where rows
   represent ranges of interest and columns represent files. The class 
-  is designed for byFile or byRange queries and can be thought of as 
-  a precursor (or skeleton) of the \code{SummarizedExperiment} 
-  class.
-
-  \code{GenomicFiles} has slots for \code{files}, \code{rowData}, 
-  \code{colData} and \code{exptData}. Unlike \code{SummarizedExperiment}, 
-  \code{GenomicFiles} does not contain an \code{assays} slot.
+  is designed for byFile or byRange queries.
 }
 
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{GenomicFiles(rowData, files, colData=DataFrame(),
-                         exptData=SimpleList(), ...)}:
+      \code{GenomicFiles(rowRanges, files, colData=DataFrame(),
+                         metadata=list(), ...)}:
     }
   }
+}
+
+\section{Details}{
+    \code{GenomicFiles} inherits from the \code{RangedSummarizedExperiment}
+    class in the \code{SummarizedExperiment} package. Currently, no use
+    is made of the \code{elementMetadat} and \code{assays} slots. This may
+    change in the future.
 }
 
 \section{Accessors}{
@@ -65,7 +57,7 @@
 
   \describe{
     \item{rowRanges, rowRanges(x) <- value}{
-      Get or set the rowData on \code{x}. \code{value} can be
+      Get or set the rowRanges on \code{x}. \code{value} can be
       a \code{GRanges} or \code{GRangesList} representing ranges or indices 
       defined on the spaces (position) of the files.
     }
@@ -80,8 +72,8 @@
       of rows must match the number of files. Row names, if present, 
       become the column names of the \code{GenomicFiles}.
     }
-    \item{exptData, exptData(x) <- value}{
-      Get or set the exptData on \code{x}. \code{value} must be
+    \item{metadata, metadata(x) <- value}{
+      Get or set the metadata on \code{x}. \code{value} must be
       a SimpleList of arbitrary content describing the overall 
       experiment.
     }
@@ -102,12 +94,12 @@
       Compactly display the object.
     }
     \item{reduceByFile}{
-     Extract, manipulate and combine data defined in \code{rowData} 
+     Extract, manipulate and combine data defined in \code{rowRanges} 
      within the files specified in \code{files}. See ?\code{reduceByFile} 
      for details.
     }
     \item{reduceByRange}{
-     Extract, manipulate and combine data defined in \code{rowData} 
+     Extract, manipulate and combine data defined in \code{rowRanges} 
      across the files specified in \code{files}. See ?\code{reduceByRange} 
      for details.
     }
@@ -117,12 +109,13 @@
 \seealso{
   \itemize{
     \item \link{reduceByFile} and \link{reduceByRange} methods.
+    \item \link[SummarizedExperiment]{SummarizedExperiment} objects in the 
+          \pkg{SummarizedExperiment} package.
   }
 }
 
 \author{
-  Martin Morgan <mtmorgan@fhcrc.org> and 
-  Valerie Obenchain <vobencha@fhcrc.org>
+  Martin Morgan and Valerie Obenchain
 }
 
 \examples{
@@ -134,7 +127,7 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
                   format=rep("bam", length(fl)))
 
   ## Construct an instance of the class:
-  gf <- GenomicFiles(files = fl, rowData = rd, colData = cd) 
+  gf <- GenomicFiles(files = fl, rowRanges = rd, colData = cd) 
   gf
 
   ## Subset on ranges or files for different experimental runs.
@@ -153,7 +146,7 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   se <- reduceByRange(gf, MAP=MAP, summarize=TRUE)
   se
  
-  ## Data from the rowData, colData and exptData slots in the
+  ## Data from the rowRanges, colData and metadata slots in the
   ## GenomicFiles are transferred to the SummarizedExperiment.
   colData(se)
  
