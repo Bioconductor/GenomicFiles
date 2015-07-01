@@ -59,10 +59,10 @@ setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "character"),
         else
             rownames(colData) <- nms 
     }
-    new("GenomicFiles", rowRanges=rowRanges, 
-                        files=files, 
-                        colData=colData, 
-                        metadata=metadata, ...)
+    new("GenomicFiles", 
+        SummarizedExperiment(rowRanges=rowRanges, 
+                             colData=colData, 
+                             metadata=metadata, ...), files=files)
 })
 
 setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "List"),
@@ -77,10 +77,10 @@ setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "List"),
         else
             rownames(colData) <- basename(nms)
     }
-    new("GenomicFiles", rowRanges=rowRanges, 
-                        files=files, 
-                        colData=colData, 
-                        metadata=metadata, ...)
+    new("GenomicFiles", 
+        SummarizedExperiment(rowRanges=rowRanges, 
+                             colData=colData, 
+                             metadata=metadata, ...), files=files)
 })
 
 setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "list"),
