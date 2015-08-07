@@ -194,7 +194,7 @@ setMethod(show, "GenomicFiles",
     cat(class(object), "object with", 
         paste(dim(object), c("ranges", "files:"), collapse=" and "),
         "\n")
-    cat("files:", paste(BiocGenerics:::selectSome(basename(files(object))), 
+    cat("files:", paste(S4Vectors:::selectSome(basename(files(object))), 
         collapse=", "), "\n")
     cat("detail: use files(), rowRanges(), colData(), ...",
         "\n")
