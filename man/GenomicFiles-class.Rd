@@ -119,6 +119,10 @@
 }
 
 \examples{
+## -----------------------------------------------------------------------
+## Basic Use
+## -----------------------------------------------------------------------
+
 if (require(RNAseqData.HNRNPC.bam.chr14)) { 
   fl <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
   rd <- GRanges("chr14", 
@@ -138,8 +142,8 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   ## When summarize = TRUE and no REDUCE is provided the reduceBy* 
   ## functions output a SummarizedExperiment object.
   MAP <- function(range, file, ...) {
-      library(GenomicRanges) ## for coverage()
-      library(Rsamtools)     ## for ScanBamParam()
+      loadNamespace(GenomicRanges) ## for coverage()
+      loadNamespace(Rsamtools)     ## for ScanBamParam()
       param = ScanBamParam(which=range)
       coverage(file, param=param)[range]
   } 
@@ -152,6 +156,41 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
  
   ## Results are in the assays slot.
   assays(se) 
+}
+ 
+## -----------------------------------------------------------------------
+## Managing cached or remote files with GenomicFiles
+## -----------------------------------------------------------------------
+
+## The GenomicFiles class can manage cached or remote files and their 
+## associated ranges.
+
+\dontrun{
+## Files from AnnotationHub can be downloaded and cached locally.
+library(AnnotationHub)
+hub = AnnotationHub()
+hublet = query(hub, c("files I'm", "interested in"))
+# cache (if need) and return local path to files
+fls = cache(hublet)
+
+## An alternative to the local file paths is to use urls to a remote file.
+## This approach could be used with something like rtracklayer::bigWig which
+## supports remote file queries.
+urls = hublet$sourceurls
+
+## Define ranges of interest and use GenomicFiles to manage.
+rngs = GRanges("chr10", IRanges(c(100000, 200000), width=1))
+gf = GenomicFiles(rngs, fls)
+
+## As an example, one could create a matrix from data extracted
+## across multiple BED files.
+MAP = function(rng, fl) import(BEDFile(fl), which=rng)$name
+REDUCE = unlist
+xx = reduceFiles(gf, MAP=MAP, REDUCE=REDUCE)
+mcols(rngs) = simplify2array(xx)
+
+## Data and ranges can be stored in a SummarizedExperiment.
+SummarizedExperiment(list(my=simplify2array(xx)), rowRanges=rngs)
 }
 }
 
