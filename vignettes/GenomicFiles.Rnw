@@ -302,21 +302,34 @@ The file grouping is passed as an extra argument to \Rcode{reduceByRange}.
 files have been computed. This delay is necessary because REDUCE uses the file 
 grouping factor to perform the $t$-test and relies on the coverage vectors for
 all files to be present. 
-<<ttest-results>>=
+<<ttest-results, eval=FALSE>>=
 ttest <- reduceByRange(roi, fls, MAP, REDUCE, iterate=FALSE, grp=grp)
 @
 
 The result is a list of summary tables of basepair-level $t$-test statistics
 for each range across all files.
-<<ttest-show>>=
-head(ttest[[1]], 3)
-@
+\begin{verbatim}
+> head(ttest[[1]], 3)
+  offset statistic   dm   p.value
+1      0 1.1489125 2.75 0.2943227
+2      1 0.9761871 2.25 0.3666718
+3      2 0.8320503 1.50 0.4372365
+\end{verbatim}
 
 These tables can be added to the \Rcode{roi} GRanges as a metadata column.
-<<ttest-metadatacol>>=
+\begin{verbatim}
 mcols(roi)$ttest <- ttest 
-head(roi)
-@ 
+> head(roi)
+GRanges object with 4 ranges and 1 metadata column:
+      seqnames                 ranges strand |    ttest
+         <Rle>              <IRanges>  <Rle> |   <list>
+  [1]    chr14 [ 19411677,  19411696]      * | ########
+  [2]    chr14 [ 19659063,  19659082]      * | ########
+  [3]    chr14 [105421963, 105421982]      * | ########
+  [4]    chr14 [105613740, 105613759]      * | ########
+  -------
+  seqinfo: 1 sequence from an unspecified genome; no seqlengths
+\end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -616,7 +629,7 @@ sums counts over the chunks.
 <<reduceByYield-MAP-REDUCE>>=
 gr <- unlist(tiles, use.names=FALSE)
 MAP <- function(value, gr, ...) {
-    library(GenomicRanges)  ## for countOverlaps()
+    loadNamespace(GenomicRanges)  ## for countOverlaps()
     countOverlaps(gr, value)
 }
 REDUCE <- `+` 
@@ -652,7 +665,7 @@ FUN <- function(file, gr, YIELD, MAP, REDUCE, tiles, ...) {
     bf <- BamFile(file, yieldSize=100000)
     YIELD <- function(x, ...) readGAlignments(x)
     MAP <- function(value, gr, ...) {
-        library(GenomicRanges)  ## for countOverlaps()
+        loadNamespace(GenomicRanges)  ## for countOverlaps()
         countOverlaps(gr, value)
     }
     REDUCE <- `+` 
