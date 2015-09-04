@@ -229,11 +229,13 @@ MAP <- function(range, file, ...) {
 
 With no REDUCE function, the output is a list the same length as the number
 of ranges where each list element is the length of the number of files.
-<<pileups-reduceByRange-map-only>>=
+\begin{verbatim}
 pile1 <- reduceByRange(gr, fls, MAP) 
-length(pile1)
-elementLengths(pile1)
-@
+> length(pile1)
+[1] 4
+> elementLengths(pile1)
+[1] 8 8 8 8
+\end{verbatim}
 
 Next add a REDUCE to sum the counts by position.
 <<pileups-REDUCE>>=
@@ -644,10 +646,12 @@ DONE <- function(value) length(value) == 0L
 
 The MAP step is run in parallel when \Rcode{parallel=TRUE}. `parallel` is
 currently implemented for Unix/Mac only so we use multicore workers.
-<<reduceByYield-result>>=
+\begin{verbatim}
 register(MulticoreParam(3))
-reduceByYield(bf, YIELD, MAP, REDUCE, DONE, gr=gr, parallel=TRUE)
-@
+> reduceByYield(bf, YIELD, MAP, REDUCE, DONE, gr=gr, parallel=TRUE)
+[[1]]
+[1]  21465 163154  75498 212593 327785
+\end{verbatim}
 
 Taking this one step further, we can use \Rcode{bplapply} to distribute files to
 workers and call \Rcode{reduceByYield} on each file. If adequate resources are
