@@ -56,14 +56,12 @@ setMethod(countBam, "BamFileViews",
 
 setMethod("summarizeOverlaps", c("GRanges", "BamFileViews"),
     function(features, reads, mode=Union,
-             algorithm=c("nclist", "intervaltree"),
              ignore.strand=FALSE, ...)
         .Defunct(msg=.msg_BFV)
 )
 
 setMethod("summarizeOverlaps", c("GRangesList", "BamFileViews"),
     function(features, reads, mode=Union,
-             algorithm=c("nclist", "intervaltree"),
              ignore.strand=FALSE, ...)
         .Defunct(msg=.msg_BFV)
 )
