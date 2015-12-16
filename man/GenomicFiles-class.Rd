@@ -142,8 +142,8 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   ## When summarize = TRUE and no REDUCE is provided the reduceBy* 
   ## functions output a SummarizedExperiment object.
   MAP <- function(range, file, ...) {
-      loadNamespace(GenomicRanges) ## for coverage()
-      loadNamespace(Rsamtools)     ## for ScanBamParam()
+      loadNamespace("GenomicRanges") ## for coverage()
+      loadNamespace("Rsamtools")     ## for ScanBamParam()
       param = ScanBamParam(which=range)
       coverage(file, param=param)[range]
   } 

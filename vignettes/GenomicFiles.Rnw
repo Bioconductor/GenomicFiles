@@ -631,7 +631,7 @@ sums counts over the chunks.
 <<reduceByYield-MAP-REDUCE>>=
 gr <- unlist(tiles, use.names=FALSE)
 MAP <- function(value, gr, ...) {
-    loadNamespace(GenomicRanges)  ## for countOverlaps()
+    loadNamespace("GenomicRanges")  ## for countOverlaps()
     countOverlaps(gr, value)
 }
 REDUCE <- `+` 
@@ -669,7 +669,7 @@ FUN <- function(file, gr, YIELD, MAP, REDUCE, tiles, ...) {
     bf <- BamFile(file, yieldSize=100000)
     YIELD <- function(x, ...) readGAlignments(x)
     MAP <- function(value, gr, ...) {
-        loadNamespace(GenomicRanges)  ## for countOverlaps()
+        loadNamespace("GenomicRanges")  ## for countOverlaps()
         countOverlaps(gr, value)
     }
     REDUCE <- `+` 
