@@ -114,8 +114,7 @@ REDUCEsampler(sampleSize=1000000, verbose=FALSE)
 
 }
 
-\author{Martin Morgan \url{mtmorgan@fhcrc.org} and
-        Valerie Obenchain \url{vobencha@fhcrc.org}}
+\author{Martin Morgan and Valerie Obenchain}
 
 \seealso{
   \itemize{

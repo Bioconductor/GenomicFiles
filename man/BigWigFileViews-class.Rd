@@ -166,9 +166,7 @@
 }
 
 \author{
-  Michael Love <michaelisaiahlove@gmail.com>,
-  Valerie Obenchain <vobencha@fhcrc.org>,
-  Martin Morgan <mtmorgan@fhcrc.org.>
+  Michael Love, Valerie Obenchain and Martin Morgan.
 }
 
 

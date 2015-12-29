@@ -155,8 +155,7 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., init)
 }
 
 \author{
-  Martin Morgan <mtmorgan@fhcrc.org> and 
-  Valerie Obenchain <vobencha@fhcrc.org>
+  Martin Morgan and Valerie Obenchain
 }
 
 \examples{

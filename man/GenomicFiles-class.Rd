@@ -22,10 +22,7 @@
 \alias{colData<-,GenomicFiles,DataFrame-method}
 
 % Methods:
-\alias{[,GenomicFiles,ANY,missing-method}
-\alias{[,GenomicFiles,missing,ANY-method}
 \alias{[,GenomicFiles,ANY,ANY-method}
-\alias{[,GenomicFiles,ANY,missing-method}
 \alias{show,GenomicFiles-method}
 
 \title{GenomicFiles objects}

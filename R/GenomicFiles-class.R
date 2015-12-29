@@ -150,38 +150,21 @@ setReplaceMethod("colData", c("GenomicFiles", "DataFrame"),
 ### Subsetting
 ###
 
-setMethod("[", c("GenomicFiles", "ANY", "missing"),
-    function(x, i, j, ..., drop=TRUE)
-        initialize(x, rowRanges=rowRanges(x)[i,])
-)
-
-setMethod("[", c("GenomicFiles", "missing", "ANY"),
-    function(x, i, j, ..., drop=TRUE)
-{
-    if (is.character(j))
-        j <- match(j, colnames(x))
-    if (any(is.na(j)))
-        stop("subscript 'j' out of bounds")
-    initialize(x, 
-               colData=colData(x)[j,,drop=FALSE],
-               files=files(x)[j])
-})
-
 setMethod("[", c("GenomicFiles", "ANY", "ANY"),
     function(x, i, j, ..., drop=TRUE)
 {
-    if (is.character(i))
-        j <- match(i, rownames(x))
-    if (is.character(j))
-        j <- match(j, colnames(x))
-    if (any(is.na(i)))
-        stop("subscript 'i' out of bounds")
-    if (any(is.na(j)))
-        stop("subscript 'j' out of bounds")
-    initialize(x, 
-        files=files(x)[j],
-        rowRanges=rowRanges(x)[i,],
-        colData=colData(x)[j,,drop=FALSE])
+    if (missing(i) && missing(j))
+        x
+
+    if (!missing(j)) {
+        if (is.character(j))
+            j <- match(j, colnames(x))
+        if (any(is.na(j)))
+            stop("subscript 'j' out of bounds")
+        callNextMethod(x, i, j, files=files(x)[j], ...)
+    } else {
+        callNextMethod()
+    }
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
