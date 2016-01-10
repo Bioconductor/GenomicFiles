@@ -5,6 +5,11 @@ BUG FIXES
 
     o dimnames<- correctly updates dim names
 
+MODIFICATIONS
+
+    o Defunct *FileViews classes
+
+
 CHANGES IN VERSION 1.4.0
 ------------------------
 

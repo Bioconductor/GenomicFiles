@@ -4,7 +4,7 @@ Description: This package provides infrastructure for parallel
 	computations distributed 'by file' or 'by range'. User 
 	defined MAPPER and REDUCER functions provide added 
 	flexibility for data combination and manipulation.
-Version: 1.7.4
+Version: 1.7.5
 Author: Valerie Obenchain, Michael Love, Martin Morgan 
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, DataImport, Sequencing, Coverage
@@ -17,12 +17,7 @@ Suggests: BiocStyle, RUnit, genefilter, deepSNV,
 	RNAseqData.HNRNPC.bam.chr14, Biostrings, Homo.sapiens
 License: Artistic-2.0
 Collate: GenomicFiles-class.R
-	GenomicFileViews-class.R
-	BigWigFileViews-class.R
-	BamFileViews-class.R
-	FaFileViews-class.R
 	VcfStack-class.R
-	utils.R
 	reduceByFile-methods.R
 	reduceByRange-methods.R
 	reduceFiles.R

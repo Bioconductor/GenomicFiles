@@ -47,8 +47,7 @@
       type register created at load time. The point of the register
       is for discovery of file type (class) by file extension.
       These are List-type classes (e.g., BamFileList) that occupy
-      the \code{fileList} slot of a GenomicFiles class
-      (e.g., BamFileViews).
+      the \code{fileList} slot of a GenomicFiles class.
 
       Each List class entry in the register is associated with
       (1) a regular expression that identifies the file extension,
