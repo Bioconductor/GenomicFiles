@@ -23,6 +23,7 @@
 
 % Methods:
 \alias{[,GenomicFiles,ANY,ANY-method}
+\alias{[,GenomicFiles,ANY,ANY,ANY-method}
 \alias{show,GenomicFiles-method}
 
 \title{GenomicFiles objects}
@@ -141,7 +142,7 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   MAP <- function(range, file, ...) {
       loadNamespace("GenomicRanges") ## for coverage()
       loadNamespace("Rsamtools")     ## for ScanBamParam()
-      param = ScanBamParam(which=range)
+      param = Rsamtools::ScanBamParam(which=range)
       coverage(file, param=param)[range]
   } 
   se <- reduceByRange(gf, MAP=MAP, summarize=TRUE)

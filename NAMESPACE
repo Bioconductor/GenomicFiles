@@ -7,8 +7,13 @@ import(BiocParallel)
 import(GenomicRanges)
 import(IRanges)
 import(S4Vectors)
+import(GenomeInfoDb)
 importFrom(GenomicAlignments, summarizeOverlaps, Union)
 importMethodsFrom(GenomicAlignments, summarizeOverlaps)
+importFrom(Biobase, samples)
+importFrom(VariantAnnotation, 
+    scanVcfHeader, ScanVcfParam, readVcf, genotypeToSnpMatrix, "vcfSamples"
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Export S4 classes
@@ -19,7 +24,8 @@ exportClasses(
     GenomicFileViews, 
     BamFileViews, 
     FaFileViews, 
-    BigWigFileViews
+    BigWigFileViews,
+    VcfStack, RangedVcfStack
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,7 +35,9 @@ exportClasses(
 exportMethods(
     "[", dim, names, show, yieldSize, 'colData<-',
     countBam, scanBam, summarizeOverlaps,
-    coverage, summary
+    coverage, summary,
+
+    samples
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,7 +51,10 @@ export(
     ## GenomicFiles class:
     GenomicFiles, files, 'files<-',
 
-    reduceByFile, reduceByRange, pack, unpack
+    reduceByFile, reduceByRange, pack, unpack,
+
+    ## VcfStack class:
+    subsetSample, features, assay, bindRanges, bindSampleNames
 )
 
 exportMethods(
@@ -53,7 +64,10 @@ exportMethods(
     ## GenomicFiles class
     GenomicFiles, files, 'files<-', 
 
-    reduceByFile, reduceByRange, pack, unpack
+    reduceByFile, reduceByRange, pack, unpack,
+
+    ## VcfStack class:
+    subsetSample, features, assay, bindRanges, bindSampleNames
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,5 +82,7 @@ export(
     ## file registry:
     .fileTypeRegistry, registerFileType, findTypeRegistry, makeFileType,
 
-    reduceFiles, reduceRanges, reduceByYield, REDUCEsampler
+    reduceFiles, reduceRanges, reduceByYield, REDUCEsampler,
+
+    VcfStack, paths1kg
 )
