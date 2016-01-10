@@ -48,9 +48,7 @@ VcfStack = function(paths, seqinfo, colData=DataFrame(), set.seqlstyle="NCBI")
 ### Other methods
 ###
 
-setGeneric("bindRanges", 
-    function(vs, gr, ...) standardGeneric("bindRanges")
-)
+setGeneric("bindRanges", function(vs, gr, ...) standardGeneric("bindRanges"))
 setMethod("bindRanges", c("VcfStack", "GRanges"), 
     function(vs, gr, ...) new("RangedVcfStack", vs, rowRanges=gr)
 )
@@ -78,9 +76,7 @@ setMethod("samples", "RangedVcfStack",
     }
 )
 
-setGeneric("subsetSample", function(x, j, ...) 
-    standardGeneric("subsetSample")
-)
+setGeneric("subsetSample", function(x, j, ...) standardGeneric("subsetSample"))
 setMethod("subsetSample", c("RangedVcfStack"), 
     function(x, j, ...) {
         if (length(sn <- x@sampleNames)>0) {
@@ -114,35 +110,37 @@ setMethod("assay", c("RangedVcfStack", "missing"),
 ###
 
 setMethod("[", c("VcfStack", "GenomicRanges", "character", "missing"),
-   function(x, i, j, drop) {
-    querseq = as.character(seqnames(i))
-    stopifnot(length(unique(querseq))==1) # is this good enough?
-    path2use = .paths(x)[querseq]
-    param = ScanVcfParam(which=i)
-    vcfSamples(param) = j
-    readVcf(path2use, param=param, genome=genome(i)[1])
-   })
+    function(x, i, j, drop) {
+        querseq = as.character(seqnames(i))
+        stopifnot(length(unique(querseq))==1) # is this good enough?
+        path2use = .paths(x)[querseq]
+        param = ScanVcfParam(which=i)
+        vcfSamples(param) = j
+        readVcf(path2use, param=param, genome=genome(i)[1])
+    }
+)
 
 setMethod("[", c("VcfStack", "GenomicRanges", "missing", "missing"),
-   function(x, i, j, drop) {
-    querseq = as.character(seqnames(i))
-    stopifnot(length(unique(querseq))==1) # is this good enough?
-    path2use = .paths(x)[querseq]
-    param = ScanVcfParam(which=i)
-    readVcf(path2use, param=param, genome=genome(i)[1])
-   })
+    function(x, i, j, drop) {
+        querseq = as.character(seqnames(i))
+        stopifnot(length(unique(querseq))==1) # is this good enough?
+        path2use = .paths(x)[querseq]
+        param = ScanVcfParam(which=i)
+        readVcf(path2use, param=param, genome=genome(i)[1])
+    }
+)
 
 setMethod("[", c("RangedVcfStack", "GRanges", "ANY", "missing"),
-   function(x, i, j, drop) {
-     x@rowRanges=i
-     if(!missing(j)) x@sampleNames=j
-     x
-   })  # just updates slots endomorphically
+    function(x, i, j, drop) {
+        x@rowRanges=i
+        if(!missing(j)) x@sampleNames=j
+        x
+    }
+)  # just updates slots endomorphically
 
 setMethod("[", c("RangedVcfStack", "missing", "missing", "missing"),
-   function(x, i, j, drop) {
-     x
-})  # above needed for biocMultiAssay validity method checker which runs x[]
+    function(x, i, j, drop) x
+)  # above needed for biocMultiAssay validity method checker which runs x[]
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### show() 
@@ -160,13 +158,13 @@ setMethod("show", "VcfStack", function(object) {
 ### Helpers
 ###
 
-getVCFPath = function(vs, chrtok) {
+getVCFPath <- function(vs, chrtok) {
     stopifnot(is.atomic(chrtok), length(chrtok)==1)
     .paths(vs)[chrtok]
 }
 
-paths1kg = function(chrtoks) sapply(chrtoks, .path1kg, USE.NAMES=FALSE)
-.path1kg = function (chrtok) 
+paths1kg <- function(chrtoks) sapply(chrtoks, .path1kg, USE.NAMES=FALSE)
+.path1kg <- function (chrtok) 
 {
     stopifnot(length(chrtok)==1 && is.atomic(chrtok))
     if (is.numeric(chrtok)) 

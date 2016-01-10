@@ -71,5 +71,5 @@ export(
 
     reduceFiles, reduceRanges, reduceByYield, REDUCEsampler,
 
-    VcfStack, paths1kg
+    VcfStack, getVCFPath, paths1kg
 )
