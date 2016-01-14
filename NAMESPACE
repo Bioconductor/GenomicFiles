@@ -10,10 +10,10 @@ import(S4Vectors)
 import(GenomeInfoDb)
 importFrom(GenomicAlignments, summarizeOverlaps, Union)
 importMethodsFrom(GenomicAlignments, summarizeOverlaps)
-importFrom(Biobase, samples)
+importFrom(Biobase, sampleNames, 'sampleNames<-')
 importFrom(VariantAnnotation, 
     scanVcfHeader, ScanVcfParam, readVcf, genotypeToSnpMatrix, 
-    vcfSamples, "vcfSamples<-"
+    samples, vcfSamples, "vcfSamples<-", readGT
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,7 +34,8 @@ exportMethods(
     countBam, scanBam, summarizeOverlaps,
     coverage, summary,
 
-    samples
+    sampleNames, 'sampleNames<-', seqinfo, 'seqinfo<-',
+    rowRanges, 'rowRanges<-', assay, colData
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,7 +49,7 @@ export(
     reduceByFile, reduceByRange, pack, unpack,
 
     ## VcfStack class:
-    subsetSample, features, assay, bindRanges, bindSampleNames
+    subsetSample 
 )
 
 exportMethods(
@@ -58,7 +59,7 @@ exportMethods(
     reduceByFile, reduceByRange, pack, unpack,
 
     ## VcfStack class:
-    subsetSample, features, assay, bindRanges, bindSampleNames
+    subsetSample
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,5 +72,5 @@ export(
 
     reduceFiles, reduceRanges, reduceByYield, REDUCEsampler,
 
-    VcfStack, getVCFPath, paths1kg
+    VcfStack, RangedVcfStack, readVcfStack, getVCFPath, paths1kg
 )
