@@ -2,9 +2,9 @@ fl <- system.file("extdata", "ex1.bam", package="Rsamtools")
 gr <- GRanges(c("seq1", "seq2", "seq2"), IRanges(1:3, width=100))
 gf <- GenomicFiles(gr, c(one=fl, two=fl))
 
-MAP = function(RANGE, FILE, ..., param=ScanBamParam()) {
-    bamWhich(param) <- RANGE 
-    countBam(FILE, param=param)
+MAP = function(RANGE, FILE, ..., param=Rsamtools::ScanBamParam()) {
+    Rsamtools::bamWhich(param) <- RANGE 
+    Rsamtools::countBam(FILE, param=param)
 }
 
 REDUCE = function(MAPPED, ...) {
@@ -16,11 +16,11 @@ test_reduceByRange_MAP <- function()
 {
     ans <- reduceByRange(gf, MAP=MAP)
     checkIdentical(length(ans), 3L)
-    checkIdentical(unname(elementLengths(ans)), c(2L, 2L, 2L))
+    checkIdentical(unname(lengths(ans)), c(2L, 2L, 2L))
 
     ans <- reduceByRange(gr, c(one=fl, two=fl), MAP=MAP)
     checkIdentical(length(ans), 3L)
-    checkIdentical(unname(elementLengths(ans)), c(2L, 2L, 2L))
+    checkIdentical(unname(lengths(ans)), c(2L, 2L, 2L))
 
     ## summarize = TRUE
     ans <- reduceByRange(gf, MAP=MAP, summarize=TRUE)
