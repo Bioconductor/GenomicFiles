@@ -19,7 +19,6 @@
 
     ## files sent to workers
     bplapply(files, function(file, ranges, MAP, REDUCE, ..., iterate, init) {
-        require(GenomicRanges)
         if (iterate) {
             result <- 
                 if (is.null(init))

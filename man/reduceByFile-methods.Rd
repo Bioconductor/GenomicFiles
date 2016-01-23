@@ -160,23 +160,23 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., init)
 
 \examples{
 
-if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
-        require(GenomicAlignments))) {
-
+if (requireNamespace("RNAseqData.HNRNPC.bam.chr14", quietly=TRUE)) {
   ## -----------------------------------------------------------------------
   ## Count junction reads in BAM files
   ## -----------------------------------------------------------------------
-  fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES  ## 8 bam files
+  fls <-                                      ## 8 bam files
+      RNAseqData.HNRNPC.bam.chr14::RNAseqData.HNRNPC.bam.chr14_BAMFILES
  
   ## Ranges of interest.
   gr <- GRanges("chr14", IRanges(c(19100000, 106000000), width=1e7))
  
   ## MAP outputs a table of junction counts per range.
   MAP <- function(range, file, ...) {
-      library(GenomicAlignments)   ## for readGAlignments(), ScanBamParam()
-      param = ScanBamParam(which=range)
-      gal = readGAlignments(file, param=param)
-      table(njunc(gal))
+      ## for readGAlignments(), Rsamtools::ScanBamParam()
+      requireNamespace("GenomicAlignments", quietly=TRUE)
+      param = Rsamtools::ScanBamParam(which=range)
+      gal = GenomicAlignments::readGAlignments(file, param=param)
+      table(GenomicAlignments::njunc(gal))
   } 
 
   ## -----------------------------------------------------------------------

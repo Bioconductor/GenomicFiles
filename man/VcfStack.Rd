@@ -12,6 +12,7 @@
 \alias{[,RangedVcfStack,missing,missing,missing-method}
 
 %% Accessors
+\alias{files}
 \alias{files,VcfStack-method}
 \alias{files<-,VcfStack,character-method}
 \alias{seqinfo}

@@ -162,13 +162,13 @@ reduceRanges(ranges, files, MAP, REDUCE, ..., init)
 
 \examples{
 
-if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
+if (all(requireNamespace("RNAseqData.HNRNPC.bam.chr14", quietly=TRUE) &&
         require(GenomicAlignments))) {
-
   ## -----------------------------------------------------------------------
   ## Compute coverage across BAM files.
   ## -----------------------------------------------------------------------
-  fls <- RNAseqData.HNRNPC.bam.chr14_BAMFILES  ## 8 bam files
+  fls <-                                ## 8 bam files
+      RNAseqData.HNRNPC.bam.chr14::RNAseqData.HNRNPC.bam.chr14_BAMFILES
   
   ## Regions of interest.
   gr <- GRanges("chr14", IRanges(c(62262735, 63121531, 63980327),
@@ -176,11 +176,11 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   
   ## The MAP computes the coverage ...
   MAP <- function(range, file, ...) {
-      library(Rsamtools)  ## for ScanBamParam() and coverage()
-      param = ScanBamParam(which=range)
-      coverage(file, param=param)[range]
+      requireNamespace("GenomicFiles", quietly=TRUE)
+      ## for coverage(), Rsamtools::ScanBamParam()
+      param = Rsamtools::ScanBamParam(which=range)
+      GenomicFiles::coverage(file, param=param)[range]
   } 
-  
   ## and REDUCE adds the last and current results. 
   REDUCE <- function(mapped, ...)
       Reduce("+", mapped)

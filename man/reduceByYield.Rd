@@ -147,8 +147,8 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
       scanBam(X, param=param, ...)[[1]][['seq']]
   }
   MAP <- function(value, ...) {
-      library(Biostrings) ## for alphabetFrequency()
-      alphabetFrequency(value, collapse=TRUE)
+      requireNamespace("Biostrings", quietly=TRUE)  ## for alphabetFrequency()
+      Biostrings::alphabetFrequency(value, collapse=TRUE)
   }
   REDUCE <- `+`        # add successive alphabetFrequency matrices
 
@@ -174,16 +174,18 @@ if (all(require(RNAseqData.HNRNPC.bam.chr14) &&
   ## variable used in 'FUN' must be explicitly passed. (This is not the case
   ## when using Multicore.)
   FUN <- function(bf, YIELD, MAP, REDUCE, parallel, ...) {
-    library(GenomicAlignments) ## for readGAlignments()
-    library(GenomicFiles)      ## for reduceByYield()
-    reduceByYield(bf, YIELD, MAP, REDUCE, parallel=parallel)
+    requireNamespace("GenomicFiles", quietly=TRUE)      ## for reduceByYield()
+    GenomicFiles::reduceByYield(bf, YIELD, MAP, REDUCE, parallel=parallel)
   }
  
   ## Passing parallel=FALSE to reduceByYield() runs the MAP step in serial on 
   ## each worker. In this example, parallel dispatch is at the file-level 
   ## only (bplapply()).
   YIELD <- `readGAlignments`
-  MAP <- function(value, ...) coverage(value)[["chr14"]] 
+  MAP <- function(value, ...) {
+      requireNamespace("GenomicAlignments", quietly=TRUE)
+      GenomicAlignments::coverage(value)[["chr14"]]
+  }
   bplapply(bfl, FUN, YIELD=YIELD, MAP=MAP, REDUCE=`+`,
            parallel=FALSE, BPPARAM = bpparam) 
 

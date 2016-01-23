@@ -80,8 +80,8 @@ The MAP function extracts and manipulates data subsets. Here we compute
 pileups for a given range and file.
 <<quick_start-MAP>>=
 MAP <- function(range, file, ...) {
-    library(Rsamtools)
-    pileup(file, scanBamParam=ScanBamParam(which=range))
+    requireNamespace("Rsamtools")
+    Rsamtools::pileup(file, scanBamParam=Rsamtools::ScanBamParam(which=range))
 }
 @
 
@@ -221,8 +221,11 @@ function can be found.
 
 <<pileups-MAP>>=
 MAP <- function(range, file, ...) {
-    require(deepSNV)
-    ct = bam2R(file, seqlevels(range), start(range), end(range), q=0)
+    requireNamespace("deepSNV")
+    ct = deepSNV::bam2R(file, 
+                        GenomeInfoDb::seqlevels(range), 
+                        GenomicRanges::start(range), 
+                        GenomicRanges::end(range), q=0)
     ct[, c("A", "T", "C", "G", "a", "t", "c", "g")]
 }
 @
@@ -280,9 +283,10 @@ The MAP reads in alignments from each BAM file and computes coverage. Coverage
 is coerced from an RleList to numeric vector for later use in the $t$-test.
 <<ttest-MAP>>=
 MAP <- function(range, file, ...) {
-    library(Rsamtools)
-    param <- ScanBamParam(which=range)
-    as.numeric(unlist(coverage(file, param=param)[range], use.names=FALSE))
+    requireNamespace("GenomicAlignments")
+    param <- Rsamtools::ScanBamParam(which=range)
+    as.numeric(unlist(
+        GenomicAlignments::coverage(file, param=param)[range], use.names=FALSE))
 }
 @ 
 
@@ -368,10 +372,11 @@ The MAP produces a table of junction counts (i.e., 'N' operations in the
 CIGAR) for each range.
 <<junctions-MAP>>=
 MAP <- function(range, file, ...) {
-    library(GenomicAlignments) ## for readGAlignments() and ScanBamParam()
-    param = ScanBamParam(which=range)
-    gal = readGAlignments(file, param=param)
-    table(njunc(gal))
+    requireNamespace("GenomicAlignments") ## for readGAlignments()
+                                          ## ScanBamParam()
+    param = Rsamtools::ScanBamParam(which=range)
+    gal = GenomicAlignments::readGAlignments(file, param=param)
+    table(GenomicAlignments::njunc(gal))
 } 
 @
 
@@ -446,10 +451,11 @@ MAP computes coverage for each range. The sum of coverage across all positions
 is recorded along with the width of the range.
 <<coverage1-MAP>>=
 MAP = function(range, file, ...) {
-    library(GenomicAlignments)  ## for ScanBamParam() and coverage()
-    param = ScanBamParam(which=range)
-    rle = coverage(file, param=param)[range]
-    c(width = width(range), sum = sum(runLength(rle) * runValue(rle))) 
+    requireNamespace("GenomicAlignments")  ## for ScanBamParam() and coverage()
+    param = Rsamtools::ScanBamParam(which=range)
+    rle = GenomicAlignments::coverage(file, param=param)[range]
+    c(width = GenomicRanges::width(range), 
+      sum = sum(S4Vectors::runLength(rle) * S4Vectors::runValue(rle))) 
 }
 @
 
@@ -493,8 +499,10 @@ at time.
 This MAP computes coverage on all ranges at once and returns an RleList.
 <<coverage2-MAP>>=
 MAP = function(range, file, ...) {
-    library(GenomicAlignments)  ## for ScanBamParam() and coverage()
-    coverage(file, param=ScanBamParam(which=range))[range]
+    requireNamespace("GenomicAlignments")  ## for ScanBamParam() and coverage()
+    GenomicAlignments::coverage(
+        file,
+        param=Rsamtools::ScanBamParam(which=range))[range]
 }
 @
 
@@ -544,15 +552,15 @@ The data are subset on each worker, coverage is computed and reduced for
 the ranges in the chunk.
 <<coverage3-MAP>>=
 MAP = function(range, file, ...) {
-    library(BiocParallel)  ## for bplapply()
+    requireNamespace("BiocParallel")  ## for bplapply()
     nranges = 2
     idx = split(seq_along(range), ceiling(seq_along(range)/nranges))
-    bplapply(idx, 
+    BiocParallel::bplapply(idx, 
         function(i, range, file) {
-            library(GenomicAlignments)  ## for ScanBamParam() and coverage()
+            requireNamespace("GenomicAlignments")  ## ScanBamParam(), coverage()
             chunk = range[i]
-            param = ScanBamParam(which=chunk)
-            cvg = coverage(file, param=param)[chunk]
+            param = Rsamtools::ScanBamParam(which=chunk)
+            cvg = GenomicAlignments::coverage(file, param=param)[chunk]
             Reduce("+", cvg)            ## collapse coverage within chunks
         }, range, file)
 }
@@ -631,8 +639,8 @@ sums counts over the chunks.
 <<reduceByYield-MAP-REDUCE>>=
 gr <- unlist(tiles, use.names=FALSE)
 MAP <- function(value, gr, ...) {
-    loadNamespace("GenomicRanges")  ## for countOverlaps()
-    countOverlaps(gr, value)
+    requireNamespace("GenomicRanges")  ## for countOverlaps()
+    GenomicRanges::countOverlaps(gr, value)
 }
 REDUCE <- `+` 
 @
@@ -663,17 +671,17 @@ parallel=TRUE)}. This example takes the conservative approach and runs
 The function `FUN` will be run on each worker.
 <<reduceByYield-bplapply>>=
 FUN <- function(file, gr, YIELD, MAP, REDUCE, tiles, ...) {
-    library(GenomicAlignments)  ## for BamFile, readGAlignments()
-    library(GenomicFiles)       ## for reduceByYield()
+    requireNamespace("GenomicAlignments")  ## for BamFile, readGAlignments()
+    requireNamespace("GenomicFiles")       ## for reduceByYield()
     gr <- unlist(tiles, use.names=FALSE)
-    bf <- BamFile(file, yieldSize=100000)
-    YIELD <- function(x, ...) readGAlignments(x)
+    bf <- Rsamtools::BamFile(file, yieldSize=100000)
+    YIELD <- function(x, ...) GenomicAlignments::readGAlignments(x)
     MAP <- function(value, gr, ...) {
-        loadNamespace("GenomicRanges")  ## for countOverlaps()
-        countOverlaps(gr, value)
+        requireNamespace("GenomicRanges")  ## for countOverlaps()
+        GenomicRanges::countOverlaps(gr, value)
     }
     REDUCE <- `+` 
-    reduceByYield(bf, YIELD, MAP, REDUCE, gr=gr, parallel=FALSE)
+    GenomicFiles::reduceByYield(bf, YIELD, MAP, REDUCE, gr=gr, parallel=FALSE)
 }
 @
 

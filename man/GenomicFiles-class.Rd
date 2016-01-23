@@ -14,11 +14,11 @@
 \alias{GenomicFiles,missing,missing-method}
 
 % Accessors:
-\alias{files}
 \alias{files<-}
 \alias{files,GenomicFiles-method}
 \alias{files<-,GenomicFiles,character-method}
 \alias{files<-,GenomicFiles,List-method}
+\alias{dimnames<-,GenomicFiles,list-method}
 \alias{colData<-,GenomicFiles,DataFrame-method}
 
 % Methods:
@@ -140,10 +140,10 @@ if (require(RNAseqData.HNRNPC.bam.chr14)) {
   ## When summarize = TRUE and no REDUCE is provided the reduceBy* 
   ## functions output a SummarizedExperiment object.
   MAP <- function(range, file, ...) {
-      loadNamespace("GenomicRanges") ## for coverage()
-      loadNamespace("Rsamtools")     ## for ScanBamParam()
+      requireNamespace("GenomicFiles", quietly=TRUE) ## for coverage()
+      requireNamespace("Rsamtools", quietly=TRUE)     ## for ScanBamParam()
       param = Rsamtools::ScanBamParam(which=range)
-      coverage(file, param=param)[range]
+      GenomicFiles::coverage(file, param=param)[range]
   } 
   se <- reduceByRange(gf, MAP=MAP, summarize=TRUE)
   se
@@ -182,7 +182,10 @@ gf = GenomicFiles(rngs, fls)
 
 ## As an example, one could create a matrix from data extracted
 ## across multiple BED files.
-MAP = function(rng, fl) import(BEDFile(fl), which=rng)$name
+MAP = function(rng, fl) {
+    requireNamespace("rtracklayer", quietly=TRUE)  ## import, BEDFile
+    rtracklayer::import(rtracklayer::BEDFile(fl), which=rng)$name
+}
 REDUCE = unlist
 xx = reduceFiles(gf, MAP=MAP, REDUCE=REDUCE)
 mcols(rngs) = simplify2array(xx)
