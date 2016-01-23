@@ -146,6 +146,15 @@ setReplaceMethod("colData", c("GenomicFiles", "DataFrame"),
     initialize(x, colData=value, files=files)
 })
 
+setReplaceMethod("dimnames", c("GenomicFiles", "list"),
+    function(x, value)
+{
+    x <- callNextMethod()
+    files <- files(x)
+    names(files) <- value[[2]]
+    initialize(x, files=files)
+})
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
 ###
