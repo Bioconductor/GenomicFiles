@@ -48,7 +48,7 @@ isPacked <- function(x, ...)
     long_minus1 <- long_minus1[long_minus1 > 0L]
     irange <- unname(psetdiff(range(x_grl), x_grl))
     irange_max <- irange[width(irange) > inter_range_len]
-    irange_idx <- elementLengths(irange_max) > 0
+    irange_idx <- elementNROWS(irange_max) > 0
     distant <- integer()
     if (any(irange_idx))
         distant <- sapply(irange_max[irange_idx], 

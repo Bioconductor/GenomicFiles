@@ -185,7 +185,7 @@ if (requireNamespace("RNAseqData.HNRNPC.bam.chr14", quietly=TRUE)) {
   ## With no REDUCE, counts are computed for each range / file combination.
   counts1 <- reduceByFile(gr, fls, MAP)
   length(counts1)          ## 8 files
-  elementLengths(counts1)  ## 2 ranges each
+  elementNROWS(counts1)    ## 2 ranges each
  
   ## Tables of counts for each range:
   counts1[[1]]

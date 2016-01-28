@@ -236,7 +236,7 @@ of ranges where each list element is the length of the number of files.
 pile1 <- reduceByRange(gr, fls, MAP) 
 > length(pile1)
 [1] 4
-> elementLengths(pile1)
+> elementNROWS(pile1)
 [1] 8 8 8 8
 \end{verbatim}
 
@@ -251,7 +251,7 @@ element lengths have been reduced to 1.
 <<pileups-reduceByRange>>=
 pile2 <- reduceByRange(gr, fls, MAP, REDUCE) 
 length(pile2)
-elementLengths(pile2)
+elementNROWS(pile2)
 @
 
 Each element is a matrix of counts (position by nucleotide) for a single range
@@ -391,8 +391,8 @@ The GenomicFiles object or any subset of the object can be used as the
 Here the object is subset on 3 files and both ranges.
 <<junctions-counts1>>=
 counts1 <- reduceByFile(gf[,1:3], MAP=MAP)
-length(counts1)          ## 3 files
-elementLengths(counts1)  ## 2 ranges
+length(counts1)        ## 3 files
+elementNROWS(counts1)  ## 2 ranges
 @
 
 Each list element has a table of counts for each range.

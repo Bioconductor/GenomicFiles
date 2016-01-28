@@ -21,8 +21,8 @@ setMethod("unpack", c("List", "GRangesList"),
 {
     if (!isPacked(skeleton))
         stop("'flesh' must be a packed object")
-    if (sum(elementLengths(flesh)) != sum(elementLengths(skeleton)))
-        stop("elementLengths(flesh) must equal elementLengths(skeleton)")
+    if (sum(elementNROWS(flesh)) != sum(elementNROWS(skeleton)))
+        stop("elementNROWS(flesh) must equal elementNROWS(skeleton)")
 
     mo <- mapOrder(skeleton@partitioning)
     if (is(flesh, "RleList"))

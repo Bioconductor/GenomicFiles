@@ -214,7 +214,7 @@ if (all(requireNamespace("RNAseqData.HNRNPC.bam.chr14", quietly=TRUE) &&
 
   cov4 <- reduceByRange(grl, fls, MAP)
   length(cov4)          ## length of GRangesList
-  elementLengths(cov4)  ## number of files
+  elementNROWS(cov4)  ## number of files
 
   ## -----------------------------------------------------------------------
   ## reduceRanges:

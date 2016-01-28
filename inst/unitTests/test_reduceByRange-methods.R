@@ -33,7 +33,7 @@ test_reduceByRange_MAP_REDUCE <- function()
 {
     ans <- reduceByRange(gf, MAP=MAP, REDUCE=REDUCE)
     checkIdentical(length(ans), 3L)
-    checkIdentical(unname(elementLengths(ans)), c(1L, 1L, 1L))
+    checkIdentical(unname(elementNROWS(ans)), c(1L, 1L, 1L))
 }
 
 ## reduceRanges

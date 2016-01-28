@@ -16,11 +16,11 @@ test_reduceByFile_MAP <- function()
 {
     ans <- reduceByFile(gf, MAP=MAP)
     checkIdentical(length(ans), 2L)
-    checkIdentical(unname(elementLengths(ans)), c(3L, 3L))
+    checkIdentical(unname(elementNROWS(ans)), c(3L, 3L))
 
     ans <- reduceByFile(gr, c(one=fl, two=fl), MAP=MAP)
     checkIdentical(length(ans), 2L)
-    checkIdentical(unname(elementLengths(ans)), c(3L, 3L))
+    checkIdentical(unname(elementNROWS(ans)), c(3L, 3L))
 
     ## summarize = TRUE
     ans <- reduceByFile(gf, MAP=MAP, summarize=TRUE)
@@ -33,7 +33,7 @@ test_reduceByFile_MAP_REDUCE <- function()
 {
     ans <- reduceByFile(gf, MAP=MAP, REDUCE=REDUCE)
     checkIdentical(length(ans), 2L)
-    checkIdentical(unname(elementLengths(ans)), c(1L, 1L))
+    checkIdentical(unname(elementNROWS(ans)), c(1L, 1L))
 }
 
 ## reduceFiles
@@ -43,7 +43,7 @@ test_reduceFiles_MAP <- function()
     ans0 <- reduceFiles(gf, MAP=MAP)
     checkIdentical(length(ans0), 2L)
     checkIdentical(unname(lengths(ans0)), c(1L, 1L))
-    elts <- lapply(ans0, elementLengths)
+    elts <- lapply(ans0, elementNROWS)
     checkIdentical(names(elts), c("one", "two"))
     checkIdentical(unlist(elts, use.names=FALSE), c(3L, 3L))
 
@@ -60,6 +60,6 @@ test_reduceFiles_MAP_REDUCE <- function()
 
     ans <- reduceFiles(gf, MAP=MAP, REDUCE=REDUCE)
     checkIdentical(length(ans), 2L)
-    checkIdentical(unname(elementLengths(ans)), c(3L, 3L))
+    checkIdentical(unname(elementNROWS(ans)), c(3L, 3L))
 }
 
