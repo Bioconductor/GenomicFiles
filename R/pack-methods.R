@@ -46,7 +46,7 @@ isPacked <- function(x, ...)
     long <- which(width(unlist(x_grl, use.names=FALSE)) > range_len)
     long_minus1 <- long - 1L
     long_minus1 <- long_minus1[long_minus1 > 0L]
-    irange <- unname(psetdiff(range(x_grl), x_grl))
+    irange <- unname(setdiff(range(x_grl), x_grl))
     irange_max <- irange[width(irange) > inter_range_len]
     irange_idx <- elementNROWS(irange_max) > 0
     distant <- integer()
