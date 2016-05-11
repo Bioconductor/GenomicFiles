@@ -36,7 +36,7 @@ setClass("RangedVcfStack",
 ### Constructors 
 ###
 
-VcfStack <- function(files, seqinfo, colData=DataFrame()) 
+VcfStack <- function(files=character(), seqinfo=Seqinfo(), colData=DataFrame()) 
 {
     if (!is(seqinfo, "Seqinfo")) 
         stop("the supplied 'seqinfo' must be a Seqinfo object")
@@ -51,7 +51,7 @@ VcfStack <- function(files, seqinfo, colData=DataFrame())
     tmp
 }
 
-RangedVcfStack <- function(vs, rowRanges = GRanges()) #, sampleNames=character()) 
+RangedVcfStack <- function(vs=VcfStack(), rowRanges = GRanges()) #, sampleNames=character()) 
 {
     stopifnot(is(vs, "VcfStack"))
     new("RangedVcfStack", vs, rowRanges=rowRanges) #, sampleNames=sampleNames)
@@ -64,13 +64,19 @@ RangedVcfStack <- function(vs, rowRanges = GRanges()) #, sampleNames=character()
 setMethod("colnames", "VcfStack", function(x, do.NULL=TRUE, prefix="col") {
   rownames(colData(x))
 })
+
 setMethod("rownames", "VcfStack", function(x, do.NULL=TRUE, prefix="row") {
   names(files(x)) # ugly
 })
 
+setMethod("dim", "VcfStack", function(x) {
+  c(length(x@files), length(vcfSamples(x@headers[[1]])))
+})
+ 
 setMethod("files", "VcfStack",
     function(x, ...) x@files 
 )
+
 setReplaceMethod("files", c("VcfStack", "character"),
     function(x, ..., value)
 {
@@ -82,6 +88,7 @@ setReplaceMethod("files", c("VcfStack", "character"),
 setMethod(seqinfo, "VcfStack",
     function(x) x@seqinfo 
 )
+
 setReplaceMethod("seqinfo", "VcfStack",
     function (x, new2old = NULL, force = FALSE, value)
 {
@@ -94,6 +101,7 @@ setReplaceMethod("seqinfo", "VcfStack",
 setMethod(colData, "VcfStack",
     function(x) x@colData 
 )
+
 setReplaceMethod("colData", c("VcfStack", "DataFrame"),
     function(x, ..., value)
 {
@@ -105,6 +113,7 @@ setReplaceMethod("colData", c("VcfStack", "DataFrame"),
 setMethod("rowRanges", "RangedVcfStack", 
     function(x, ...) x@rowRanges
 )
+
 setReplaceMethod("rowRanges", c("RangedVcfStack", "GRanges"), 
     function(x, ..., value) 
 {
@@ -116,6 +125,14 @@ setReplaceMethod("rowRanges", c("RangedVcfStack", "GRanges"),
 ### Other methods
 ###
 
+
+## FIXME: enforce 'i' numeric?
+setMethod("assay", c("VcfStack", "missing"),
+    function(x, i, ...)
+{
+        vcfob <- readVcf(files(x), genome=genome(x), ...)
+        t(as(genotypeToSnpMatrix(vcfob)$genotypes, "numeric"))
+})
 
 ## FIXME: enforce 'i' numeric?
 setMethod("assay", c("RangedVcfStack", "missing"), 
@@ -191,15 +208,6 @@ setMethod("[", c("RangedVcfStack", "missing", "missing", "missing"),
 #     callNextMethod()
      x[ rowRanges(x), ]  # can't get callNext... dispatch right
 })
-setMethod("[", c("RangedVcfStack", "missing", "character", "missing"),
-    function(x, i, j, drop) {
-#    message("omitting first subscript disallowed, please use GRanges subscripting")
-#    message("returning VcfStack unaltered.")
-#    x
-#     i = rowRanges(x)
-#     callNextMethod()
-     x[ rowRanges(x), j ]  # can't get dispatch right
-})
 
 setMethod("[", c("RangedVcfStack", "missing", "character", "missing"),
     function(x, i, j, drop) {
@@ -251,6 +259,3 @@ paths1kg <- function(chrtoks) sapply(chrtoks, .path1kg, USE.NAMES=FALSE)
     ans
 }
 
-setMethod("dim", "VcfStack", function(x) {
-  c(length(x@files), length(vcfSamples(x@headers[[1]])))
-})
