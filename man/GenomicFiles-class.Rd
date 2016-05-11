@@ -15,6 +15,7 @@
 
 % Accessors:
 \alias{files<-}
+\alias{files}
 \alias{files,GenomicFiles-method}
 \alias{files<-,GenomicFiles,character-method}
 \alias{files<-,GenomicFiles,List-method}

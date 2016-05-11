@@ -1,4 +1,5 @@
 import(methods)
+importFrom(stats, rbinom)
 import(BiocGenerics)
 import(SummarizedExperiment)
 import(Rsamtools)
