@@ -7,13 +7,23 @@
     msg <- NULL
     pa <- files(object)
     npa <- names(pa)
+
     if (!is.character(npa) || length(npa)!=length(pa))
         msg <- c(msg, "'files' must be character with one element per path")
-    ## FIXME: enforce @files %in% seqnames(@rowRanges)?
-    ## FIXME: enforce length(@files) == length(@seqinfo)?
-    ## FIXME: colData requirements?
+    
+    if (any(!rownames(object) %in% seqlevels(object)))
+        msg <- c(msg, "rownames must be in seqinfo object")
+ 
+    if (any(!colnames(object) %in% vcfSamples(object@headers[[1]])))
+        msg <- c(msg, "a sample in 'colData' is not a sample in 'files'")
+
+    # check sample names same across all files
+
+
     if (is.null(msg)) TRUE else msg
 }
+
+
 
 setClass("VcfStack", 
     representation(
@@ -42,9 +52,14 @@ VcfStack <- function(files=character(), seqinfo=Seqinfo(), colData=DataFrame())
         stop("the supplied 'seqinfo' must be a Seqinfo object")
     pt <- files
     sn <- names(files)
+
+    ## so we subset for user?? - asssume names of files are seqinfo seqnames? 
     si <- seqinfo[sn]
     #seqlevelsStyle(si) <- set.seqlstyle
+    
     names(files) <- seqnames(si)
+#    seqlevels(si) = intersect(seqlevels(seqinfo), seqlevels(si))
+        
     hs <- lapply(files, scanVcfHeader)
     tmp <- new("VcfStack", files=files, colData=colData, seqinfo=si,
        headers=hs)
@@ -61,16 +76,12 @@ RangedVcfStack <- function(vs=VcfStack(), rowRanges = GRanges()) #, sampleNames=
 ### Getters and setters 
 ###
 
-setMethod("colnames", "VcfStack", function(x, do.NULL=TRUE, prefix="col") {
-  rownames(colData(x))
-})
-
-setMethod("rownames", "VcfStack", function(x, do.NULL=TRUE, prefix="row") {
-  names(files(x)) # ugly
+setMethod("dimnames", "VcfStack", function(x){
+    list(names(files(x)), rownames(colData(x)))
 })
 
 setMethod("dim", "VcfStack", function(x) {
-  c(length(x@files), length(vcfSamples(x@headers[[1]])))
+  c(length(files(x)), nrow(colData(x)))
 })
  
 setMethod("files", "VcfStack",
@@ -84,7 +95,7 @@ setReplaceMethod("files", c("VcfStack", "character"),
     x
 })
 
-## seqinfo (also seqlevels, genome, seqlevels<-, genome<-), seqinfo<-
+## seqinfo (also seqlevels, genome, seqlevels<-, genome<-)
 setMethod(seqinfo, "VcfStack",
     function(x) x@seqinfo 
 )
@@ -147,7 +158,7 @@ setMethod("assay", c("RangedVcfStack", "missing"),
         t(as(genotypeToSnpMatrix(vcfob)$genotypes, "numeric"))
 })
 
-readVcfStack <- function(x, i, j=character())
+readVcfStack <- function(x, i, j=colnames(x))
 {
     stopifnot(is(x, "VcfStack"))
     if (is(x, "RangedVcfStack") && missing(i))
@@ -156,8 +167,9 @@ readVcfStack <- function(x, i, j=character())
     qseqnames <- as.character(unique(seqnames(i)))
     if (length(qseqnames) != 1L)
         stop("seqnames(i) must have one unique seqname")
+    ## FIXME: read more than one seqname 
+       # do.call(rbind, lapply(files, readVcf, ...))
 
-    ## FIXME: assume seqnames will match file paths?
     path2use <- files(x)[qseqnames]
     param <- ScanVcfParam(which=i, samples=j)
     readVcf(path2use, param=param, genome=genome(i)[1])
@@ -223,10 +235,12 @@ setMethod("[", c("RangedVcfStack", "missing", "character", "missing"),
 ###
 
 setMethod("show", "VcfStack", function(object) {
-    cat("VcfStack instance with", length(files(object)), "files.\n")
-    cat("Genome build recorded as ", genome(seqinfo(object))[1], ".\n", sep="")
-    cat("use 'readVcfStack() to extract VariantAnnotation VCF.\n")
+    cat("VcfStack object with ", nrow(object), " files and ", ncol(object), " samples",
+        "\ngenome: ", unique(genome(object)), 
+        "\n", sep="")
     show(seqinfo(object))
+    cat("use 'readVcfStack() to extract VariantAnnotation VCF.\n")
+ 
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

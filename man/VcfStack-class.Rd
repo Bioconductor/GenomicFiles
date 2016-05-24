@@ -15,6 +15,7 @@
 % Accessors:
 \alias{colnames,VcfStack-method}
 \alias{rownames,VcfStack-method}
+\alias{dimnames,VcfStack-method}
 \alias{files,VcfStack-method}
 \alias{files<-,VcfStack,character-method}
 \alias{seqinfo,VcfStack-method}
@@ -101,6 +102,9 @@
     }
     \item{rownames(x), do.NULL=TRUE, prefix="row")}{
       Get the short names of the files in \code{VcfStack}.
+    }
+    \item{dimnames(x))}{
+      Get the sample names and the short names of files in \code{VcfStack}.
     }
     \item{files(x, \dots), files(x, \dots) <- value}{
       Get or set the files on \code{x}. \code{value} can be a character() of
@@ -197,12 +201,13 @@ stack
 dim(stack)
 colnames(stack)
 rownames(stack)
+dimnames(stack)
 files(stack)
 seqinfo(stack)
 colData(stack)
 
 ## Methods
-readVcfStack(stack, i=GRanges("20:862167-62858306"))
+#readVcfStack(stack, i=GRanges("20:862167-62858306"))
 
 ## Subsetting
 stack[GRanges("20:862167-62858306")]
