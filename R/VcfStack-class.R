@@ -19,7 +19,8 @@
         if (any(!colnames(object) %in% smps))
             msg <- c(msg, "a sample in 'colData' is not a sample in 'files'")
     
-    # check sample names same across all files compare to smps??
+        if (!all(sapply(lapply(files(object),scanVcfHeader),samples) == smps))
+            msg <- c(msg, "sample names are not consistent between 'files'")
     }
 
     if (is.null(msg)) TRUE else msg
@@ -31,7 +32,7 @@ setClass("VcfStack",
         seqinfo="Seqinfo",
         colData="DataFrame"
     ),
-    validity=.validVcfStack  # verify 1-1 mapping from files to seqinfo
+    validity=.validVcfStack
 )
 
 setClass("RangedVcfStack",
@@ -130,7 +131,6 @@ setReplaceMethod("colData", c("VcfStack", "DataFrame"),
     x
 })
 
-## Replaces "bindRanges" and "bindRanges<-"
 setMethod("rowRanges", "RangedVcfStack",
     function(x, ...) x@rowRanges
 )
@@ -172,54 +172,79 @@ readVcfStack <- function(x, i, j=colnames(x))
 {
     stopifnot(is(x, "VcfStack"))
     if (is(x, "RangedVcfStack") && missing(i))
-    i = rowRanges(x)
+        i = rowRanges(x)
     stopifnot(is(i, "GenomicRanges"))
     qseqnames <- as.character(unique(seqnames(i)))
-    if (length(qseqnames) != 1L)
-        stop("seqnames(i) must have one unique seqname")
-    ## FIXME: read more than one seqname
-       # do.call(rbind, lapply(files, readVcf, ...))
-
     path2use <- files(x)[qseqnames]
-    param <- ScanVcfParam(which=i, samples=j)
-    readVcf(path2use, param=param, genome=genome(i)[1])
+    
+    do.call(rbind,lapply(path2use, readVcf, genome=genome(i), param=ScanVcfParam(samples=j)))
+   
 }
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
 ###
 
-# we are going to allow 'row'-like subsetting using a GRanges
-# sample subsetting is typical
-# seqnames(i) picks the element of the VcfStack to read
-# all subsetting is dependent on GRanges as row selection predicate
-# if that is missing a message is given and the input returned
+setMethod("[", c("VcfStack", "numeric", "missing", "missing"),
+    function(x, i, j, drop){
+        initialize(x, files=files(x)[i])
+})
+
+setMethod("[", c("VcfStack", "missing", "numeric", "missing"),
+    function(x, i, j, drop){
+        initialize(x, colData=colData(x)[j,])
+})
+
+setMethod("[", c("VcfStack", "numeric", "numeric", "missing"),
+    function(x, i, j, drop){
+	initialize(x, files=files(x)[i], colData=colData(x)[j,]) 
+})
+
+setMethod("[",c("VcfStack", "character", "missing", "missing"),
+    function(x, i, j, drop){
+	initialize(x, files=files(x)[rownames(x) %in% i])
+})
+
+setMethod("[",c("VcfStack", "missing", "character", "missing"),
+    function(x, i, j, drop){
+	initialize(x, colData=colData(x)[colnames(x) %in% j,])
+})
+
+setMethod("[",c("VcfStack", "character", "character", "missing"),
+    function(x, i, j, drop){
+	initialize(x, files=files(x)[rownames(x) %in% i], colData=colData(x)[colnames(x) %in% j,])
+})
+
+setMethod("[", c("VcfStack", "numeric", "character", "missing"),
+    function(x, i, j, drop){
+	initialize(x, files=files(x)[i], colData=colData(x)[colnames(x) %in% j,])
+})
+
+setMethod("[", c("VcfStack", "character", "numeric", "missing"),
+    function(x, i, j, drop){
+	initialize(x, files=files(x)[rownames(x) %in% i], colData=colData(x)[j,])
+})
 
 setMethod("[", c("VcfStack", "GenomicRanges", "character", "missing"),
-   function(x, i, j, drop) {
-    querseq = as.character(seqnames(i))
-    stopifnot(length(unique(querseq))==1) # is this good enough?
-    path2use = files(x)[querseq]
-    param = ScanVcfParam(which=i)
-    vcfSamples(param) = j
-    readVcf(path2use, param=param, genome=genome(i)[1])
-   })
+    function(x, i, j, drop) {
+        querseq = as.character(seqnames(i))
+        initialize(x, files=files(x)[rownames(x) %in% querseq], colData=colData(x)[colnames(x) %in% j,])
+})
 
 setMethod("[", c("VcfStack", "GenomicRanges", "missing", "missing"),
-   function(x, i, j, drop) {
-    querseq = as.character(seqnames(i))
-    stopifnot(length(unique(querseq))==1) # is this good enough?
-    path2use = files(x)[querseq]
-    param = ScanVcfParam(which=i)
-    readVcf(path2use, param=param, genome=genome(i)[1])
-   })
-
-setMethod("[", c("VcfStack", "missing", "character", "missing"),
-   function(x, i, j, drop) {
-    message("omitting first subscript disallowed, please use GRanges subscripting")
-    message("returning VcfStack unaltered.")
-    x
+    function(x, i, j, drop) {
+        querseq = as.character(seqnames(i))
+        initialize(x, files=files(x)[rownames(x) %in% querseq])
 })
+
+setMethod("[", c("VcfStack", "GenomicRanges", "numeric", "missing"),
+    function(x, i, j, drop) {
+        querseq = as.character(seqnames(i))
+        initialize(x, files=files(x)[rownames(x) %in% querseq], colData=colData(x)[j,])
+})
+
+
+
 
 setMethod("[", c("RangedVcfStack", "missing", "missing", "missing"),
     function(x, i, j, drop) {

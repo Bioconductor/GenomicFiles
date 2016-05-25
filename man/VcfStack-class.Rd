@@ -27,14 +27,24 @@
 \alias{rowRanges<-,RangedVcfStack,GRanges-method}
 
 % Methods:
+\alias{assay,VcfStack,missing-method}
 \alias{assay,RangedVcfStack,missing-method}
 \alias{readVcfStack}
 \alias{show,VcfStack-method}
 
 % Subsetting:
+\alias{[,VcfStack,numeric,missing,missing-method}
+\alias{[,VcfStack,missing,numeric,missing-method}
+\alias{[,VcfStack,numeric,numeric,missing-method}
+\alias{[,VcfStack,character,missing,missing-method}
+\alias{[,VcfStack,missing,character,missing-method}
+\alias{[,VcfStack,character,character,missing-method}
+\alias{[,VcfStack,numeric,character,missing-method}
+\alias{[,VcfStack,character,numeric,missing-method}
+
 \alias{[,VcfStack,GenomicRanges,character,missing-method}
 \alias{[,VcfStack,GenomicRanges,missing,missing-method}
-\alias{[,VcfStack,missing,character,missing-method}
+\alias{[,VcfStack,GenomicRanges,numeric,missing-method}
 
 \alias{[,RangedVcfStack,missing,missing,missing-method}
 \alias{[,RangedVcfStack,missing,character,missing-method}
@@ -208,8 +218,14 @@ colData(stack)
 
 ## Methods
 readVcfStack(stack, i=GRanges("20:862167-62858306"))
+i = as(c("20:862167-62858306", "7:1-159138000"), "GRanges")
+readVcfStack(stack, i=i, j="NA12891")
 
 ## Subsetting
+stack[4:6,1:2]
+stack[c("7","11","X"),"NA12891"]
+stack[c("7","11","X"),2:3]
+
 stack[GRanges("20:862167-62858306")]
 
 ## Helpers
