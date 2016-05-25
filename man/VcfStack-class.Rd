@@ -57,7 +57,7 @@
 \section{Constructor}{
   \describe{
     \item{}{
-	\code{VcfStack(files=character(), seqinfo=Seqinfo(), colData=DataFrame())}
+	\code{VcfStack(files=NULL, seqinfo=NULL, colData=NULL)}
 	Creates a VcfStack object.
 	\describe{
 	  \item{\code{files}}{
@@ -135,7 +135,7 @@
 %      See \link[VariantAnnotation]{genotypeToSnpMatrix}. Argument \code{i} 
 %      must be missing. 
 %    }
-    \item{readVcfStack(x, i, j=character())}{
+    \item{readVcfStack(x, i, j=colnames(x))}{
       Get content of VCF files in the VcfStack. \code{i} can be missing (if
       \code{x} is a \code{RangedVcfStack}) or a \code{GRanges} object. \code{j}
       can be missing or a character() vector of sample names (see
@@ -207,7 +207,7 @@ seqinfo(stack)
 colData(stack)
 
 ## Methods
-#readVcfStack(stack, i=GRanges("20:862167-62858306"))
+readVcfStack(stack, i=GRanges("20:862167-62858306"))
 
 ## Subsetting
 stack[GRanges("20:862167-62858306")]
