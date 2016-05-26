@@ -185,62 +185,27 @@ readVcfStack <- function(x, i, j=colnames(x))
 ### Subsetting
 ###
 
-setMethod("[", c("VcfStack", "numeric", "missing", "missing"),
-    function(x, i, j, drop){
+setMethod("[", c("VcfStack", "ANY", "ANY"),
+    function(x, i, j, ..., drop=TRUE){
+
+    if (1L != length(drop) || (!missing(drop) && drop))
+        warning("'drop' ignored '[,VCF,ANY,ANY-method'")
+
+    if (missing(i) && missing(j)) {
+        x
+    } else if (missing(j)) {
+        if (class(i) == "GRanges") {
+            i = as.character(seqnames(i))
+        }
         initialize(x, files=files(x)[i])
-})
-
-setMethod("[", c("VcfStack", "missing", "numeric", "missing"),
-    function(x, i, j, drop){
-        initialize(x, colData=colData(x)[j,])
-})
-
-setMethod("[", c("VcfStack", "numeric", "numeric", "missing"),
-    function(x, i, j, drop){
-	initialize(x, files=files(x)[i], colData=colData(x)[j,]) 
-})
-
-setMethod("[",c("VcfStack", "character", "missing", "missing"),
-    function(x, i, j, drop){
-	initialize(x, files=files(x)[rownames(x) %in% i])
-})
-
-setMethod("[",c("VcfStack", "missing", "character", "missing"),
-    function(x, i, j, drop){
-	initialize(x, colData=colData(x)[colnames(x) %in% j,])
-})
-
-setMethod("[",c("VcfStack", "character", "character", "missing"),
-    function(x, i, j, drop){
-	initialize(x, files=files(x)[rownames(x) %in% i], colData=colData(x)[colnames(x) %in% j,])
-})
-
-setMethod("[", c("VcfStack", "numeric", "character", "missing"),
-    function(x, i, j, drop){
-	initialize(x, files=files(x)[i], colData=colData(x)[colnames(x) %in% j,])
-})
-
-setMethod("[", c("VcfStack", "character", "numeric", "missing"),
-    function(x, i, j, drop){
-	initialize(x, files=files(x)[rownames(x) %in% i], colData=colData(x)[j,])
-})
-
-setMethod("[", c("VcfStack", "GenomicRanges", "character", "missing"),
-    function(x, i, j, drop) {
-        querseq = as.character(seqnames(i))
-        initialize(x, files=files(x)[rownames(x) %in% querseq], colData=colData(x)[colnames(x) %in% j,])
-})
-
-setMethod("[", c("VcfStack", "GenomicRanges", "missing", "missing"),
-    function(x, i, j, drop) {
-        querseq = as.character(seqnames(i))
-        initialize(x, files=files(x)[rownames(x) %in% querseq])
-})
-
-setMethod("[", c("VcfStack", "GenomicRanges", "numeric", "missing"),
-    function(x, i, j, drop) {
-        querseq = as.character(seqnames(i))
-        initialize(x, files=files(x)[rownames(x) %in% querseq], colData=colData(x)[j,])
+    } else if (missing(i)) {
+	initialize(x, colData=colData(x)[j,])
+    } else {
+        if (class(i) == "GRanges") {
+            i = as.character(seqnames(i))
+        }        
+  	initialize(x, files=files(x)[i], colData=colData(x)[j,])
+    }      
 })
 
 

@@ -33,18 +33,9 @@
 \alias{show,VcfStack-method}
 
 % Subsetting:
-\alias{[,VcfStack,numeric,missing,missing-method}
-\alias{[,VcfStack,missing,numeric,missing-method}
-\alias{[,VcfStack,numeric,numeric,missing-method}
-\alias{[,VcfStack,character,missing,missing-method}
-\alias{[,VcfStack,missing,character,missing-method}
-\alias{[,VcfStack,character,character,missing-method}
-\alias{[,VcfStack,numeric,character,missing-method}
-\alias{[,VcfStack,character,numeric,missing-method}
 
-\alias{[,VcfStack,GenomicRanges,character,missing-method}
-\alias{[,VcfStack,GenomicRanges,missing,missing-method}
-\alias{[,VcfStack,GenomicRanges,numeric,missing-method}
+\alias{[,VcfStack,ANY,ANY-method}
+\alias{[,VcfStack,ANY,ANY,ANY-method}
 
 \alias{[,RangedVcfStack,missing,missing,missing-method}
 \alias{[,RangedVcfStack,missing,character,missing-method}

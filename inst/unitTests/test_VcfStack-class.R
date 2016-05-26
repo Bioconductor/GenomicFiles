@@ -54,6 +54,9 @@ test_VcfStack_subsetting <- function() {
     ## default data is 7 files x 3 samples object 
     stack <- VcfStack(files, seqinfo)
 
+    ## test empty subsetting
+    checkTrue(all(dim(stack[])==c(7,3)))
+
     ## test numeric subsetting 
     checkTrue(all(dim(stack[1:3,])==c(3,3)))
     checkTrue(all(dim(stack[,2])==c(7,1)))
@@ -76,17 +79,12 @@ test_VcfStack_subsetting <- function() {
     checkTrue(all(dim(stack[GRanges("20:862167-62858306"),1])==c(1,1))) 
     checkTrue(all(dim(stack[GRanges("20:862167-62858306"),"NA12891"])==c(1,1)))
 
-    ## currently throwns errors when out of bounds by numeric 
-    ## consider changing so valid object with bounds given
+    ## errors if out of bounds or value not found
     checkException(stack[4:8,])
     checkException(stack[,2:4])
-
-    ## test character value not found 
-    checkTrue(all(dim(stack[c("X", "19"),])==c(1,3)))
-    checkTrue(all(dim(stack["19",])==c(0,3)))
-    checkTrue(all(dim(stack[,c("NA12878","NOTFOUND")])==c(7,1)))
-    checkTrue(all(dim(stack[,"NOTFOUND"])==c(7,0)))
-    checkTrue(all(dim(stack[GRanges("19:1-235466666")])==c(0,3)))
+    checkException(stack[c("X", "19")],)
+    checkException(stack[,c("NA12878","NOTFOUND")])
+    checkException(stack[GRanges("19:1-235466666")])
 
 }
 
