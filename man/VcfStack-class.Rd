@@ -27,7 +27,7 @@
 \alias{rowRanges<-,RangedVcfStack,GRanges-method}
 
 % Methods:
-\alias{assay,VcfStack,missing-method}
+\alias{assay,VcfStack,ANY-method}
 \alias{assay,RangedVcfStack,missing-method}
 \alias{readVcfStack}
 \alias{show,VcfStack-method}

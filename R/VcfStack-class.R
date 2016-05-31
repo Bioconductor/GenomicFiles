@@ -146,13 +146,24 @@ setReplaceMethod("rowRanges", c("RangedVcfStack", "GRanges"),
 ### Other methods
 ###
 
-
-## FIXME: enforce 'i' numeric?
-setMethod("assay", c("VcfStack", "missing"),
-    function(x, i, ...)
+setMethod("assay", c("VcfStack", "ANY"),
+     function(x, i, ...)
 {
-        vcfob <- readVcf(files(x), genome=genome(x), ...)
-        t(as(genotypeToSnpMatrix(vcfob)$genotypes, "numeric"))
+    if (is(i, "GRanges")) {
+        files <- files(x)[as.character(seqnames(i))]
+    } else {
+        files <- if (missing(i)) files(x) else files(x)[i]
+        i <- GRanges(seqinfo(x))[names(files)]
+    }
+
+    i <- splitAsList(i, seq_along(i))
+    genotypes <- Map(function(file, grange, genome) {
+        ## FIXME: readGeno or other more efficient input?
+        vcf <- readVcf(file, genome, grange)
+        t(as(genotypeToSnpMatrix(vcf)$genotypes, "numeric"))
+    }, files, i, MoreArgs=list(genome=genome(x)))
+
+    do.call(rbind, genotypes)
 })
 
 ## FIXME: enforce 'i' numeric?
@@ -171,13 +182,26 @@ setMethod("assay", c("RangedVcfStack", "missing"),
 readVcfStack <- function(x, i, j=colnames(x))
 {
     stopifnot(is(x, "VcfStack"))
-    if (is(x, "RangedVcfStack") && missing(i))
-        i = rowRanges(x)
-    stopifnot(is(i, "GenomicRanges"))
-    qseqnames <- as.character(unique(seqnames(i)))
-    path2use <- files(x)[qseqnames]
-    
-    do.call(rbind,lapply(path2use, readVcf, genome=genome(i), param=ScanVcfParam(samples=j)))
+    if (is(x, "RangedVcfStack") && missing(i)){
+        ranges = rowRanges(x)
+        i = as.character(unique(seqnames(ranges)))
+    }
+    if (missing(i)) {
+        i = names(files(x))
+    }
+    if (is(i, "GRanges")) {
+        i = as.character(unique(seqnames(i)))
+    } 
+
+    if (is.numeric(j)) {
+        j = colnames(x)[j]
+    }
+
+    path2use <- files(x)[i]
+
+    files = lapply(path2use, readVcf, genome=genome(x), param=ScanVcfParam(samples=j))
+
+    do.call(rbind,files)
    
 }
 
@@ -194,14 +218,14 @@ setMethod("[", c("VcfStack", "ANY", "ANY"),
     if (missing(i) && missing(j)) {
         x
     } else if (missing(j)) {
-        if (class(i) == "GRanges") {
+        if (is(i, "GRanges")) {
             i = as.character(seqnames(i))
         }
         initialize(x, files=files(x)[i])
     } else if (missing(i)) {
 	initialize(x, colData=colData(x)[j,])
     } else {
-        if (class(i) == "GRanges") {
+        if (is(i, "GRanges")) {
             i = as.character(seqnames(i))
         }        
   	initialize(x, files=files(x)[i], colData=colData(x)[j,])
@@ -238,7 +262,7 @@ setMethod("show", "VcfStack", function(object) {
     cat("VcfStack object with ", nrow(object), " files and ", ncol(object), " samples",
         "\ngenome: ", unique(genome(object)),
         "\n", sep="")
-    show(seqinfo(object))
+    cat("Seqinfo object with", summary(seqinfo(object)), "\n")
     cat("use 'readVcfStack() to extract VariantAnnotation VCF.\n")
 
 })
