@@ -48,6 +48,22 @@ test_VcfStack_construction <- function() {
 
 }
 
+test_RangedVcfStack_construction <- function() {
+
+    ## empty constructor
+    checkTrue(validObject(RangedVcfStack()))
+
+    ## constructor with VcfStack object 
+    checkTrue(validObject(RangedVcfStack(VcfStack(files))))
+
+    ## constructor with valid rowRanges object 
+    checkTrue(validObject(RangedVcfStack(VcfStack(files), rowRanges=GRanges(c("7:1-100000000","X:1-100000000")))))
+
+    ## constructor with invalid rowRanges object 
+    checkException(RangedVcfStack(VcfStack(files), rowRanges=GRanges(c("7:1-100000000","X:1-100000000", "19:1-100000000"))))
+
+}
+
 
 test_VcfStack_subsetting <- function() {
 

@@ -26,6 +26,16 @@
     if (is.null(msg)) TRUE else msg
 }
 
+
+.validRangedVcfStack = function(object)
+{
+    msg <- NULL
+    if (any(!seqnames(rowRanges(object)) %in% rownames(object)))
+        msg <- c(msg, "A 'GRange' seqname is not in VcfStack")
+
+    if (is.null(msg)) TRUE else msg
+}
+
 setClass("VcfStack",
     representation(
         files="character",
@@ -39,12 +49,13 @@ setClass("RangedVcfStack",
     contains="VcfStack",
     representation(
         rowRanges="GRanges"
-    )
+    ),
+    validity=.validRangedVcfStack
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors
-###
+##
 
 VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL)
 {
@@ -77,10 +88,19 @@ VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL)
     new("VcfStack", files=files, colData=colData, seqinfo=si)
 }
 
-RangedVcfStack <- function(vs=VcfStack(), rowRanges = GRanges()) #, sampleNames=character())
+RangedVcfStack <- function(vs=NULL, rowRanges = NULL) 
 {
-    stopifnot(is(vs, "VcfStack"))
-    new("RangedVcfStack", vs, rowRanges=rowRanges) #, sampleNames=sampleNames)
+    if (is.null(vs) && is.null(rowRanges)) {
+        new("RangedVcfStack", VcfStack(), rowRanges=GRanges()) 
+    } else {
+        stopifnot(is(vs, "VcfStack"))
+        if (is.null(rowRanges)){
+            rowRanges <- as(seqinfo(vs), "GRanges")
+            if (any(!seqnames(rowRanges) %in% rownames(vs)))
+                rowRanges <- rowRanges[seqnames(rowRanges) %in% rownames(vs)]
+        }         
+        new("RangedVcfStack", vs, rowRanges=rowRanges)
+    }
 }
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -139,6 +159,7 @@ setReplaceMethod("rowRanges", c("RangedVcfStack", "GRanges"),
     function(x, ..., value)
 {
         x@rowRanges <- value
+        validObject(x)
         x
 })
 
@@ -199,7 +220,8 @@ readVcfStack <- function(x, i, j=colnames(x))
 
     path2use <- files(x)[i]
 
-    files = lapply(path2use, readVcf, genome=genome(x), param=ScanVcfParam(samples=j))
+    files = lapply(path2use, readVcf, genome=genome(x), 
+                   param=ScanVcfParam(samples=j))
 
     do.call(rbind,files)
    
@@ -259,10 +281,25 @@ setMethod("[", c("RangedVcfStack", "missing", "character", "missing"),
 ###
 
 setMethod("show", "VcfStack", function(object) {
-    cat("VcfStack object with ", nrow(object), " files and ", ncol(object), " samples",
+    cat("VcfStack object with ", nrow(object), " files and ", 
+        ncol(object), " samples",
         "\ngenome: ", unique(genome(object)),
         "\n", sep="")
     cat("Seqinfo object with", summary(seqinfo(object)), "\n")
+    
+    ## FIXME: replace when GenomicRanges summary() implemented 
+    if( is(object, "RangedVcfStack") ){
+        x <- rowRanges(object)
+        x_class <- class(x)
+        x_len <- length(x)
+        x_mcols <- mcols(x)
+        x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
+        cat(x_class, " object with ",
+            x_len, " ", ifelse(x_len == 1L, "range", "ranges"),
+            " and ",
+            x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
+            "\n", sep="")
+    }
     cat("use 'readVcfStack() to extract VariantAnnotation VCF.\n")
 
 })
