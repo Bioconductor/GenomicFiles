@@ -28,7 +28,7 @@
 
 % Methods:
 \alias{assay,VcfStack,ANY-method}
-\alias{assay,RangedVcfStack,missing-method}
+\alias{assay,RangedVcfStack,ANY-method}
 \alias{readVcfStack}
 \alias{show,VcfStack-method}
 
@@ -36,9 +36,8 @@
 
 \alias{[,VcfStack,ANY,ANY-method}
 \alias{[,VcfStack,ANY,ANY,ANY-method}
-
-\alias{[,RangedVcfStack,missing,missing,missing-method}
-\alias{[,RangedVcfStack,missing,character,missing-method}
+\alias{[,RangedVcfStack,ANY,ANY-method}
+\alias{[,RangedVcfStack,ANY,ANY,ANY-method}
 
 % Helpers:
 \alias{getVCFPath}
@@ -75,7 +74,7 @@
 	}
     }
     \item{}{
-	\code{RangedVcfStack(vs=VcfStack(), rowRanges = GRanges())}
+	\code{RangedVcfStack(vs=NULL, rowRanges=NULL)}
 	Creates a RangedVcfStack object.
 	\describe{
 	  \item{\code{vs}}{
@@ -83,7 +82,9 @@
 	  }
 	  \item{\code{rowRanges}}{
 	    An optional \link[GenomicRanges]{GRanges} object associating the
-	    genomic ranges of interest to the collection of VCF files.
+	    genomic ranges of interest to the collection of VCF files. If 
+            missing, a default is created from the \code{seqinfo} object of the 
+            provided \code{VcfStack}.
 	  }
 	}
     }
@@ -128,18 +129,21 @@
 }
 
 \section{Methods}{
-  In the code below, \code{x} is a VcfStack or RangedVcfStack object.
+  In the code below, \code{x} is a VcfStack or RangedVcfStack object. \code{i} 
+  is a \link[GenomicRanges]{GRanges} object, character() vector of 
+  \link[GenomeInfoDb:Seqinfo-class]{seqnames}, numeric() vector, logical() vector, 
+  or can be missing. For a RangedVcfStack object, assay and readVcfStack will use
+  the associated \code{rowRanges} object for \code{i}.  
 
   \describe{
-%    \item{assay(x, i, \dots)}{
-%      Get matrix of genotype calls from the VCF files. 
-%      See \link[VariantAnnotation]{genotypeToSnpMatrix}. Argument \code{i} 
-%      must be missing. 
-%    }
+    \item{assay(x, i, \dots)}{
+      Get matrix of genotype calls from the VCF files. 
+      See \link[VariantAnnotation]{genotypeToSnpMatrix}. Argument \code{i} 
+      specifies which files to read. 
+    }
     \item{readVcfStack(x, i, j=colnames(x))}{
-      Get content of VCF files in the VcfStack. \code{i} can be missing (if
-      \code{x} is a \code{RangedVcfStack}) or a \code{GRanges} object. \code{j}
-      can be missing or a character() vector of sample names (see
+      Get content of VCF files in the VcfStack. \code{i} indicated which files to 
+      read. \code{j}can be missing or a character() vector of sample names (see
       \link[VariantAnnotation:VCFHeader-class]{samples}) present in the VCF
       files. 
     }
@@ -151,14 +155,19 @@
 }
 
 \section{Subsetting}{
-  In the code below, \code{x} is a VcfStack or RangedVcfStack object.
+  In the code below, \code{x} is a VcfStack or RangedVcfStack object. For a 
+  RangedVcfStack object, subsetting will use the associated \code{rowRanges} 
+  object for \code{i}.
 
   \describe{
     \item{x[i, j]}{
       Get elements from ranges \code{i} and samples \code{j} as a
-      \link[VariantAnnotation]{VCF} object. \code{i} can be missing or a 
-      \code{GRanges} object. \code{j} can be missing or a character() vector of 
-      sample names. 
+      VcfStack or RangedVcfStack object. \code{i} can be missing, a 
+      \code{GRanges} object, a character() vector of 
+      \link[GenomeInfoDb:Seqinfo-class]{seqnames}, numeric() 
+      vector of indicies, logicial(), or missing. \code{j} can be missing, a 
+      character() vector of sample names, a numeric(), logical() vector, 
+      or missing. 
     }    
   }
 }
@@ -198,6 +207,11 @@ seqinfo <- as(readRDS(file.path(extdata, "seqinfo.rds")), "Seqinfo")
 stack <- VcfStack(files, seqinfo)
 stack
 
+Rstack = RangedVcfStack(stack)
+gr = GRanges(c("7:1-159138000","X:1-155270560"))
+Rstack2 = RangedVcfStack(stack, gr)
+Rstack2
+
 ## Accessors
 dim(stack)
 colnames(stack)
@@ -212,12 +226,17 @@ readVcfStack(stack, i=GRanges("20:862167-62858306"))
 i = as(c("20:862167-62858306", "7:1-159138000"), "GRanges")
 readVcfStack(stack, i=i, j="NA12891")
 
+# assay(stack, gr)
+# assay(Rstack2)
+
 ## Subsetting
 stack[4:6,1:2]
 stack[c("7","11","X"),"NA12891"]
 stack[c("7","11","X"),2:3]
-
 stack[GRanges("20:862167-62858306")]
+
+Rstack2[]
+Rstack2[,1]
 
 ## Helpers
 getVCFPath(stack, 1)

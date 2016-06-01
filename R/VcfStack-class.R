@@ -88,7 +88,7 @@ VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL)
     new("VcfStack", files=files, colData=colData, seqinfo=si)
 }
 
-RangedVcfStack <- function(vs=NULL, rowRanges = NULL) 
+RangedVcfStack <- function(vs=NULL, rowRanges=NULL) 
 {
     if (is.null(vs) && is.null(rowRanges)) {
         new("RangedVcfStack", VcfStack(), rowRanges=GRanges()) 
@@ -187,40 +187,37 @@ setMethod("assay", c("VcfStack", "ANY"),
     do.call(rbind, genotypes)
 })
 
-## FIXME: enforce 'i' numeric?
-setMethod("assay", c("RangedVcfStack", "missing"),
+setMethod("assay", c("RangedVcfStack", "ANY"),
     function(x, i, ...)
-{
-        rr <- rowRanges(x)
-        usn = unique(seqnames(rr))
-#        mat <- readGT(files(x)[usn],  # used to work but now genotypeTo... needs ref
-#                      param=ScanVcfParam(which=rr), ...)
-        vcfob <- readVcf(files(x)[unique(seqnames(rr))], genome=genome(x)[usn],
-                      param=ScanVcfParam(which=rr), ...)
-        t(as(genotypeToSnpMatrix(vcfob)$genotypes, "numeric"))
+{   
+    if (!missing(i)) message(paste(strwrap("RangedVcfStack uses rowRanges to subset; Ignoring given 'i'", exdent=4), collapse="\n"))   
+    i <- rowRanges(x)
+    #assay(x,i)
+    callNextMethod(x=x, i=i)
 })
+
 
 readVcfStack <- function(x, i, j=colnames(x))
 {
     stopifnot(is(x, "VcfStack"))
     if (is(x, "RangedVcfStack") && missing(i)){
-        ranges = rowRanges(x)
-        i = as.character(unique(seqnames(ranges)))
+        ranges <- rowRanges(x)
+        i <- as.character(unique(seqnames(ranges)))
     }
     if (missing(i)) {
-        i = names(files(x))
+        i <- names(files(x))
     }
     if (is(i, "GRanges")) {
-        i = as.character(unique(seqnames(i)))
+        i <- as.character(unique(seqnames(i)))
     } 
 
     if (is.numeric(j)) {
-        j = colnames(x)[j]
+        j <- colnames(x)[j]
     }
 
     path2use <- files(x)[i]
 
-    files = lapply(path2use, readVcf, genome=genome(x), 
+    files <- lapply(path2use, readVcf, genome=genome(x), 
                    param=ScanVcfParam(samples=j))
 
     do.call(rbind,files)
@@ -241,40 +238,32 @@ setMethod("[", c("VcfStack", "ANY", "ANY"),
         x
     } else if (missing(j)) {
         if (is(i, "GRanges")) {
-            i = as.character(seqnames(i))
+            i <- as.character(seqnames(i))
         }
         initialize(x, files=files(x)[i])
     } else if (missing(i)) {
 	initialize(x, colData=colData(x)[j,])
     } else {
         if (is(i, "GRanges")) {
-            i = as.character(seqnames(i))
+            i <- as.character(seqnames(i))
         }        
   	initialize(x, files=files(x)[i], colData=colData(x)[j,])
     }      
 })
 
+setMethod("[", c("RangedVcfStack", "ANY", "ANY"),
+    function(x, i, j, ..., drop=TRUE) {
 
-
-
-setMethod("[", c("RangedVcfStack", "missing", "missing", "missing"),
-    function(x, i, j, drop) {
-#    message("omitting first subscript disallowed, please use GRanges subscripting")
-#    message("returning VcfStack unaltered.")
-#    x
-#     i = rowRanges(x)
-#     callNextMethod()
-     x[ rowRanges(x), ]  # can't get callNext... dispatch right
+    if (1L != length(drop) || (!missing(drop) && drop))
+      warning("'drop' ignored '[,VCF,ANY,ANY-method'")
+    if (!missing(i)) message(paste(strwrap("RangedVcfStack uses rowRanges to subset; Ignoring given 'i'", exdent=4), collapse="\n"))
+    i <- rowRanges(x)
+    if (missing(j)) j <- colnames(x)
+    
+    callNextMethod(x=x, i=i, j=j) 
+        
 })
 
-setMethod("[", c("RangedVcfStack", "missing", "character", "missing"),
-    function(x, i, j, drop) {
-#    message("omitting first subscript disallowed, please use GRanges subscripting")
-#    message("returning VcfStack unaltered.")
-#    x
-     i = rowRanges(x)
-     callNextMethod()
-})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### show()

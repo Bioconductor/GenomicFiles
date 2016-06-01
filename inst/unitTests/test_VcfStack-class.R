@@ -105,5 +105,23 @@ test_VcfStack_subsetting <- function() {
 }
 
 
+test_RangedVcfStack_subsetting <- function(){
+    
+    # VcfStack object with 7 files and 3 samples
+    # GRanges object with 2 ranges and 0 metadata columns
+    Rstack <- RangedVcfStack(VcfStack(files, seqinfo),GRanges(c("7:1-159138000","X:1-155270560")))
 
+    # empty subset 
+    checkTrue(all(dim(Rstack[])==c(2,3)))
+   
+    # check sample subsetting 
+    checkTrue(all(dim(Rstack[,1])==c(2,1)))
+    checkTrue(all(dim(Rstack[,c(T,F,T)])==c(2,2)))
+    checkTrue(all(dim(Rstack[,"NA12891"])==c(2,1)))
+
+    # check file subsetting - always use rowRanges
+    checkTrue(all(dim(Rstack[1,])==c(2,3)))
+    checkTrue(all(dim(Rstack["11",])==c(2,3)))
+
+}
 
