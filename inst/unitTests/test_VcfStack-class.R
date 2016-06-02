@@ -1,6 +1,5 @@
 extdata <- system.file(package="GenomicFiles", "extdata")
 files <- dir(extdata, pattern="^CEUtrio.*bgz$", full=TRUE)
-files2 <- files
 names(files) <- sub(".*_([0-9XY]+).*", "\\1", basename(files))
 seqinfo <- as(readRDS(file.path(extdata, "seqinfo.rds")), "Seqinfo")
 smps <- samples(VariantAnnotation::scanVcfHeader(files[1]))
@@ -11,7 +10,7 @@ test_VcfStack_construction <- function() {
     checkTrue(validObject(VcfStack()))
 
     ## named files
-    checkException(validObject(VcfStack(files2)))
+    checkException(validObject(VcfStack(unname(files))))
 
     ## all files must exist
     checkException(VcfStack(tempfile()))
@@ -35,7 +34,9 @@ test_VcfStack_construction <- function() {
     checkTrue(validObject(VcfStack(files, colData=colData)))
 
     ## constructor with files and wrong colData
-    checkException(VcfStack(files, colData=DataFrame(row.names=c("Break", "This", "Now"))))
+    checkException(VcfStack(
+        files,
+        colData=DataFrame(row.names=c("Break", "This", "Now"))))
 
     ## constructor with seqinfo and colData
     checkTrue(validObject(VcfStack(seqinfo=seqinfo, colData=colData)))
@@ -45,7 +46,6 @@ test_VcfStack_construction <- function() {
 
     ## constructor with colData 
     checkTrue(validObject(VcfStack(colData=colData)))
-
 }
 
 test_RangedVcfStack_construction <- function() {
@@ -57,13 +57,46 @@ test_RangedVcfStack_construction <- function() {
     checkTrue(validObject(RangedVcfStack(VcfStack(files))))
 
     ## constructor with valid rowRanges object 
-    checkTrue(validObject(RangedVcfStack(VcfStack(files), rowRanges=GRanges(c("7:1-100000000","X:1-100000000")))))
+    checkTrue(validObject(RangedVcfStack(
+        VcfStack(files),
+        rowRanges=GRanges(c("7:1-100000000","X:1-100000000")))))
 
     ## constructor with invalid rowRanges object 
-    checkException(RangedVcfStack(VcfStack(files), rowRanges=GRanges(c("7:1-100000000","X:1-100000000", "19:1-100000000"))))
-
+    checkException(RangedVcfStack(
+        VcfStack(files),
+        rowRanges=GRanges(
+            c("7:1-100000000", "X:1-100000000", "19:1-100000000"))))
 }
 
+test_RangedVcfStack_construction_2 <- function() {
+    stack <- VcfStack(files)
+    gr0 <- GRanges(seqinfo(stack))[rownames(stack)]
+
+    checkTrue(validObject(RangedVcfStack(stack, gr0)))
+
+    gr1 <- gr0[1:2]
+    checkTrue(validObject(RangedVcfStack(stack, gr1)))
+
+    gr2 <- GRanges(seqinfo(stack))[c("1", "2")]
+    checkException(RangedVcfStack(stack, gr2))
+}
+
+test_RangedVcfStack_seqinfo <- function() {
+    rstack <- RangedVcfStack(VcfStack(files))
+    value0 <- seqinfo(rstack)
+
+    ## valid update of seqinfo -- reduce seqlevels
+    value <- value0[rownames(rstack)]
+    seqinfo(rstack) <- value
+    checkIdentical(seqinfo(rstack), value)
+    checkIdentical(seqinfo(rowRanges(rstack)), value)
+
+    ## fail to drop seqlevels currently in use
+    value <- value0[setdiff(seqnames(value0), rownames(rstack))]
+    checkException({
+        seqinfo(rstack) <- value        
+    })
+}
 
 test_VcfStack_subsetting <- function() {
 
@@ -109,19 +142,19 @@ test_RangedVcfStack_subsetting <- function(){
     
     # VcfStack object with 7 files and 3 samples
     # GRanges object with 2 ranges and 0 metadata columns
-    Rstack <- RangedVcfStack(VcfStack(files, seqinfo),GRanges(c("7:1-159138000","X:1-155270560")))
+    Rstack <- RangedVcfStack(VcfStack(files, seqinfo),
+                             GRanges(c("7:1-159138000", "X:1-155270560")))
 
     # empty subset 
-    checkTrue(all(dim(Rstack[])==c(2,3)))
+    checkIdentical(dim(Rstack[,]), dim(Rstack))
    
-    # check sample subsetting 
-    checkTrue(all(dim(Rstack[,1])==c(2,1)))
-    checkTrue(all(dim(Rstack[,c(T,F,T)])==c(2,2)))
-    checkTrue(all(dim(Rstack[,"NA12891"])==c(2,1)))
+    # check sample subsetting
+    checkIdentical(dim(Rstack[, 1]), c(7L, 1L))
+    checkIdentical(dim(Rstack[,c(TRUE, FALSE, TRUE)]), c(7L, 2L))
+    checkIdentical(dim(Rstack[,"NA12891"]), c(7L, 1L))
 
     # check file subsetting - always use rowRanges
-    checkTrue(all(dim(Rstack[1,])==c(2,3)))
-    checkTrue(all(dim(Rstack["11",])==c(2,3)))
-
+    checkIdentical(dim(Rstack[1,]), c(1L, 3L))
+    checkIdentical(dim(Rstack["11",]), c(1L, 3L))
 }
 
