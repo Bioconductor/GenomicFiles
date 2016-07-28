@@ -164,12 +164,13 @@
   \describe{
     \item{x[i, j]}{
       Get elements from ranges \code{i} and samples \code{j} as a
-      VcfStack or RangedVcfStack object.
+      VcfStack or RangedVcfStack object. Note: for a \code{RangedVcfStack},
+      the \code{rowRanges} object will also be subset.
 
       \code{i} can be missing, a character() vector of
       \link[GenomeInfoDb:Seqinfo-class]{seqnames}, numeric() vector of
-      indexes, logical(). When \code{x} is a VcfStack instance, \code{i}
-      can also be a \code{GRanges} object; \code{seqnames(i)} is then
+      indexes, logical() or \code{GRanges} object. When \code{i} is a
+      \code{GRanges} object,  \code{seqnames(i)} is then
       used to subset the files in the VcfStack.
 
       \code{j} can be missing, a character() vector of sample names, a

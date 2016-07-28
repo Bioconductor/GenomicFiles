@@ -276,7 +276,15 @@ setMethod("[", c("RangedVcfStack", "ANY", "ANY"),
 
     if (missing(i)) {
         i <- rownames(x)
+    } else if (is(i, "GenomicRanges")) {
+        stopifnot(all(seqnames(i) %in% rownames(x)))
+        rowRanges(x) <- intersect(rowRanges(x), i)
+    } else if (is(i, "character")) {
+        stopifnot(all(i %in% rownames(x)))
+        value <- rowRanges(x)
+        rowRanges(x) <- value[seqnames(value) %in% i]
     } else {
+        stopifnot(is(i, "numeric") || is(i, "logical"))
         value <- rowRanges(x)
         rowRanges(x) <- value[seqnames(value) %in% rownames(x)[i]]
     }

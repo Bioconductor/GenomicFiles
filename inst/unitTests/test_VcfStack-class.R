@@ -153,8 +153,13 @@ test_RangedVcfStack_subsetting <- function(){
     checkIdentical(dim(Rstack[,c(TRUE, FALSE, TRUE)]), c(7L, 2L))
     checkIdentical(dim(Rstack[,"NA12891"]), c(7L, 1L))
 
-    # check file subsetting - always use rowRanges
+    # check file subsetting and updating GRanges object 
     checkIdentical(dim(Rstack[1,]), c(1L, 3L))
-    checkIdentical(dim(Rstack["11",]), c(1L, 3L))
+    checkIdentical(length(seqnames(rowRanges(Rstack[1,]))), 0L)
+    checkIdentical(dim(Rstack["7",]), c(1L, 3L))
+    checkIdentical(as.character(seqnames(rowRanges(Rstack["7",]))), "7")
+    gr <- GRanges(c("X:1-100000"))
+    checkIdentical(as.character(seqnames(rowRanges(Rstack[gr,]))), "X")
+    checkException(Rstack[GRanges(c("X:1-100000", "13:1-100000")),])
 }
 
