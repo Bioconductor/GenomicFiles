@@ -118,15 +118,13 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., init)
   ranges extracted from a single file to be kept separate or combined with 
   \code{REDUCE}.
  
-  In contrast, \code{reduceFiles} does not iterate through the individual
-  ranges but instead treats them as a group. \code{MAP} is invoked
-  once for each file using all ranges as the \code{range} argument.
-  In general, \code{REDUCE} does not play a significant role in 
-  \code{reduceFiles} because \code{MAP} is only called once on each worker. 
+  In contrast, \code{reduceFiles} treats the output of all MAP calls
+  as a group and reduces them together. \code{REDUCE} usually plays
+  a minor role by concatenating or unlisting results.
  
   Both \code{MAP} and \code{REDUCE} are applied in the distributed 
-  step (``on the worker``). There is no built-in ability to combine 
-  results across workers in the distributed step.
+  step (``on the worker``). Results are not combined across workers in 
+  the distributed step.
 }
 
 \value{

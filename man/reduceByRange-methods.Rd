@@ -119,16 +119,14 @@ reduceRanges(ranges, files, MAP, REDUCE, ..., init)
   invoked on each range / file combination. This approach allows ranges 
   extracted from multiple files to be kept separate or combined with 
   \code{REDUCE}.
-  
-  In contrast, \code{reduceRanges} does not iterate through the individual
-  files but instead treats them as a group. \code{MAP} is invoked once for 
-  each range using all files as the \code{files} argument. Depending on
-  the nature of \code{MAP}, \code{REDUCE} may play a minor role by
-  concatenating or unlisting results.
+ 
+  In contrast, \code{reduceRanges} treats the output of all MAP calls
+  as a group and reduces them together. \code{REDUCE} usually plays
+  a minor role by concatenating or unlisting results.
 
   Both \code{MAP} and \code{REDUCE} are applied in the distributed 
-  step (``on the worker``). There is no built-in ability to combine 
-  results across workers in the distributed step.
+  step (``on the worker``). Results are not combined across workers in 
+  the distributed step.
 }
 
 \value{
