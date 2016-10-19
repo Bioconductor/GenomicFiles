@@ -259,12 +259,12 @@ setMethod("[", c("VcfStack", "ANY", "ANY"),
         }
         initialize(x, files=files(x)[i])
     } else if (missing(i)) {
-        initialize(x, colData=colData(x)[j,])
+        initialize(x, colData=colData(x)[j,,drop=FALSE])
     } else {
         if (is(i, "GRanges")) {
             i <- as.character(seqnames(i))
         }
-        initialize(x, files=files(x)[i], colData=colData(x)[j,])
+        initialize(x, files=files(x)[i], colData=colData(x)[j,,drop=FALSE])
     }
 })
 

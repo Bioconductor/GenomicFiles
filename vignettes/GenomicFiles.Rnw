@@ -156,11 +156,11 @@ These functions split the problem by range which allows subsets (i.e., the same
 range) to be combined across different files.  \Rcode{reduceByRange} iterates
 through the files, invoking MAP and REDUCE for each range / file combination.
 This approach allows ranges extracted from the files to be kept separate or
-combined before the next call to \code{MAP} based on whether or not a
-\code{REDUCE} is supplied.
+combined before the next call to \Rcode{MAP} based on whether or not a
+\Rcode{REDUCE} is supplied.
 
-\code{reduceRanges} applies \code{MAP} to each range / file combination and 
-REDUCEs the output of all MAP calls. \code{REDUCE} usually plays a minor 
+\Rcode{reduceRanges} applies \Rcode{MAP} to each range / file combination and 
+REDUCEs the output of all MAP calls. \Rcode{REDUCE} usually plays a minor 
 role by concatenating or unlisting results.
 
 
@@ -176,11 +176,11 @@ In contrast to the `byRange` approach, \Rcode{reduceByFile} and
 \Rcode{reduceFiles} (Figure \ref{reduceByFile_flow}) split the problem by file.
 Files are sent to different workers with the set of ranges
 allowing subsets (i.e., multiple ranges) from the same file to be combined.
-\Rcode{reduceByFile} invokes \code{MAP} for each file / range combination 
-allowing potential \code{REDUCE} after each MAP step.
+\Rcode{reduceByFile} invokes \Rcode{MAP} for each file / range combination 
+allowing potential \Rcode{REDUCE} after each MAP step.
 
-\Rcode{reduceFiles} applies \code{MAP} to each range / file combination and
-REDUCEs the output of all MAP calls. \code{REDUCE} usually plays a minor 
+\Rcode{reduceFiles} applies \Rcode{MAP} to each range / file combination and
+REDUCEs the output of all MAP calls. \Rcode{REDUCE} usually plays a minor 
 role by concatenating or unlisting results.
 
 \begin{figure}[!h]
