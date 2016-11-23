@@ -160,6 +160,34 @@ setReplaceMethod("seqinfo", "RangedVcfStack",
     initialize(x, seqinfo=value, rowRanges=rowRanges)
 })
 
+setReplaceMethod("seqlevelsStyle", "VcfStack",
+    function(x, value)
+{
+    newSeqInfo <- seqinfo(x)
+    seqlevelsStyle(newSeqInfo) <- value
+    newFiles <- files(x)
+    nms = names(newFiles)
+    seqlevelsStyle(nms) <- value
+    names(newFiles) <- nms
+    message("Updating seqinfo object and file names")
+    initialize(x, seqinfo=newSeqInfo, files=newFiles)
+})
+
+setReplaceMethod("seqlevelsStyle", "RangedVcfStack",
+    function(x, value)
+{
+    newSeqInfo <- seqinfo(x)
+    seqlevelsStyle(newSeqInfo) <- value
+    newFiles <- files(x)
+    nms = names(newFiles)
+    seqlevelsStyle(nms) <- value
+    names(newFiles) <- nms
+    newRange <- rowRanges(x)
+    seqlevelsStyle(newRange) <- value
+    message("Updating seqinfo object, file names, and rowRanges object")
+    initialize(x, seqinfo=newSeqInfo, files=newFiles, rowRanges=newRange)
+})
+
 setMethod(colData, "VcfStack",
     function(x) x@colData
 )

@@ -20,6 +20,8 @@
 \alias{seqinfo,VcfStack-method}
 \alias{seqinfo<-,VcfStack-method}
 \alias{seqinfo<-,RangedVcfStack-method}
+\alias{seqlevelsStyle<-,VcfStack-method}
+\alias{seqlevelsStyle<-,RangedVcfStack-method}
 \alias{colData,VcfStack-method}
 \alias{colData<-,VcfStack,DataFrame-method}
 
@@ -118,6 +120,11 @@
       Get or set the seqinfo on \code{x}. See \link[GenomeInfoDb]{seqinfo<-}
       for details on \code{new2old} and \code{force}.
     }
+    \item{seqlevelsStyle(x) <- value}{
+      Set the seqlevels according to the supplied style. File names and
+      rowRanges will also be updated if applicable.
+      See \link[GenomeInfoDb]{seqlevelsStyle<-} for more details.
+    }    
     \item{colData(x), colData(x, \dots) <- value}{
       Get or set the \code{colData} on \code{x}. \code{value} is a
       \link[S4Vectors]{DataFrame}.
@@ -245,6 +252,14 @@ readVcfStack(stack, i=i, j="NA12891")
 
 head(assay(stack, gr))
 head(assay(rstack2))
+
+seqlevels(stack2)
+rownames(stack2)
+seqlevelsStyle(stack2)
+seqlevelsStyle(stack2) <- "UCSC"
+seqlevelsStyle(stack2)
+seqlevels(stack2)
+rownames(stack2)
 
 ## ---------------------------------------------------------------------
 ## SUBSETTING
