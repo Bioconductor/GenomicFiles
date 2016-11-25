@@ -169,7 +169,6 @@ setReplaceMethod("seqlevelsStyle", "VcfStack",
     nms = names(newFiles)
     seqlevelsStyle(nms) <- value
     names(newFiles) <- nms
-    message("Updating seqinfo object and file names")
     initialize(x, seqinfo=newSeqInfo, files=newFiles)
 })
 
@@ -184,7 +183,6 @@ setReplaceMethod("seqlevelsStyle", "RangedVcfStack",
     names(newFiles) <- nms
     newRange <- rowRanges(x)
     seqlevelsStyle(newRange) <- value
-    message("Updating seqinfo object, file names, and rowRanges object")
     initialize(x, seqinfo=newSeqInfo, files=newFiles, rowRanges=newRange)
 })
 
