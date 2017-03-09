@@ -334,7 +334,7 @@ setMethod("show", "VcfStack", function(object) {
         cat(summary(rowRanges(object)), "\n")
     }
     cat("Seqinfo object with", summary(seqinfo(object)), "\n")
-    cat("use 'readVcfStack() to extract VariantAnnotation VCF.\n")
+    cat("use 'readVcfStack()' to extract VariantAnnotation VCF.\n")
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
