@@ -17,6 +17,8 @@
 \alias{dimnames,VcfStack-method}
 \alias{files,VcfStack-method}
 \alias{files<-,VcfStack,character-method}
+\alias{files<-,VcfStack,VcfFile-method}
+\alias{files<-,VcfStack,VcfFileList-method}
 \alias{seqinfo,VcfStack-method}
 \alias{seqinfo<-,VcfStack-method}
 \alias{seqinfo<-,RangedVcfStack-method}
@@ -60,7 +62,9 @@
         Creates a VcfStack object.
         \describe{
           \item{\code{files}}{
-            A character vector of files paths pointing to VCF files. The
+	    A VcfFilelist object. If a VcfFile or character vector is
+	    given a VcfFileList will be coerced. The character vector
+	    should be files paths pointing to VCF files. The
             character vector must be named, with names correspond to
             seqnames in each VCF file.
           }
@@ -114,6 +118,7 @@
     \item{files(x, \dots), files(x, \dots) <- value}{
       Get or set the files on \code{x}. \code{value} can be a named
       character() of file paths or a
+      \link[VariantAnnotation]{VcfFileList}. The return value will be a
       \link[VariantAnnotation]{VcfFileList}.
     }
     \item{seqinfo(x), seqinfo(x, new2old = NULL, force = FALSE) <- value}{

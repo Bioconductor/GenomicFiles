@@ -9,12 +9,9 @@ import(GenomicRanges)
 import(IRanges)
 import(S4Vectors)
 import(GenomeInfoDb)
+import(VariantAnnotation)
 importFrom(GenomicAlignments, summarizeOverlaps, Union)
 importMethodsFrom(GenomicAlignments, summarizeOverlaps)
-importFrom(VariantAnnotation, 
-    scanVcfHeader, ScanVcfParam, readVcf, genotypeToSnpMatrix, 
-    samples, vcfSamples, "vcfSamples<-", readGT
-)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Export S4 classes

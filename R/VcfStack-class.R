@@ -5,21 +5,15 @@
 .validVcfStack = function(object)
 {
     msg <- NULL
-    pa <- files(object)
-    npa <- names(pa)
-
-    if (is.null(npa))
-        msg <- c(msg, "'files' must be a named character() vector")
 
     if (!all(rownames(object) %in% seqlevels(object)))
         msg <- c(msg, "all rownames(object) must be in seqlevels(object)")
 
     if (length(files(object))) {
-        smps = samples(scanVcfHeader(files(object)[1]))
+        smps = samples(scanVcfHeader(files(object)[[1]]))
         if (!all(colnames(object) %in% smps))
             msg <- c(msg,
                      "all colnames(object) must be sample names in VCF 'files'")
-
         samplesOk <- sapply(files(object), function(file) {
             setequal(samples(scanVcfHeader(file)), smps)
         })
@@ -32,7 +26,7 @@
 
 setClass("VcfStack",
     representation(
-        files="character",
+        files="VcfFileList",
         seqinfo="Seqinfo",
         colData="DataFrame"
     ),
@@ -68,21 +62,21 @@ setClass("RangedVcfStack",
 VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL)
 {
     if (is.null(files)) {
-        files <- structure(character(), .Names=character())
+        files <- VcfFileList()
         header <- NULL
     } else {
-        header <- scanVcfHeader(files[1])
+        if (class(files) != "VcfFileList")
+            files = VcfFileList(files)
+        files = indexVcf(files)
+        header <- scanVcfHeader(files[[1]])
+        
     }
 
     if (is.null(seqinfo)) {
         seqinfo <- if (length(files)) {
-            seqinfo(header)
+            seqinfo(files)
         } else Seqinfo()
     }
-
-    pt <- files
-    sn <- names(files)
-    si <- seqinfo
 
     if (is.null(colData) && length(files)) {
         colData <- DataFrame(row.names=samples(header))
@@ -93,7 +87,7 @@ VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL)
     if (is.null(rownames(colData)) && length(files))
          stop("specify rownames in 'colData'")
 
-    new("VcfStack", files=files, colData=colData, seqinfo=si)
+    new("VcfStack", files=files, colData=colData, seqinfo=seqinfo)
 }
 
 RangedVcfStack <- function(vs=NULL, rowRanges=NULL)
@@ -134,6 +128,21 @@ setMethod("files", "VcfStack",
 setReplaceMethod("files", c("VcfStack", "character"),
     function(x, ..., value)
 {
+    files(x) <- VcfFileList(value)
+    x
+})
+
+setReplaceMethod("files", c("VcfStack", "VcfFile"),
+    function(x, ..., value)
+{
+    files(x) <- VcfFileList(value)
+    x
+})
+
+setReplaceMethod("files", c("VcfStack", "VcfFileList"),
+    function(x, ..., value)
+{
+    value <- indexVcf(value)
     initialize(x, files=value)
 })
 
