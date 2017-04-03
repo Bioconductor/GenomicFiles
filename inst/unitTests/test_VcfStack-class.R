@@ -163,3 +163,59 @@ test_RangedVcfStack_subsetting <- function(){
     checkException(Rstack[GRanges(c("X:1-100000", "13:1-100000")),])
 }
 
+test_VcfStack_replaceFiles <- function(){
+
+    stack <- VcfStack(files)
+    checkTrue(class(files(stack)) == "VcfFileList")
+    checkTrue(all(dim(stack) == c(7L, 3L)))
+
+    # replace with character
+    files(stack) = files[1]
+    checkTrue(all(dim(stack) == c(1L, 3L)))
+         
+    # replace with VcfFileList
+    files(stack) = VariantAnnotation::VcfFileList(files[1:3])
+    checkTrue(all(dim(stack) == c(3L, 3L)))
+}
+
+test_VcfStack_readVcfStack <- function(){
+
+    stack <- VcfStack(files)
+
+    # all files
+    temp = readVcfStack(stack)
+    checkTrue(all(dim(temp) == c(1000L, 3L)))
+
+    # test read by numeric and read by character
+    temp1 = readVcfStack(stack, 1)
+    temp2 = readVcfStack(stack, names(files(stack[1])))
+    checkTrue(all(dim(temp1) == dim(temp2)))
+
+    # test read by GRange
+    gr = GRanges("11:1-100")
+    temp3 = readVcfStack(stack, gr)
+    checkTrue(all(dim(temp3) == c(0L, 3L)))
+    gr = GRanges(paste0("11:1-", seqlengths(seqinfo(stack))[levels(seqnames(gr))]))
+    temp3 = readVcfStack(stack, gr)
+    checkTrue(all(dim(temp1) == dim(temp3)))
+    
+    # test read by range out of bounds
+    checkException(readVcfStack(stack, GRanges("11:1-1000000000")))
+
+    # check multiple
+    temp4 = readVcfStack(stack, 3)
+    temp5 = readVcfStack(stack,c(1,3))
+    checkTrue((dim(temp1)[1] + dim(temp4)[1]) == dim(temp5)[1])
+
+
+    # test RangedVcfStack
+    gr = GRanges("11:1-135006516")
+    Rstack = RangedVcfStack(stack, gr)
+    temp6 = readVcfStack(Rstack)
+    checkTrue(all(dim(temp6) == dim(temp3)))
+
+    gr = GRanges(c("11:1-135006516", "21:1-48129895"))
+    Rstack = RangedVcfStack(stack, gr)
+    temp7 = readVcfStack(Rstack)
+    checkTrue(all(dim(temp7) == dim(temp5)))
+}

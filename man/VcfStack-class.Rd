@@ -155,12 +155,14 @@
       See \link[VariantAnnotation]{genotypeToSnpMatrix}. Argument \code{i}
       specifies which files to read.
     }
-    \item{readVcfStack(x, i, j=colnames(x))}{
+    \item{readVcfStack(x, i, j=colnames(x), param=ScanVcfParam())}{
       Get content of VCF files in the VcfStack. \code{i} indicates which
       files to read. \code{j} can be missing or a character() vector of
       sample names (see
       \link[VariantAnnotation:VCFHeader-class]{samples}) present in the
-      VCF files.
+      VCF files. \code{param} is a
+      \link[VariantAnnotation]{ScanVcfParam} object. If \code{param} is
+      used \code{i} and \code{j} are ignored. 
     }
     \item{show(object)}{
       Display abbreviated information about \code{VcfStack} or

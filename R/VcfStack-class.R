@@ -252,28 +252,45 @@ setMethod("assay", c("RangedVcfStack", "ANY"),
     callNextMethod(x=x, i=i)
 })
 
-readVcfStack <- function(x, i, j=colnames(x))
+readVcfStack <- function(x, i, j=colnames(x), param=ScanVcfParam())
 {
     stopifnot(is(x, "VcfStack"))
-    if (is(x, "RangedVcfStack") && missing(i)) {
-        ranges <- rowRanges(x)
-        i <- as.character(unique(seqnames(ranges)))
-    } else if (missing(i)) {
-        i <- names(files(x))
-    } else if (is(i, "GRanges")) {
-        i <- as.character(unique(seqnames(i)))
-    }
+    if ((!missing(i) || !missing(j)) && !missing(param))
+        stop("'i' and 'j' cannot be used with 'param'")
 
+    gr <- NULL
+    if (missing(param) && missing(i) && is(x, "RangedVcfStack")) {
+        gr <- rowRanges(x)
+    } else if (missing(param) && missing(i)) {
+        gr <- GRanges(seqinfo(x))
+    } else if (missing(param) && is(i, "GRanges")) {
+        gr <- i
+    } else if (missing(param)) {
+        if (is.numeric(i))
+            i = names(files(x))[i]
+        gr <- GRanges(seqinfo(x)[i])
+    } else {                            # use param
+        gr <- GRanges(vcfWhich(param))
+    }
+    
     if (is.numeric(j)) {
         j <- colnames(x)[j]
+    } else if (!missing(param)) {
+        j <- vcfSamples(param)
     }
 
-    path2use <- files(x)[i]
+    genome <- genome(x)
+    vcfSamples(param) <- j
+    vcfWhich(param) <- gr
+    idx <- intersect(names(files(x)), as.character(seqnames(gr)))
 
-    files <- lapply(path2use, readVcf, genome=genome(x),
-                    param=ScanVcfParam(samples=j))
+    vcf <- lapply(idx, function(i, files, genome, param) {
+        file <- files[[i]]
+        vcfWhich(param) <- vcfWhich(param)[i]
+        readVcf(file, genome, param)
+    }, files(x), genome, param)
 
-    do.call(rbind,files)
+    do.call(rbind, vcf)
 }
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
