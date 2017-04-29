@@ -121,9 +121,9 @@
       \link[VariantAnnotation]{VcfFileList}. The return value will be a
       \link[VariantAnnotation]{VcfFileList}.
     }
-    \item{seqinfo(x), seqinfo(x, new2old = NULL, force = FALSE) <- value}{
+    \item{seqinfo(x), seqinfo(x, new2old = NULL, pruning.mode = c("error", "coarse", "fine", "tidy")) <- value}{
       Get or set the seqinfo on \code{x}. See \link[GenomeInfoDb]{seqinfo<-}
-      for details on \code{new2old} and \code{force}.
+      for details on \code{new2old} and \code{pruning.mode}.
     }
     \item{seqlevelsStyle(x) <- value}{
       Set the seqlevels according to the supplied style. File names and

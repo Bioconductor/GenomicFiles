@@ -152,13 +152,15 @@ setMethod(seqinfo, "VcfStack",
 )
 
 setReplaceMethod("seqinfo", "VcfStack",
-    function (x, new2old = NULL, force = FALSE, value)
+    function (x, new2old = NULL, pruning.mode = c("error", "coarse", "fine", "tidy"), value)
 {
     initialize(x, seqinfo=value)
 })
 
+## H.P. 2017-04-29: I renamed 'force' -> 'pruning.mode'. Surprisingly this
+## argument is ignored. That doesn't seem right.
 setReplaceMethod("seqinfo", "RangedVcfStack",
-    function (x, new2old = NULL, force = FALSE, value)
+    function (x, new2old = NULL, pruning.mode = c("error", "coarse", "fine", "tidy"), value)
 {
     if (!is(value, "Seqinfo"))
         stop("the supplied 'seqinfo' must be a Seqinfo object")
