@@ -65,7 +65,7 @@ VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL)
         files <- VcfFileList()
         header <- NULL
     } else {
-        if (class(files) != "VcfFileList")
+        if (!is(files, "VcfFileList"))
             files = VcfFileList(files)
         files = indexVcf(files)
         header <- scanVcfHeader(files[[1]])
