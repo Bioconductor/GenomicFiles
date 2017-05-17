@@ -290,7 +290,12 @@ readVcfStack <- function(x, i, j=colnames(x), param=ScanVcfParam())
     vcfSamples(param) <- j
     vcfWhich(param) <- gr
 
-    vcf <- lapply(names(files(x)), function(i, files, genome, param) {
+    idx <- if (length(gr) > 0){
+        intersect(names(files(x)),
+                  as.character(seqnames(gr))) } else {
+                      names(files(x)) }
+    
+    vcf <- lapply(idx, function(i, files, genome, param) {
         file <- files[[i]]
         if (length(vcfWhich(param)))
             vcfWhich(param) <- vcfWhich(param)[i]
