@@ -266,19 +266,22 @@ readVcfStack <- function(x, i, j=colnames(x), param=ScanVcfParam())
     gr <- NULL
     if (missing(param) && missing(i) && is(x, "RangedVcfStack")) {
         gr <- rowRanges(x)
+        i = intersect(names(files(x)), as.character(seqnames(gr)))
     } else if (missing(param) && missing(i)) {
         gr <- GRanges()
+        i = names(files(x))
     } else if (missing(param) && is(i, "GRanges")) {
-        x <- x[unique(seqnames(i))]
         gr <- i
+        i = unique(seqnames(i))
     } else if (missing(param)) {
         if (is.numeric(i))
             i = names(files(x))[i]
-        x <- x[i]
         gr <- GRanges()
     } else {                            # use param
         gr <- GRanges(vcfWhich(param))
+        i = intersect(names(files(x)), as.character(seqnames(gr)))
     }
+    x = x[i]
     
     if (is.numeric(j)) {
         j <- colnames(x)[j]
@@ -290,12 +293,7 @@ readVcfStack <- function(x, i, j=colnames(x), param=ScanVcfParam())
     vcfSamples(param) <- j
     vcfWhich(param) <- gr
 
-    idx <- if (length(gr) > 0){
-        intersect(names(files(x)),
-                  as.character(seqnames(gr))) } else {
-                      names(files(x)) }
-    
-    vcf <- lapply(idx, function(i, files, genome, param) {
+    vcf <- lapply(names(files(x)), function(i, files, genome, param) {
         file <- files[[i]]
         if (length(vcfWhich(param)))
             vcfWhich(param) <- vcfWhich(param)[i]
