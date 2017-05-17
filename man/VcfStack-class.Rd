@@ -58,7 +58,7 @@
 \section{Constructor}{
   \describe{
     \item{}{
-        \code{VcfStack(files=NULL, seqinfo=NULL, colData=NULL)}
+        \code{VcfStack(files=NULL, seqinfo=NULL, colData=NULL, index=TRUE)}
         Creates a VcfStack object.
         \describe{
           \item{\code{files}}{
@@ -77,6 +77,9 @@
             in the VcfStack. When present, row names must correspond to
             sample names in the VCF file.
           }
+          \item{\code{index}}{
+            A logical indicating if the vcf index files should be created.
+	  }
         }
     }
     \item{}{
