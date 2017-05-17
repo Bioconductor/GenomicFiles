@@ -59,15 +59,18 @@ setClass("RangedVcfStack",
 ### Constructors
 ##
 
-VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL)
+VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL, index=TRUE)
 {
+    stopifnot(is.logical(index), length(index) == 1L, !is.na(index))
+
     if (is.null(files)) {
         files <- VcfFileList()
         header <- NULL
     } else {
         if (!is(files, "VcfFileList"))
             files = VcfFileList(files)
-        files = indexVcf(files)
+        if (index)
+            files = indexVcf(files)
         header <- scanVcfHeader(files[[1]])
         
     }
@@ -264,13 +267,14 @@ readVcfStack <- function(x, i, j=colnames(x), param=ScanVcfParam())
     if (missing(param) && missing(i) && is(x, "RangedVcfStack")) {
         gr <- rowRanges(x)
     } else if (missing(param) && missing(i)) {
-        gr <- GRanges(seqinfo(x))
+        gr <- GRanges()
     } else if (missing(param) && is(i, "GRanges")) {
         gr <- i
     } else if (missing(param)) {
         if (is.numeric(i))
             i = names(files(x))[i]
-        gr <- GRanges(seqinfo(x)[i])
+        x <- x[i]
+        gr <- GRanges()
     } else {                            # use param
         gr <- GRanges(vcfWhich(param))
     }
@@ -288,7 +292,8 @@ readVcfStack <- function(x, i, j=colnames(x), param=ScanVcfParam())
 
     vcf <- lapply(idx, function(i, files, genome, param) {
         file <- files[[i]]
-        vcfWhich(param) <- vcfWhich(param)[i]
+        if (length(vcfWhich(param)))
+            vcfWhich(param) <- vcfWhich(param)[i]
         readVcf(file, genome, param)
     }, files(x), genome, param)
 
