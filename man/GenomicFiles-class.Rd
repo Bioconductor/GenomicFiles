@@ -7,9 +7,9 @@
 \alias{GenomicFiles-class}
 
 % Constructors:
-\alias{GenomicFiles,GenomicRangesORGRangesList,character-method}
-\alias{GenomicFiles,GenomicRangesORGRangesList,List-method}
-\alias{GenomicFiles,GenomicRangesORGRangesList,list-method}
+\alias{GenomicFiles,GenomicRanges_OR_GRangesList,character-method}
+\alias{GenomicFiles,GenomicRanges_OR_GRangesList,List-method}
+\alias{GenomicFiles,GenomicRanges_OR_GRangesList,list-method}
 \alias{GenomicFiles,missing,ANY-method}
 \alias{GenomicFiles,missing,missing-method}
 

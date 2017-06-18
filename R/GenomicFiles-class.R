@@ -46,7 +46,7 @@ setMethod("parallelSlotNames", "GenomicFiles",
 ### Constructors 
 ###
 
-setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "character"),
+setMethod(GenomicFiles, c("GenomicRanges_OR_GRangesList", "character"),
    function(rowRanges, files, colData=DataFrame(), metadata=list(), ...)
 {
     if (length(files)) {
@@ -65,7 +65,7 @@ setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "character"),
                              metadata=metadata, ...), files=files)
 })
 
-setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "List"),
+setMethod(GenomicFiles, c("GenomicRanges_OR_GRangesList", "List"),
    function(rowRanges, files, colData=DataFrame(), metadata=list(), ...)
 {
     if (length(files)) {
@@ -83,7 +83,7 @@ setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "List"),
                              metadata=metadata, ...), files=files)
 })
 
-setMethod(GenomicFiles, c("GenomicRangesORGRangesList", "list"),
+setMethod(GenomicFiles, c("GenomicRanges_OR_GRangesList", "list"),
     function(rowRanges, files, ...)
 {
     GenomicFiles(rowRanges, as(files, "List"), ...)
