@@ -153,10 +153,11 @@
   RangedVcfStack object, assay and readVcfStack will use the associated
   \code{rowRanges} object for \code{i}.
   \describe{
-    \item{assay(x, i, \dots)}{
+    \item{assay(x, i, \dots, BPPARAM=bpparam())}{
       Get matrix of genotype calls from the VCF files.
       See \link[VariantAnnotation]{genotypeToSnpMatrix}. Argument \code{i}
-      specifies which files to read.
+      specifies which files to read. \code{BPPARAM} is the argument to
+      the \link[BiocParallel]{bpmapply}.
     }
     \item{readVcfStack(x, i, j=colnames(x), param=ScanVcfParam())}{
       Get content of VCF files in the VcfStack. \code{i} indicates which

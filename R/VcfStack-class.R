@@ -227,7 +227,7 @@ setReplaceMethod("rowRanges", c("RangedVcfStack", "GRanges"),
 ###
 
 setMethod("assay", c("VcfStack", "ANY"),
-     function(x, i, ...)
+     function(x, i, ..., BPPARAM=bpparam())
 {
     if (is(i, "GRanges")) {
         files <- files(x)[as.character(seqnames(i))]
@@ -237,11 +237,11 @@ setMethod("assay", c("VcfStack", "ANY"),
     }
 
     i <- splitAsList(i, seq_along(i))
-    genotypes <- Map(function(file, grange, genome) {
+    genotypes <- bpmapply(function(file, grange, genome) {
         ## FIXME: readGeno or other more efficient input?
         vcf <- readVcf(file, genome, grange)
         t(as(genotypeToSnpMatrix(vcf)$genotypes, "numeric"))
-    }, files, i, MoreArgs=list(genome=genome(x)))
+    }, files, i, MoreArgs=list(genome=genome(x)), BPPARAM=BPPARAM)
 
     do.call(rbind, genotypes)
 })
