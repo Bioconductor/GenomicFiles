@@ -17,9 +17,9 @@ test_VcfStack_construction <- function() {
 
     ## constructor with files only
     checkTrue(validObject(VcfStack(files)))
-    
-    ## constructor with files and seqinfo 
-    checkTrue(validObject(VcfStack(files, seqinfo)))    
+
+    ## constructor with files and seqinfo
+    checkTrue(validObject(VcfStack(files, seqinfo)))
 
     ## constructor with files and wrong seqinfo
     nm <- names(files)
@@ -38,13 +38,18 @@ test_VcfStack_construction <- function() {
         files,
         colData=DataFrame(row.names=c("Break", "This", "Now"))))
 
+    ## check override check - bad!
+    checkTrue(validObject(VcfStack(files,
+           colData=DataFrame(row.names=c("Break","This", "Now")),
+                                   check =FALSE)))
+
     ## constructor with seqinfo and colData
     checkTrue(validObject(VcfStack(seqinfo=seqinfo, colData=colData)))
 
-    ## constructor with seqinto 
-    checkTrue(validObject(VcfStack(seqinfo=seqinfo)))    
+    ## constructor with seqinto
+    checkTrue(validObject(VcfStack(seqinfo=seqinfo)))
 
-    ## constructor with colData 
+    ## constructor with colData
     checkTrue(validObject(VcfStack(colData=colData)))
 }
 
@@ -53,15 +58,15 @@ test_RangedVcfStack_construction <- function() {
     ## empty constructor
     checkTrue(validObject(RangedVcfStack()))
 
-    ## constructor with VcfStack object 
+    ## constructor with VcfStack object
     checkTrue(validObject(RangedVcfStack(VcfStack(files))))
 
-    ## constructor with valid rowRanges object 
+    ## constructor with valid rowRanges object
     checkTrue(validObject(RangedVcfStack(
         VcfStack(files),
         rowRanges=GRanges(c("7:1-100000000","X:1-100000000")))))
 
-    ## constructor with invalid rowRanges object 
+    ## constructor with invalid rowRanges object
     checkException(RangedVcfStack(
         VcfStack(files),
         rowRanges=GRanges(
@@ -94,38 +99,38 @@ test_RangedVcfStack_seqinfo <- function() {
     ## fail to drop seqlevels currently in use
     value <- value0[setdiff(seqnames(value0), rownames(rstack))]
     checkException({
-        seqinfo(rstack) <- value        
+        seqinfo(rstack) <- value
     })
 }
 
 test_VcfStack_subsetting <- function() {
 
-    ## default data is 7 files x 3 samples object 
+    ## default data is 7 files x 3 samples object
     stack <- VcfStack(files, seqinfo)
 
     ## test empty subsetting
     checkTrue(all(dim(stack[])==c(7,3)))
 
-    ## test numeric subsetting 
+    ## test numeric subsetting
     checkTrue(all(dim(stack[1:3,])==c(3,3)))
     checkTrue(all(dim(stack[,2])==c(7,1)))
-    checkTrue(all(dim(stack[1:3,2])==c(3,1)))  
+    checkTrue(all(dim(stack[1:3,2])==c(3,1)))
 
-    ## test character subsetting 
-    ## default object names 
+    ## test character subsetting
+    ## default object names
     ## files: "11" "20" "21" "22" "7"  "X"  "Y"
     ## samples: "NA12878" "NA12891" "NA12892"
-    checkTrue(all(dim(stack[c("X", "11"),])==c(2,3)))   
+    checkTrue(all(dim(stack[c("X", "11"),])==c(2,3)))
     checkTrue(all(dim(stack[,c("NA12878","NA12891")])==c(7,2)))
     checkTrue(all(dim(stack[c("X", "11"),"NA12892"])==c(2,1)))
-    
-    ## test mix numeric and character subsetting 
-    checkTrue(all(dim(stack[c("X", "11"),1:2])==c(2,2))) 
+
+    ## test mix numeric and character subsetting
+    checkTrue(all(dim(stack[c("X", "11"),1:2])==c(2,2)))
     checkTrue(all(dim(stack[1:3,"NA12892"])==c(3,1)))
 
-    ## test GRange object subsetting 
+    ## test GRange object subsetting
     checkTrue(all(dim(stack[GRanges("20:862167-62858306")])==c(1,3)))
-    checkTrue(all(dim(stack[GRanges("20:862167-62858306"),1])==c(1,1))) 
+    checkTrue(all(dim(stack[GRanges("20:862167-62858306"),1])==c(1,1)))
     checkTrue(all(dim(stack[GRanges("20:862167-62858306"),"NA12891"])==c(1,1)))
 
     ## errors if out of bounds or value not found
@@ -139,21 +144,21 @@ test_VcfStack_subsetting <- function() {
 
 
 test_RangedVcfStack_subsetting <- function(){
-    
+
     # VcfStack object with 7 files and 3 samples
     # GRanges object with 2 ranges and 0 metadata columns
     Rstack <- RangedVcfStack(VcfStack(files, seqinfo),
                              GRanges(c("7:1-159138000", "X:1-155270560")))
 
-    # empty subset 
+    # empty subset
     checkIdentical(dim(Rstack[,]), dim(Rstack))
-   
+
     # check sample subsetting
     checkIdentical(dim(Rstack[, 1]), c(7L, 1L))
     checkIdentical(dim(Rstack[,c(TRUE, FALSE, TRUE)]), c(7L, 2L))
     checkIdentical(dim(Rstack[,"NA12891"]), c(7L, 1L))
 
-    # check file subsetting and updating GRanges object 
+    # check file subsetting and updating GRanges object
     checkIdentical(dim(Rstack[1,]), c(1L, 3L))
     checkIdentical(length(seqnames(rowRanges(Rstack[1,]))), 0L)
     checkIdentical(dim(Rstack["7",]), c(1L, 3L))
@@ -172,7 +177,7 @@ test_VcfStack_replaceFiles <- function(){
     # replace with character
     files(stack) = files[1]
     checkTrue(all(dim(stack) == c(1L, 3L)))
-         
+
     # replace with VcfFileList
     files(stack) = VariantAnnotation::VcfFileList(files[1:3])
     checkTrue(all(dim(stack) == c(3L, 3L)))
@@ -198,7 +203,7 @@ test_VcfStack_readVcfStack <- function(){
     gr = GRanges(paste0("11:1-", seqlengths(seqinfo(stack))[levels(seqnames(gr))]))
     temp3 = readVcfStack(stack, gr)
     checkTrue(all(dim(temp1) == dim(temp3)))
-    
+
     # test read by range out of bounds
     checkException(readVcfStack(stack, GRanges("11:1-1000000000")))
 

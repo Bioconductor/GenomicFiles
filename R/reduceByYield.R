@@ -3,7 +3,8 @@
 ### =========================================================================
 
 .reduceByYield_iterate <-
-    function(X, YIELD, MAP, REDUCE, DONE, ..., parallel, init)
+    function(X, YIELD, MAP, REDUCE, DONE, ...,
+             BPPARAM = registered()[[1]], parallel, init)
 {
     if (parallel) {
         ITER <- function() {

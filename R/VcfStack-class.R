@@ -9,18 +9,6 @@
     if (!all(rownames(object) %in% seqlevels(object)))
         msg <- c(msg, "all rownames(object) must be in seqlevels(object)")
 
-    if (length(files(object))) {
-        smps = samples(scanVcfHeader(files(object)[[1]]))
-        if (!all(colnames(object) %in% smps))
-            msg <- c(msg,
-                     "all colnames(object) must be sample names in VCF 'files'")
-        samplesOk <- sapply(files(object), function(file) {
-            setequal(samples(scanVcfHeader(file)), smps)
-        })
-        if (!all(samplesOk))
-            msg <- c(msg, "sample names are not consistent between VCF 'files'")
-    }
-
     if (is.null(msg)) TRUE else msg
 }
 
@@ -55,11 +43,31 @@ setClass("RangedVcfStack",
     validity=.validRangedVcfStack
 )
 
+# check for sample consistency separate function to make optional for
+# slow internet connections
+.validSamples <- function(files, colData){
+    msg = NULL
+    if (length(files)) {
+        smps = samples(scanVcfHeader(files[[1]]))
+        if (!all(rownames(colData) %in% smps))
+            msg <- c(msg,
+                     "all colnames(object) must be sample names in VCF 'files'")
+        samplesOk <- sapply(files, function(file) {
+            setequal(samples(scanVcfHeader(file)), smps)
+        })
+        if (!all(samplesOk))
+            msg <- c(msg, "sample names are not consistent between VCF 'files'")
+    }
+
+    if (is.null(msg)) TRUE else msg
+}
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors
 ##
 
-VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL, index=TRUE)
+VcfStack <-
+    function(files=NULL, seqinfo=NULL, colData=NULL, index=TRUE, check=TRUE)
 {
     stopifnot(is.logical(index), length(index) == 1L, !is.na(index))
 
@@ -72,7 +80,7 @@ VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL, index=TRUE)
         if (index)
             files = indexVcf(files)
         header <- scanVcfHeader(files[[1]])
-        
+
     }
 
     if (is.null(seqinfo)) {
@@ -89,6 +97,12 @@ VcfStack <- function(files=NULL, seqinfo=NULL, colData=NULL, index=TRUE)
 
     if (is.null(rownames(colData)) && length(files))
          stop("specify rownames in 'colData'")
+
+    if (check) {
+        res <- .validSamples(files, colData)
+        if (!isTRUE(res))
+            stop(res)
+    }
 
     new("VcfStack", files=files, colData=colData, seqinfo=seqinfo)
 }
@@ -129,23 +143,38 @@ setMethod("files", "VcfStack",
 )
 
 setReplaceMethod("files", c("VcfStack", "character"),
-    function(x, ..., value)
+    function(x, ..., check=TRUE, value)
 {
     files(x) <- VcfFileList(value)
+    if (check) {
+        res <- .validSamples(files(x), colData(x))
+        if (!isTRUE(res))
+            stop(res)
+    }
     x
 })
 
 setReplaceMethod("files", c("VcfStack", "VcfFile"),
-    function(x, ..., value)
+    function(x, ..., check=TRUE, value)
 {
     files(x) <- VcfFileList(value)
+    if (check) {
+        res <- .validSamples(files(x), colData(x))
+        if (!isTRUE(res))
+            stop(res)
+    }
     x
 })
 
 setReplaceMethod("files", c("VcfStack", "VcfFileList"),
-    function(x, ..., value)
+    function(x, ..., check=TRUE, value)
 {
     value <- indexVcf(value)
+    if (check) {
+        res <- .validSamples(value, colData(x))
+        if (!isTRUE(res))
+            stop(res)
+    }
     initialize(x, files=value)
 })
 
@@ -282,7 +311,7 @@ readVcfStack <- function(x, i, j=colnames(x), param=ScanVcfParam())
         i = intersect(names(files(x)), as.character(seqnames(gr)))
     }
     x = x[i]
-    
+
     if (is.numeric(j)) {
         j <- colnames(x)[j]
     } else if (!missing(param)) {
@@ -321,12 +350,18 @@ setMethod("[", c("VcfStack", "ANY", "ANY"),
         }
         initialize(x, files=files(x)[i])
     } else if (missing(i)) {
-        initialize(x, colData=colData(x)[j,,drop=FALSE])
+        colData = colData(x)[j,,drop=FALSE]
+        if (any(is.na(rownames(colData))))
+            stop("invalid 'j' value; sample not found")
+        initialize(x, colData=colData)
     } else {
         if (is(i, "GRanges")) {
             i <- as.character(seqnames(i))
         }
-        initialize(x, files=files(x)[i], colData=colData(x)[j,,drop=FALSE])
+        colData = colData(x)[j,,drop=FALSE]
+        if (any(is.na(rownames(colData))))
+            stop("invalid 'j' value; sample not found")
+        initialize(x, files=files(x)[i], colData=colData)
     }
 })
 

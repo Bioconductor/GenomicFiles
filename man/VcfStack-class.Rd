@@ -58,7 +58,8 @@
 \section{Constructor}{
   \describe{
     \item{}{
-        \code{VcfStack(files=NULL, seqinfo=NULL, colData=NULL, index=TRUE)}
+        \code{VcfStack(files=NULL, seqinfo=NULL, colData=NULL,
+	  index=TRUE, check=TRUE)}
         Creates a VcfStack object.
         \describe{
           \item{\code{files}}{
@@ -79,6 +80,9 @@
           }
           \item{\code{index}}{
             A logical indicating if the vcf index files should be created.
+	  }
+	  \item{\code{check}}{
+	    A logical indicating if the check across samples should be performed
 	  }
         }
     }
@@ -118,7 +122,7 @@
     \item{dimnames(x))}{
       Get the names of samples and the names of files in \code{VcfStack}.
     }
-    \item{files(x, \dots), files(x, \dots) <- value}{
+    \item{files(x, \dots), files(x, \dots, check=TRUE) <- value}{
       Get or set the files on \code{x}. \code{value} can be a named
       character() of file paths or a
       \link[VariantAnnotation]{VcfFileList}. The return value will be a
