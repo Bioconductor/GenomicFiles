@@ -66,7 +66,7 @@ setMethod(reduceByRange, c("GRangesList", "ANY"),
 setMethod(reduceByRange, c("GRanges", "ANY"), 
     function(ranges, files, MAP, REDUCE, ..., summarize=FALSE,
              iterate=TRUE, init) {
-        lst <- .reduceByRange(as(ranges, "List"), files, MAP, REDUCE,
+        lst <- .reduceByRange(as(ranges, "CompressedGRangesList"), files, MAP, REDUCE,
                               ..., iterate=iterate) 
         if (summarize && !missing(REDUCE))
             warning("'summarize' set to FALSE when REDUCE is provided")

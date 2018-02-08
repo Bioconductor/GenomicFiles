@@ -4,7 +4,7 @@ Description: This package provides infrastructure for parallel
 	computations distributed 'by file' or 'by range'. User 
 	defined MAPPER and REDUCER functions provide added 
 	flexibility for data combination and manipulation.
-Version: 1.15.1
+Version: 1.15.2
 Authors@R: c(person("Bioconductor Package Maintainer", role = c("aut", "cre"),
 		     email = "maintainer@bioconductor.org"),
 	      person("Valerie", "Obenchain", role = "aut"),
@@ -13,7 +13,7 @@ Authors@R: c(person("Bioconductor Package Maintainer", role = c("aut", "cre"),
 	      person("Martin", "Morgan", role = "aut"))
 biocViews: Genetics, Infrastructure, DataImport, Sequencing, Coverage
 Depends: R (>= 3.1.0), methods, BiocGenerics (>= 0.11.2),
-        GenomicRanges (>= 1.29.6), SummarizedExperiment,
+        GenomicRanges (>= 1.31.16), SummarizedExperiment,
         BiocParallel (>= 1.1.0), Rsamtools (>= 1.17.29), rtracklayer (>= 1.25.3)
 Imports: GenomicAlignments (>= 1.7.7), IRanges, S4Vectors (>= 0.9.25),
         VariantAnnotation, GenomeInfoDb
