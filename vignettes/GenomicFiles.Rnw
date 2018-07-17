@@ -41,11 +41,12 @@ vignettes and documentation in \Biocpkg{GenomicRanges},
 an introduction to these classes.
 
 The \Rpackage{GenomicFiles} package is available at bioconductor.org
-and can be downloaded via \Rcode{biocLite}:
+and can be downloaded via \Rcode{BiocManager::install}:
 
-<<biocLite, eval=FALSE>>=
-source("http://bioconductor.org/biocLite.R")
-biocLite("GenomicFiles")
+<<install, eval=FALSE>>=
+if (!require("BiocManager")
+    install.packages("BiocManager")
+BiocManager::install("GenomicFiles")
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
