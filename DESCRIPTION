@@ -4,7 +4,7 @@ Description: This package provides infrastructure for parallel
 	computations distributed 'by file' or 'by range'. User 
 	defined MAPPER and REDUCER functions provide added 
 	flexibility for data combination and manipulation.
-Version: 1.17.1
+Version: 1.17.2
 Authors@R: c(person("Bioconductor Package Maintainer", role = c("aut", "cre"),
 		     email = "maintainer@bioconductor.org"),
 	      person("Valerie", "Obenchain", role = "aut"),

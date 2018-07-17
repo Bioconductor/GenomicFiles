@@ -44,7 +44,7 @@ The \Rpackage{GenomicFiles} package is available at bioconductor.org
 and can be downloaded via \Rcode{BiocManager::install}:
 
 <<install, eval=FALSE>>=
-if (!require("BiocManager")
+if (!require("BiocManager"))
     install.packages("BiocManager")
 BiocManager::install("GenomicFiles")
 @
