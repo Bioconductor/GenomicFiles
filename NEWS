@@ -1,3 +1,11 @@
+CHANGES IN VERSION 1.17.3
+------------------------
+
+NEW FEATURES
+
+    o Add vcfFields,VcfStack-method.
+
+
 CHANGES IN VERSION 1.6.0
 ------------------------
 

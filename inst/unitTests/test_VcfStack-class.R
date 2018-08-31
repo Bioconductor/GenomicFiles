@@ -224,3 +224,19 @@ test_VcfStack_readVcfStack <- function(){
     temp7 = readVcfStack(Rstack)
     checkTrue(all(dim(temp7) == dim(temp5)))
 }
+
+test_VcfStack_vcfFields <- function(){
+
+    ## empty
+    checkException(vcfFields(VcfStack()), silent=TRUE)
+
+    ## names
+    stack <- VcfStack(files)
+    flds <- vcfFields(stack)
+    checkTrue(is(flds, "CharacterList"))
+    checkIdentical(names(flds), c("fixed", "info", "geno", "samples"))
+    
+    fl <- files(stack)[[1]]
+    flds.fl <- vcfFields(fl)
+    checkIdentical(flds, flds.fl)
+}

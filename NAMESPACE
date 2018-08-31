@@ -31,7 +31,8 @@ exportMethods(
     countBam, scanBam, summarizeOverlaps,
     coverage, summary,
     seqinfo, 'seqinfo<-',
-    rowRanges, 'rowRanges<-', assay, colData
+    rowRanges, 'rowRanges<-', assay, colData,
+    vcfFields
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

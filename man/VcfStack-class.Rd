@@ -31,6 +31,7 @@
 \alias{rowRanges<-,RangedVcfStack,GRanges-method}
 
 % Methods:
+\alias{vcfFields,VcfStack-method}
 \alias{assay,VcfStack,ANY-method}
 \alias{assay,RangedVcfStack,ANY-method}
 \alias{readVcfStack}
@@ -157,6 +158,13 @@
   RangedVcfStack object, assay and readVcfStack will use the associated
   \code{rowRanges} object for \code{i}.
   \describe{
+    \item{vcfFields(x)}{
+      Returns a \code{\link[IRanges]{CharacterList}} of all
+      available VCF fields, with names of \code{fixed}, \code{info},
+      \code{geno} and \code{samples} indicating the four categories.
+      Each element is a character() vector of available VCF field
+      names within each category.
+    }
     \item{assay(x, i, \dots, BPPARAM=bpparam())}{
       Get matrix of genotype calls from the VCF files.
       See \link[VariantAnnotation]{genotypeToSnpMatrix}. Argument \code{i}
@@ -275,6 +283,7 @@ seqlevelsStyle(stack2) <- "UCSC"
 seqlevelsStyle(stack2)
 seqlevels(stack2)
 rownames(stack2)
+vcfFields(stack2)
 
 ## ---------------------------------------------------------------------
 ## SUBSETTING
