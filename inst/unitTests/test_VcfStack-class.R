@@ -228,15 +228,15 @@ test_VcfStack_readVcfStack <- function(){
 test_VcfStack_vcfFields <- function(){
 
     ## empty
-    checkException(vcfFields(VcfStack()), silent=TRUE)
+    target <- CharacterList(
+        fixed = character(), info = character(), geno = character(),
+        samples = character()
+    )
+    checkIdentical(target, vcfFields(VcfStack()))
 
-    ## names
     stack <- VcfStack(files)
     flds <- vcfFields(stack)
     checkTrue(is(flds, "CharacterList"))
-    checkIdentical(names(flds), c("fixed", "info", "geno", "samples"))
-    
-    fl <- files(stack)[[1]]
-    flds.fl <- vcfFields(fl)
-    checkIdentical(flds, flds.fl)
+    target <- c(fixed = 2L, info = 26L, geno = 9L, samples = 3L)
+    checkIdentical(target, lengths(flds))
 }

@@ -257,12 +257,7 @@ setReplaceMethod("rowRanges", c("RangedVcfStack", "GRanges"),
 
 setMethod("vcfFields", "VcfStack", function(x, ...)
 {
-    if (length(files(x))) {
-        stop("The input \"VcfStack\" object has 0 file.")
-    } else {
-        vcf <- files(x)[[1]]
-        vcfFields(vcf)
-    }
+    vcfFields(files(x))
 })
 
 setMethod("assay", c("VcfStack", "ANY"),
