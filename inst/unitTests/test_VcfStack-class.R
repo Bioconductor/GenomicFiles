@@ -237,6 +237,6 @@ test_VcfStack_vcfFields <- function(){
     stack <- VcfStack(files)
     flds <- vcfFields(stack)
     checkTrue(is(flds, "CharacterList"))
-    target <- c(fixed = 2L, info = 26L, geno = 9L, samples = 3L)
+    target <- c(fixed = 4L, info = 26L, geno = 9L, samples = 3L)
     checkIdentical(target, lengths(flds))
 }

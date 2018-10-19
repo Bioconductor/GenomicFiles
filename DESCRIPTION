@@ -4,7 +4,7 @@ Description: This package provides infrastructure for parallel
 	computations distributed 'by file' or 'by range'. User 
 	defined MAPPER and REDUCER functions provide added 
 	flexibility for data combination and manipulation.
-Version: 1.17.3
+Version: 1.17.4
 Authors@R: c(person("Bioconductor Package Maintainer", role = c("aut", "cre"),
 		     email = "maintainer@bioconductor.org"),
 	      person("Valerie", "Obenchain", role = "aut"),
@@ -16,20 +16,20 @@ Depends: R (>= 3.1.0), methods, BiocGenerics (>= 0.11.2),
         GenomicRanges (>= 1.31.16), SummarizedExperiment,
         BiocParallel (>= 1.1.0), Rsamtools (>= 1.17.29), rtracklayer (>= 1.25.3)
 Imports: GenomicAlignments (>= 1.7.7), IRanges, S4Vectors (>= 0.9.25),
-        VariantAnnotation (>= 1.27.7), GenomeInfoDb
+        VariantAnnotation (>= 1.27.9), GenomeInfoDb
 Suggests: BiocStyle, RUnit, genefilter, deepSNV,
 	RNAseqData.HNRNPC.bam.chr14, Biostrings, Homo.sapiens
 License: Artistic-2.0
 Collate: GenomicFiles-class.R
-	VcfStack-class.R
-	reduceByFile-methods.R
-	reduceByRange-methods.R
-	reduceFiles.R
-	reduceRanges.R
-	reduceByYield.R
-	pack-methods.R
-	unpack-methods.R
-	registry.R
-	zzz.R
+    VcfStack-class.R
+    reduceByFile-methods.R
+    reduceByRange-methods.R
+    reduceFiles.R
+    reduceRanges.R
+    reduceByYield.R
+    pack-methods.R
+    unpack-methods.R
+    registry.R
+    zzz.R
 Video: https://www.youtube.com/watch?v=3PK_jx44QTs
 RoxygenNote: 6.1.0
