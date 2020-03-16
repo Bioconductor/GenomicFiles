@@ -17,7 +17,7 @@ Depends: R (>= 3.1.0), methods, BiocGenerics (>= 0.11.2),
         BiocParallel (>= 1.1.0), Rsamtools (>= 1.17.29), rtracklayer (>= 1.25.3)
 Imports: GenomicAlignments (>= 1.7.7), IRanges, S4Vectors (>= 0.9.25),
         VariantAnnotation (>= 1.27.9), GenomeInfoDb
-Suggests: BiocStyle, RUnit, genefilter, deepSNV,
+Suggests: BiocStyle, RUnit, genefilter, deepSNV, snpStats,
 	RNAseqData.HNRNPC.bam.chr14, Biostrings, Homo.sapiens
 License: Artistic-2.0
 Collate: GenomicFiles-class.R
