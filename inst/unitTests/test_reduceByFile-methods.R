@@ -7,10 +7,6 @@ MAP = function(RANGE, FILE, ..., param=Rsamtools::ScanBamParam()) {
     Rsamtools::countBam(FILE, param=param)
 }
 
-REDUCE = function(MAPPED, ...) {
-    Reduce("+", MAPPED)
-}
-
 ## reduceByFile
 test_reduceByFile_MAP <- function()
 {
@@ -31,6 +27,10 @@ test_reduceByFile_MAP <- function()
  
 test_reduceByFile_MAP_REDUCE <- function()
 {
+
+    REDUCE = function(MAPPED, ...) {
+        head(MAPPED, 1)
+    }
     ans <- reduceByFile(gf, MAP=MAP, REDUCE=REDUCE)
     checkIdentical(length(ans), 2L)
     checkIdentical(unname(elementNROWS(ans)), c(1L, 1L))
