@@ -30,21 +30,12 @@ setMethod(.validity, "GenomicFiles",
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Generic 
+### Constructors
 ###
 
 setGeneric("GenomicFiles",
     function(rowRanges, files, ...) standardGeneric("GenomicFiles"),
     signature=c("rowRanges", "files"))
-
-### Combine the new parallel slots with those of the parent class.
-setMethod("parallelSlotNames", "GenomicFiles",
-    function(x) c("files", callNextMethod())
-)
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructors 
-###
 
 setMethod(GenomicFiles, c("GenomicRanges_OR_GRangesList", "character"),
    function(rowRanges, files, colData=DataFrame(), metadata=list(), ...)
