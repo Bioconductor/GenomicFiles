@@ -10,6 +10,5 @@ reduceRanges <- function(ranges, files, MAP, REDUCE, ..., init) {
     if (!is(ranges, "GRanges") && !is(ranges, "GRangesList"))
         stop("'ranges' must be GRanges or GRangesList")
 
-    .reduceByRange(ranges, list(files), MAP, REDUCE, ..., 
-                   iterate=FALSE)
+    .reduceByRange(ranges, files, MAP, REDUCE, ..., iterate=FALSE)
 }
