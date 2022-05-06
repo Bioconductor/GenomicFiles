@@ -1,3 +1,10 @@
+CHANGES IN VERSION 1.32
+-----------------------
+
+BUG FIXES
+
+    o (v. 1.32.1) reduceRanges() supports `files` as character vectors.
+
 CHANGES IN VERSION 1.18.0
 ------------------------
 
