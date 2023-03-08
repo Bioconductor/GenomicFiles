@@ -1,0 +1,287 @@
+---
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+---
+title: "GenomicFiles"
+author: Martin Morgan
+date: March 04, 2023
+package: GenomicFiles
+vignette: >
+  %\VignetteIndexEntry{GenomicFiles}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+  BiocStyle::html_document
+---
+
+# Introduction
+
+This vignette illustrates how to use the package for distributed
+computing across files. The functions in manipulate and combine data
+subsets via two user-supplied functions, MAP and REDUCE. These are
+similar in spirit to and in . Together they provide a flexible interface
+to extract, manipulate and combine data. Both functions are executed in
+the distributed step which means results are combined on a single
+worker, not across workers.
+
+We assume the reader has some previous experience with and with basic
+manipulation of ranges objects such as and and file classes such as and
+. See the vignettes and documentation in , , and for an introduction to
+these classes.
+
+The package is available at bioconductor.org and can be downloaded via :
+
+\<\<install, eval=FALSE\>\>= if (!require("BiocManager"))
+install.packages("BiocManager") BiocManager::install("GenomicFiles") \@
+
+# Quick Start
+
+offers functions for the parallel extraction and combination of data
+subsets. A user-defined MAP function extracts and manipulates data while
+an optional REDUCE function consolidates the output of MAP.
+
+\<\<quick_start-load, results=hide\>\>= library(GenomicFiles) \@
+
+Ranges can be a , or class. \<\<quick_start-ranges\>\>= gr \<-
+GRanges("chr14", IRanges(c(19411500 + (1:5)\*20), width=10)) \@
+
+File are supplied as a character vector or list of \*File classes such
+as , etc. \<\<class-bam-data\>\>= library(RNAseqData.HNRNPC.bam.chr14)
+fls \<- RNAseqData.HNRNPC.bam.chr14_BAMFILES \@
+
+The MAP function extracts and manipulates data subsets. Here we compute
+pileups for a given range and file. \<\<quick_start-MAP\>\>= MAP \<-
+function(range, file, \...) requireNamespace("Rsamtools")
+Rsamtools::pileup(file,
+scanBamParam=Rsamtools::ScanBamParam(which=range)) \@
+
+sends each file to a worker where MAP is applied to each file / range
+combination. When the output is a object.
+\<\<quick_start-reduceByFile\>\>= se \<- reduceByFile(gr, fls, MAP,
+summarize=TRUE) se \@
+
+Results are stored in the slot. \<\<quick_start-assays\>\>=
+dim(assays(se)\$data) \## ranges x files \@
+
+\Rcode{reduceByRange} sends each range to a worker and extracts the same
+range from all files. Adding a reducer to this example combines the
+pileups from each range across files.
+\<<quick_start-MAP-REDUCE-reduceByRange>\>= REDUCE \<- function(mapped,
+...) { cmb = do.call(rbind, mapped) xtabs(count \~ pos + nucleotide,
+cmb) }
+
+lst \<- reduceByRange(gr, fls, MAP, REDUCE, iterate=FALSE) \@
+
+The result is a list where each element is a summary table of counts for
+a single range across all 8 files. \<<quick_start-result>\>=
+head(lst[[1]], 3) \@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Overview of classes and functions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{\Rcode{GenomicFiles} class}
+
+The \Rcode{GenomicFiles} class is a matrix-like container where rows
+represent ranges of interest and columns represent files. The object can
+be subset on files and / or ranges to perform different experimental
+runs. The class inherits from \Rcode{RangedSummarizedExperiment} but
+does not (as of yet) make use of the \Rcode{elementMetadata} and
+\Rcode{assays} slots.
+
+\<<overview-GenomicFiles>\>= GenomicFiles(gr, fls) \@
+
+A \Rcode{GenomicFiles} can be used as the \Rcode{ranges} argument to the
+functions in this package. When \Rcode{summarize=TRUE}, data from the
+common slots are transferred to the \Rcode{SummarizedExperiment} result.
+NOTE: Results can only be put into a \Rcode{SummarizedExperiment} when
+no reduction is performed because of the matching dimensions requirement
+(i.e., a REDUCE collapses the results in one dimension).
+
+\subsection{Functions}
+
+Functions in \Rcode{GenomicFiles} manipulate and combine data across or
+within files using the parallel infrastructure provided in
+\Rcode{BiocParallel}. Files and ranges are sent to workers along with
+MAP and REDUCE functions. The MAP extracts and/or manipulates data and
+REDUCE consolidates the results from MAP. Both MAP and REDUCE are
+executed in the distributed step and therefore reduction occurs on data
+from the same worker, not across workers.
+
+The chart in Figure \ref{reduceByRange_flow} represents the division of
+labor in \Rcode{reduceByRange} and \Rcode{reduceRanges} with 3 files and
+4 ranges. These functions split the problem by range which allows
+subsets (i.e., the same range) to be combined across different files.
+\Rcode{reduceByRange} iterates through the files, invoking MAP and
+REDUCE for each range / file combination. This approach allows ranges
+extracted from the files to be kept separate or combined before the next
+call to \Rcode{MAP} based on whether or not a \Rcode{REDUCE} is
+supplied.
+
+\Rcode{reduceRanges} applies \Rcode{MAP} to each range / file
+combination and REDUCEs the output of all MAP calls. \Rcode{REDUCE}
+usually plays a minor role by concatenating or unlisting results.
+
+```{=tex}
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics{reduceByRange_flow.png}
+    \caption{Mechanics of \Rcode{reduceByRange} and \Rcode{reduceRanges}}
+    \label{reduceByRange_flow}
+  \end{center}
+\end{figure}
+```
+In contrast to the `byRange` approach, \Rcode{reduceByFile} and
+\Rcode{reduceFiles} (Figure \ref{reduceByFile_flow}) split the problem
+by file. Files are sent to different workers with the set of ranges
+allowing subsets (i.e., multiple ranges) from the same file to be
+combined. \Rcode{reduceByFile} invokes \Rcode{MAP} for each file / range
+combination allowing potential \Rcode{REDUCE} after each MAP step.
+
+\Rcode{reduceFiles} applies \Rcode{MAP} to each range / file combination
+and REDUCEs the output of all MAP calls. \Rcode{REDUCE} usually plays a
+minor role by concatenating or unlisting results.
+
+```{=tex}
+\begin{figure}[!h]
+  \begin{center}
+    \includegraphics{reduceByFile_flow.png}
+    \caption{Mechanics of \Rcode{reduceByFile} and \Rcode{reduceFiles}}
+    \label{reduceByFile_flow}
+  \end{center}
+\end{figure}
+```
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Queries across files: \Rcode{reduceByRange} and \Rcode{reduceRanges}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The \Rcode{reduceByRange} and \Rcode{reduceRanges} functions are
+designed for analyses that compare or combine data subsets across files.
+The first example in this section computes pileups on subsets from
+individual files then sums over all files. The second example computes
+coverage on a group of ranges for each file then performs a
+basepair-level$t$-test across files. The$t$-test example also
+demonstrates how to use a blocking factor to differentiate files by
+experimental group (e.g., case vs control). \pagebreak
+
+\subsection{Pileup summaries}
+
+In this example nucleotide counts (pileups) are computed for the same
+ranges in each file (MAP step). Pileups are then summed by position
+resulting in a single table for each range across all files (REDUCE
+step).
+
+Create a \Rclass{GRanges} with regions of interest:
+\<<pileups-ranges>\>= gr \<- GRanges("chr14", IRanges(c(19411677,
+19659063, 105421963, 105613740), width=20)) \@
+
+The \Rcode{bam2R} function from the \Rpackage{deepSNV} package is used
+to compute the statistics. The MAP invokes \Rcode{bam2R} and retains
+only the nucleotide counts (see ?\Rcode{bam2R} for other output fields).
+Counts from the reference strand are uppercase and counts from the
+complement are lowercase.
+
+Because the \Rcode{bam2R} function is not explicitly passed through the
+MAP, \Rcode{deepSNV} must be loaded on each worker so the function can
+be found.
+
+\<<pileups-MAP>\>= MAP \<- function(range, file, ...) {
+requireNamespace("deepSNV") ct = deepSNV::bam2R(file,
+GenomeInfoDb::seqlevels(range), GenomicRanges::start(range),
+GenomicRanges::end(range), q=0) ct[, c("A", "T", "C", "G", "a", "t",
+"c", "g")] } \@
+
+With no REDUCE function, the output is a list the same length as the
+number of ranges where each list element is the length of the number of
+files.
+
+```{=tex}
+\begin{verbatim}
+pile1 <- reduceByRange(gr, fls, MAP) 
+> length(pile1)
+[1] 4
+> elementNROWS(pile1)
+[1] 8 8 8 8
+\end{verbatim}
+```
+Next add a REDUCE to sum the counts by position. \<<pileups-REDUCE>\>=
+REDUCE \<- function(mapped, ...) Reduce("+", mapped) \@
+
+The output is again a list with the same length as the number of ranges
+but the element lengths have been reduced to 1.
+\<<pileups-reduceByRange>\>= pile2 \<- reduceByRange(gr, fls, MAP,
+REDUCE) length(pile2) elementNROWS(pile2) \@
+
+Each element is a matrix of counts (position by nucleotide) for a single
+range summed over all files. \<<pileups-res>\>= head(pile2[[1]]) \@
+
+\subsection{Basepair-level $t$-test with case / control groups}
+
+In this example coverage is computed for a region of interest in
+multiple files. A grouping variable that defines case / control status
+is passed as an extra argument to \Rcode{reduceByRange} and used in the
+reduction step to perform the$t$-test.
+
+Define ranges of interest, \<<ttest-ranges>\>= roi \<- GRanges("chr14",
+IRanges(c(19411677, 19659063, 105421963, 105613740), width=20)) \@
+
+and assign the case, control grouping of files. (Grouping is arbitrary
+in this example.) \<<ttest-group>\>= grp \<- factor(rep(c("A","B"),
+each=length(fls)/2)) \@
+
+The MAP reads in alignments from each BAM file and computes coverage.
+Coverage is coerced from an RleList to numeric vector for later use in
+the$t$-test. \<<ttest-MAP>\>= MAP \<- function(range, file, ...) {
+requireNamespace("GenomicAlignments") param \<-
+Rsamtools::ScanBamParam(which=range) as.numeric(unlist(
+GenomicAlignments::coverage(file, param=param)[range], use.names=FALSE))
+} \@
+
+REDUCE combines the coverage vectors into a matrix, identifies all-zero
+rows, and performs row-wise$t$-testing using the \Rcode{rowttests}
+function from the \Biocpkg{genefilter} package. The index of which rows
+correspond to which basepair of the original range is stored as a column
+\Robject{offset}. \<<ttest-REDUCE>\>= REDUCE \<- function(mapped, ...,
+grp) { mat = simplify2array(mapped) idx = which(rowSums(mat) != 0) df =
+genefilter::rowttests(mat[idx,], grp) cbind(offset = idx - 1, df) } \@
+
+The file grouping is passed as an extra argument to
+\Rcode{reduceByRange}. \Rcode{iterate=FALSE} postpones the reduction
+until coverage vectors for all files have been computed. This delay is
+necessary because REDUCE uses the file grouping factor to perform
+the$t$-test and relies on the coverage vectors for all files to be
+present. \<\<ttest-results, eval=FALSE\>\>= ttest \<- reduceByRange(roi,
+fls, MAP, REDUCE, iterate=FALSE, grp=grp) \@
+
+The result is a list of summary tables of basepair-level$t$-test
+statistics for each range across all files.
+
+```{=tex}
+\begin{verbatim}
+> head(ttest[[1]], 3)
+  offset statistic   dm   p.value
+1      0 1.1489125 2.75 0.2943227
+2      1 0.9761871 2.25 0.3666718
+3      2 0.8320503 1.50 0.4372365
+\end{verbatim}
+```
+These tables can be added to the \Rcode{roi} GRanges as a metadata
+column. \\begin{verbatim} mcols(roi)\$ttest \<- ttest \> head(roi)
+GRanges object with 4 ranges and 1 metadata column: seqnames ranges
+strand \| ttest \<Rle\> \<IRanges\> \<Rle\> \| \<list\> $$1$$ chr14
+$$ 19411677, 19411696$$ \* \| \######## $$2$$ chr14
+$$ 19659063, 19659082$$ \* \| \######## $$3$$ chr14
+$$105421963, 105421982$$ \* \| \######## $$4$$ chr14 $$105613740,
+105613759$$ \* \| \######## ------- seqinfo: 1 sequence from an
+unspecified genome; no seqlengths
