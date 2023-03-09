@@ -166,7 +166,7 @@ Create a GRanges with regions of interest:
 
 The `bam2R` function from the deepSNV package is used to compute the statistics. The MAP invokes `bam2R` and retains only the nucleotide counts (see ?bam2R for other output fields). Counts from the reference strand are uppercase and counts from the complement are lowercase.
 
-Because the `bam2R` function is not explicitly passed through the MAP, deepSNV must be loaded on each worker so the function can be found.
+Because the `bam2R` function is not explicitly passed through the MAP, `deepSNV` must be loaded on each worker so the function can be found.
 ```
 > MAP <- function(range, file, ...) {
 + requireNamespace("deepSNV")
@@ -193,6 +193,7 @@ pile1 <- reduceByRange(gr, fls, MAP)
 ```
 
 Next add a REDUCE to sum the counts by position.
+
 ```
 > REDUCE <- function(mapped, ...)
 + Reduce("+", mapped)
@@ -200,8 +201,8 @@ Next add a REDUCE to sum the counts by position.
 
 The output is again a list with the same length as the number of ranges but the element
 lengths have been reduced to 1.
-```
 
+```
 > pile2 <- reduceByRange(gr, fls, MAP, REDUCE)
 > length(pile2)
 
@@ -210,8 +211,8 @@ lengths have been reduced to 1.
 > elementNROWS(pile2)
 
 [1] 20 20 20 20
-```
 
+```
 
 Each element is a matrix of counts (position by nucleotide) for a single
 range summed over all files. 
@@ -348,6 +349,7 @@ ERR127306 ERR127307 ERR127308
 ```
 
 Each list element has a table of counts for each range.
+
 ```
 > counts1[[1]]
 [[1]]
@@ -356,9 +358,11 @@ Each list element has a table of counts for each range.
 [[2]]
 0 1
 2329 57
+
 ```
 
 Add a reducer that combines counts for records in each range with exactly 1 junction.
+
 ```
 > REDUCE <- function(mapped, ...)
 + sum(sapply(mapped, "[", "1"))
@@ -381,10 +385,11 @@ $ERR127305
 [1] 35369
 ```
 
-
 Next invoke `reduceFiles` with the same files and MAP function. `reduceFiles` treats all ranges as a group and counts junctions for all ranges simultaneously.
+
 ```
 > counts2 <- reduceFiles(gf[,1:3], MAP=MAP)
+
 ```
 
 In the `reduceByFile` example junctions were counted for each range individually which allowed us to see results for the individual ranges and combine them on the fly based on specific criteria. In contrast, `reduceFiles` counts junctions for all ranges simultaneously.
@@ -403,6 +408,7 @@ In the `reduceByFile` example junctions were counted for each range individually
 [[2]]
 0 1
 2329 57
+
 ```
 
 
@@ -413,8 +419,8 @@ Files that are too large to fit in memory can be streamed over by creating ‘ti
 ```
 > chr14_seqlen <- seqlengths(seqinfo(BamFileList(fls))["chr14"])
 > tiles <- tileGenome(chr14_seqlen, ntile=5)
-```
 
+```
 
 tiles is a GRangesList of length ntile with one range per element
 
@@ -425,39 +431,51 @@ GRanges object with 1 range and 0 metadata columns:
 seqnames ranges strand
 <Rle> <IRanges> <Rle>
 [1] chr14 1-21469908 *
+
 -------
+
 seqinfo: 1 sequence from an unspecified genome
 [[2]]
 GRanges object with 1 range and 0 metadata columns:
 seqnames ranges strand
 <Rle> <IRanges> <Rle>
 [1] chr14 21469909-42939816 *
+
 -------
+
 seqinfo: 1 sequence from an unspecified genome
 [[3]]
 GRanges object with 1 range and 0 metadata columns:
 seqnames ranges strand
 <Rle> <IRanges> <Rle>
 [1] chr14 42939817-64409724 *
+
 -------
+
 seqinfo: 1 sequence from an unspecified genome
 [[4]]
 GRanges object with 1 range and 0 metadata columns:
 seqnames ranges strand
 <Rle> <IRanges> <Rle>
 [1] chr14 64409725-85879632 *
+
 -------
+
 seqinfo: 1 sequence from an unspecified genome
 [[5]]
 GRanges object with 1 range and 0 metadata columns:
 seqnames ranges strand
 <Rle> <IRanges> <Rle>
 [1] chr14 85879633-107349540 *
+
 -------
+
 seqinfo: 1 sequence from an unspecified genome
+
 ```
 
 MAP computes coverage for each range. The sum of coverage across all positions is recorded along with the width of the range.
+
 ```
 > MAP = function(range, file, ...) {
 + requireNamespace("GenomicAlignments") ## for ScanBamParam() and coverage()
@@ -466,6 +484,7 @@ MAP computes coverage for each range. The sum of coverage across all positions i
 + c(width = GenomicRanges::width(range),
 + sum = sum(S4Vectors::runLength(rle) * S4Vectors::runValue(rle)))
 + }
+
 ```
 
 REDUCE sums the width and coverage for all ranges in ‘tiles‘.
@@ -474,11 +493,14 @@ REDUCE sums the width and coverage for all ranges in ‘tiles‘.
 > REDUCE = function(mapped, ...) {
 + Reduce(function(i, j) Map("+", i, j), mapped)
 + }
+
 ```
 
 When iterate=TRUE REDUCE is applied after each MAP step. Iterating prevents the data from growing too large on the worker. The total width and coverage sum for all ranges are returned for each file.
+
 ```
 > cvg1 <- reduceByFile(tiles, fls, MAP, REDUCE, iterate=TRUE)
+
 ```
 
 cvg1[1]
@@ -513,13 +535,16 @@ REDUCE extracts the RleList from ‘mapped‘ and collapses the coverage. Note t
 > REDUCE = function(mapped, ...) {
 + sapply(mapped, Reduce, f = "+")
 + }
+
 ```
 
 Recall ‘tiles‘ is a GRangesList with one range per list element. We have no need for the
 grouping in this example so we pass ‘tiles‘ as a GRanges.
+
 ```
 > cvg2 <- reduceFiles(unlist(tiles), fls, MAP, REDUCE)
 ```
+
 Output is a list of length 8 where each element is a single Rle of coverage for all ranges.
 
 > cvg2[1]
