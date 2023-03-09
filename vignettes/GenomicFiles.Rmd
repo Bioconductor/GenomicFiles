@@ -83,7 +83,7 @@ head(lst[[1]], 3) \@
 # Overview of classes and functions
 
 
-\subsection{\Rcode{GenomicFiles} class}
+##GenomicFiles class
 
 The \Rcode{GenomicFiles} class is a matrix-like container where rows
 represent ranges of interest and columns represent files. The object can
@@ -101,7 +101,7 @@ NOTE: Results can only be put into a \Rcode{SummarizedExperiment} when
 no reduction is performed because of the matching dimensions requirement
 (i.e., a REDUCE collapses the results in one dimension).
 
-\subsection{Functions}
+## Functions
 
 Functions in \Rcode{GenomicFiles} manipulate and combine data across or
 within files using the parallel infrastructure provided in
@@ -167,7 +167,7 @@ basepair-level$t$-test across files. The$t$-test example also
 demonstrates how to use a blocking factor to differentiate files by
 experimental group (e.g., case vs control). \pagebreak
 
-\subsection{Pileup summaries}
+## Pileup summaries
 
 In this example nucleotide counts (pileups) are computed for the same
 ranges in each file (MAP step). Pileups are then summed by position
@@ -218,7 +218,7 @@ REDUCE) length(pile2) elementNROWS(pile2) \@
 Each element is a matrix of counts (position by nucleotide) for a single
 range summed over all files. \<<pileups-res>\>= head(pile2[[1]]) \@
 
-\subsection{Basepair-level $t$-test with case / control groups}
+## Basepair-level $t$-test with case / control groups
 
 In this example coverage is computed for a region of interest in
 multiple files. A grouping variable that defines case / control status
@@ -294,7 +294,7 @@ The coverage example is performed with both \Rcode{reduceByFile} and
 at once. The last example uses a MAP function to chunk through subsets when the 
 data are too large for available memory.
 
-\subsection{Counting read junctions}
+## Counting read junctions
 
 This example highlights how \Rcode{reduceByFile} allows detailed control
 over the combination of data subsets from distinct ranges within the same 
@@ -364,7 +364,7 @@ counts2[[1]]
 counts1[[1]]
 @
 
-\subsection{Coverage 1: \Rcode{reduceByFile}}
+## Coverage 1: reduceByFile
 
 Files that are too large to fit in memory can be streamed over by creating `tiles` or
 ranges that span the whole file. The \Rcode{tileGenome} function creates a set
@@ -419,7 +419,7 @@ cvg1 <- reduceByFile(tiles, fls, MAP, REDUCE, iterate=TRUE)
   [1] 57633506
 \end{verbatim}
 
-\subsection{Coverage 2: \Rcode{reduceFiles}}
+## Coverage 2: reduceFiles
 
 In the first coverage example we used \Rcode{reduceByFile} to invoke MAP for
 each file / range combination. This approach is useful when analyses
@@ -467,7 +467,7 @@ for all ranges.
 cvg2[1]
 @
 
-\subsection{Coverage 3: \Rcode{reduceFiles} with chunking}
+## Coverage 3: reduceFiles with chunking
 
 Continuing with the same coverage example. Now let's assume the result from
 calling \Rcode{coverage} with all ranges in `tiles` does not fit in available
@@ -529,7 +529,7 @@ cvg3 <- reduceFiles(unlist(tiles), fls, MAP, REDUCE)
 
 # Chunking
 
-\subsection{Ranges in a file}
+## Ranges in a file
 
 Both \Rcode{reduceByFile} and \Rcode{reduceByRange} process \Rcode{ranges} one
 element at a time. When \Rcode{ranges} is a GRanges the element is a single
@@ -548,7 +548,7 @@ ranges to combine data \emph{across} files use \Rcode{reduceByRange} with a
 GRangesList.
 
 
-\subsection{Records in a file}
+## Records in a file
 
 \Rcode{reduceByYield} iterates through records in a single file
 that would otherwise not fit in memory. It is similar to a one dimensional 
