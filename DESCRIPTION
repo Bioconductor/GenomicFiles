@@ -12,7 +12,7 @@ Authors@R: c(person("Bioconductor Package Maintainer", role = c("aut", "cre"),
 	      person("Lori", "Shepherd", role = "aut"),
 	      person("Martin", "Morgan", role = "aut"),
               person("Sonali", "Kumari", role = "ctb",
-                     comment = "Converted GinomicFles vignette from GenomicFiles.Rnw to RMarkdown / HTML."),
+                     comment = "Converted `GinomicFles` vignette from GenomicFiles.Rnw to RMarkdown / HTML."),
         person("Bioconductor Package Maintainer",
                      email = "maintainer@bioconductor.org", role = "cre"))
 biocViews: Genetics, Infrastructure, DataImport, Sequencing, Coverage
