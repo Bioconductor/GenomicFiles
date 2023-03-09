@@ -5,7 +5,7 @@ author: Valerie Obenchain,Michael Love,Lori Shepherd,Martin Morgan
 date: March 04, 2023
 package: GenomicFiles
 vignette: >
-  %\VignetteIndexEntry{GenomicFiles}
+  %\VignetteIndexEntry{Introduction to GenomicFiles}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
