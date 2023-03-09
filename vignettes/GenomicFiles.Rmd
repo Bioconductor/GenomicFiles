@@ -296,6 +296,7 @@ seqnames ranges strand | ttest
 -------
 
 seqinfo: 1 sequence from an unspecified genome; no seqlengths
+
 ```
 
 
@@ -497,15 +498,17 @@ In the first coverage example we used `reduceByFile` to invoke MAP for each file
 
 An alternative is to use `reduceFiles` which passes all ranges as a single argument to MAP. The ranges can be used to create a param or passed as an argument to another function that operates on multiple ranges at a time.
 
-
+```
 MAP = function(range, file, ...) {
     requireNamespace("GenomicAlignments")  ## for ScanBamParam() and coverage()
     GenomicAlignments::coverage(
         file,
         param=Rsamtools::ScanBamParam(which=range))[range]
 }
+```
 
 REDUCE extracts the RleList from ‘mapped‘ and collapses the coverage. Note that reduction could have be done in the MAP step on the output of coverage. Because all ranges are passed as a single argument, MAP is only called once on each worker. Consequences of a single invocation are (1) reduction can be done at the end of the MAP or by REDUCE and (2) REDUCE cannot be applied iteratively (this requires more than a single output from MAP).
+
 ```
 > REDUCE = function(mapped, ...) {
 + sapply(mapped, Reduce, f = "+")
