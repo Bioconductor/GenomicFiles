@@ -13,7 +13,7 @@ Authors@R: c(person("Bioconductor Package Maintainer", role = c("aut", "cre"),
 	      person("Martin", "Morgan", role = "aut"),
               person("Sonali", "Kumari", role = "ctb",
                      comment = "Converted 'GenomicFiles' vignettes from Sweave to RMarkdown / HTML."),
-        person("Bioconductor Package Maintainer",
+              person("Bioconductor Package Maintainer",
                      email = "maintainer@bioconductor.org", role = "cre"))
 biocViews: Genetics, Infrastructure, DataImport, Sequencing, Coverage
 Depends: R (>= 3.1.0), methods, BiocGenerics (>= 0.11.2), MatrixGenerics,
