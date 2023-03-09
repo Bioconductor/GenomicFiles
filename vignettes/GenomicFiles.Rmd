@@ -25,10 +25,10 @@ We assume the reader has some previous experience with R and with basic manipula
 
 The `GenomicFiles` package is available at bioconductor.org and can be downloaded via `BiocManager::install`. 
 
-```
-> if (!require("BiocManager"))
-+ install.packages("BiocManager")
-> BiocManager::install("GenomicFiles")
+```{r install, eval=FALSE}
+if (!require("BiocManager"))
+  install.packages("BiocManager")
+BiocManager::install("GenomicFiles")
 ```
 # Quick Start
 
