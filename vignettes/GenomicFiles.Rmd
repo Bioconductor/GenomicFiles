@@ -1,6 +1,6 @@
 
 ---
-title: "GenomicFiles"
+title: "Introduction to GenomicFiles"
 author: Valerie Obenchain,Michael Love,Lori Shepherd,Martin Morgan
 date: March 04, 2023
 package: GenomicFiles
@@ -10,7 +10,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 output:
   BiocStyle::html_document
-  
 ---
 
 # Introduction
@@ -206,7 +205,6 @@ lengths have been reduced to 1.
 > elementNROWS(pile2)
 
 [1] 20 20 20 20
-
 ```
 
 Each element is a matrix of counts (position by nucleotide) for a single
@@ -222,7 +220,6 @@ A T C G a t c g
 [4,] 0 0 0 16 0 0 0 42
 [5,] 0 0 20 0 0 0 40 0
 [6,] 19 0 0 0 39 0 0 0
-
 ```
 
 ## Basepair-level $t$-test with case / control groups
@@ -231,7 +228,6 @@ In this example, coverage is computed for a region of interest in multiple files
 
 ```
 roi <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963, 105613740), width=20))
-
 ```
 
 
@@ -292,7 +288,6 @@ seqnames ranges strand | ttest
 -------
 
 seqinfo: 1 sequence from an unspecified genome; no seqlengths
-
 ```
 
 
@@ -340,7 +335,6 @@ The `GenomicFiles` object or any subset of the object can be used as the ranges 
 > elementNROWS(counts1) ## 2 ranges
 ERR127306 ERR127307 ERR127308
 2 2 2
-
 ```
 
 Each list element has a table of counts for each range.
@@ -353,7 +347,6 @@ Each list element has a table of counts for each range.
 [[2]]
 0 1
 2329 57
-
 ```
 
 Add a reducer that combines counts for records in each range with exactly 1 junction.
@@ -384,7 +377,6 @@ Next invoke `reduceFiles` with the same files and MAP function. `reduceFiles` tr
 
 ```
 > counts2 <- reduceFiles(gf[,1:3], MAP=MAP)
-
 ```
 
 In the `reduceByFile` example junctions were counted for each range individually which allowed us to see results for the individual ranges and combine them on the fly based on specific criteria. In contrast, `reduceFiles` counts junctions for all ranges simultaneously.
@@ -403,7 +395,6 @@ In the `reduceByFile` example junctions were counted for each range individually
 [[2]]
 0 1
 2329 57
-
 ```
 
 
@@ -414,7 +405,6 @@ Files that are too large to fit in memory can be streamed over by creating ‘ti
 ```
 > chr14_seqlen <- seqlengths(seqinfo(BamFileList(fls))["chr14"])
 > tiles <- tileGenome(chr14_seqlen, ntile=5)
-
 ```
 
 tiles is a GRangesList of length ntile with one range per element
@@ -426,7 +416,6 @@ GRanges object with 1 range and 0 metadata columns:
 seqnames ranges strand
 <Rle> <IRanges> <Rle>
 [1] chr14 1-21469908 *
-
 -------
 
 seqinfo: 1 sequence from an unspecified genome
@@ -435,7 +424,6 @@ GRanges object with 1 range and 0 metadata columns:
 seqnames ranges strand
 <Rle> <IRanges> <Rle>
 [1] chr14 21469909-42939816 *
-
 -------
 
 seqinfo: 1 sequence from an unspecified genome
@@ -446,14 +434,12 @@ seqnames ranges strand
 [1] chr14 42939817-64409724 *
 
 -------
-
 seqinfo: 1 sequence from an unspecified genome
 [[4]]
 GRanges object with 1 range and 0 metadata columns:
 seqnames ranges strand
 <Rle> <IRanges> <Rle>
 [1] chr14 64409725-85879632 *
-
 -------
 
 seqinfo: 1 sequence from an unspecified genome
@@ -462,15 +448,12 @@ GRanges object with 1 range and 0 metadata columns:
 seqnames ranges strand
 <Rle> <IRanges> <Rle>
 [1] chr14 85879633-107349540 *
-
 -------
 
 seqinfo: 1 sequence from an unspecified genome
 
 ```
-
 MAP computes coverage for each range. The sum of coverage across all positions is recorded along with the width of the range.
-
 ```
 > MAP = function(range, file, ...) {
 + requireNamespace("GenomicAlignments") ## for ScanBamParam() and coverage()
@@ -479,7 +462,6 @@ MAP computes coverage for each range. The sum of coverage across all positions i
 + c(width = GenomicRanges::width(range),
 + sum = sum(S4Vectors::runLength(rle) * S4Vectors::runValue(rle)))
 + }
-
 ```
 
 REDUCE sums the width and coverage for all ranges in ‘tiles‘.
