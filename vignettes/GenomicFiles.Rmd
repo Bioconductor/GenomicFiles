@@ -3,7 +3,6 @@ title: "Introduction to GenomicFiles"
 authors:
   - name: "Valerie Obenchain"
   - name: "Michael Love"
-  - name: "Shepherd"
   - name: "Martin Morgan"
   - name: "Sonali Kumari"
     affiliation: "Vignette translation from Sweave to Rmarkdown / HTML"
