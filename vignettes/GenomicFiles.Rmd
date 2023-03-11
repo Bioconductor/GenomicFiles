@@ -7,7 +7,8 @@ authors:
   - name: "Martin Morgan"
   - name: "Sonali Kumari"
     affiliation: "Vignette translation from Sweave to Rmarkdown / HTML"
-date: "Last Modified October 2014"; "Compiled: `r format(Sys.time(), '%B %d, %Y')`"
+date: "Last modified: October 2014; Compiled: `r format(Sys.time(), '%B %d , %Y')`"
+
 vignette: >
   %\VignetteIndexEntry{Introduction to GenomicFiles}
   %\VignetteEncoding{UTF-8}
@@ -62,8 +63,8 @@ GenomicFiles offers functions for the parallel extraction and combination of dat
 subsets. A user-defined MAP function extracts and manipulates data while an optional REDUCE
 function consolidates the output of MAP.
 
-```{r quick_start-load}
-library(GenomicRanges)
+```{r quick_start-load, include=FALSE}
+library(GenomicFiles)
 
 ```
 
