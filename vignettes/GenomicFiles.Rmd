@@ -7,7 +7,7 @@ authors:
   - name: "Martin Morgan"
   - name: "Sonali Kumari"
     affiliation: "Vignette translation from Sweave to Rmarkdown / HTML"
-date: "`r format(Sys.time(), '%B %d, %Y')`"
+date: "Last Modified October 2014"; "Compiled: `r format(Sys.time(), '%B %d, %Y')`"
 vignette: >
   %\VignetteIndexEntry{Introduction to GenomicFiles}
   %\VignetteEncoding{UTF-8}
