@@ -47,10 +47,9 @@ worker, not across workers.
 We assume the reader has some previous experience with R and with basic
 manipulation of ranges objects such as `GRanges` and `GAlignments` and
 file classes such as `BamFile` and `BigWigFile`. See the vignettes and
-documentation in `r Biocpkg("GenomicRanges")`, `r Biocpkg("GenomicAlignments")`, `r Biocpkg ("GenomicAlignments")`, `r Biocpkg("Rsamtools")` and `{r} Biocpkg("rtracklayer")`for an introduction to these classes.
+documentation in `r Biocpkg("GenomicRanges")`, `r Biocpkg("GenomicAlignments")`, `r Biocpkg ("GenomicAlignments")`, `r Biocpkg("Rsamtools")` and `r Biocpkg("rtracklayer")` for an introduction to these classes.
 
-The `GenomicFiles` package is available at bioconductor.org and can be
-downloaded via `BiocManager::install`.
+The `GenomicFiles` package is available at bioconductor.org and can be downloaded via `BiocManager::install`.
 ```{r install, eval=FALSE}
 if (!require("BiocManager"))
   install.packages("BiocManager")
