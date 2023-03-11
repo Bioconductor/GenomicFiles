@@ -24,12 +24,10 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("BiocStyle", force = TRUE)
 ```
 
-
 ```{r include=FALSE}
 library(knitr)
 opts_chunk$set(tidy=FALSE)
 ```
-
 
 ```{r include=FALSE}
 library(BiocStyle)
@@ -66,7 +64,6 @@ function consolidates the output of MAP.
 
 ```{r quick_start-load, include=FALSE}
 library(GenomicFiles)
-
 ```
 
 Ranges can be a `GRanges`, `GRangesList` or `GenomicFiles` class.
@@ -113,7 +110,6 @@ REDUCE <- function(mapped, ...) {
   cmb = do.call(rbind, mapped)
   xtabs(count ~ pos + nucleotide, cmb)
 }
-
 lst <- reduceByRange(gr, fls, MAP, REDUCE, iterate=FALSE)
 ```
 
@@ -670,7 +666,6 @@ GenomicFiles::reduceByYield(bf, YIELD, MAP, REDUCE, gr=gr, parallel=FALSE)
   $ERR127305
   [1]  25646 145655  79854 219333 327909
 ```
-
 
 # `sessionInfo()`
 
