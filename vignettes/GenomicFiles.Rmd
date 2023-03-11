@@ -21,6 +21,20 @@ editor_options:
   markdown: 
     wrap: 72
 ---
+```{r echo=FALSE, include=FALSE}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("BiocStyle", force = TRUE)
+```
+
+```{r include=FALSE}
+library(knitr)
+opts_chunk$set(tidy=FALSE)
+```
+
+```{r include=FALSE}
+library(BiocStyle)
+```
 
 # Introduction
 
