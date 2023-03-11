@@ -11,6 +11,7 @@ date: "Last modified: October 2014; Compiled: `r format(Sys.time(), '%B %d , %Y'
 
 vignette: >
   %\VignetteIndexEntry{Introduction to GenomicFiles}
+  %\VignetteDepends{GenomicAlignments, RNAseqData.HNRNPC.bam.chr14}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 output:
