@@ -93,7 +93,6 @@ MAP <- function(range, file, ...) {
 file / range combination. When `summarize=TRUE` the output is a
 `SummarizedExperiment` object.
 ```{r quick_start-reduceByFile}
-library(GenomicFiles)
 se <- reduceByFile(gr, fls, MAP, summarize=TRUE)
 se 
 ```
@@ -131,7 +130,6 @@ The `GenomicFiles` class is a matrix-like container where rows represent
 ranges of interest and columns represent files.
 The object can be subset on files and /or ranges to perform different experimental runs. The class inherits from `RangedSummarizedExperiment` but does not (as of yet) make use of the `elementMetadata` and `assays` slots.
 ```{r overview-GenomicFiles}
-library(GenomicFiles)
 GenomicFiles(gr, fls)
 ```
 
@@ -163,7 +161,7 @@ from the files to be kept separate or combined before the next call to
 `reduceRanges` applies `MAP` to each range / file combination and
 REDUCEs the output of all MAP calls. `REDUCE` usually plays a minor
 role by concatenating or unlisting results.
-```{r fig1, fig.cap="**Figure 1**: Mechanics of reduceByRange and reduceRanges"}
+```{r fig1, fig.cap=": Mechanics of `reduceByRange` and `reduceRanges`"}
 knitr::include_graphics("reduceByRange_flow.png")
 ```
 
@@ -171,7 +169,7 @@ In contrast to the 'byRange' approach, `reduceByFile` and `reduceFiles`
 (Figure [2](reduceByFile_flow.png)) split the problem by file. Files are sent to different workers with the set of ranges allowing subsets (i.e., multiple ranges) from the same file to be combined. `reduceByFile` invokes MAP for each file / range combination allowing potential `REDUCE` after each MAP step.
 
 `reduceFiles` applies MAP to each range / file combination and REDUCEs the output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or unlisting results.
-```{r fig2, fig.cap="**Figure 2**: Mechanics of reduceByFile and reduceFiles"}
+```{r fig2, fig.cap=": Mechanics of `reduceByFile` and `reduceFiles`"}
 knitr::include_graphics("reduceByFile_flow.png")
 ```
 
@@ -237,7 +235,6 @@ REDUCE <- function(mapped, ...) {
 The output is again a list with the same length as the number of ranges
 but the element lengths have been reduced to 1.
 ```{r pileups-reduceByRange}
-    library(GenomicFiles)
     pile2 <- reduceByRange(gr, fls, MAP, REDUCE)
     length(pile2)
     elementNROWS(pile2)
@@ -294,7 +291,6 @@ files have been computed. This delay is necessary because REDUCE uses
 the file grouping factor to perform the t-test and relies on the
 coverage vectors for all files to be present.
 ```{r ttest-results}
-library(GenomicFiles)
 ttest <- reduceByRange(roi, fls, MAP, REDUCE, iterate=FALSE, grp=grp)
 ```
 
@@ -306,7 +302,6 @@ head(ttest[[1]], 3)
 
 These tables can be added to the `roi` GRanges as a metadata column.
 ```{r}
-library(GenomicFiles)
     mcols(roi)$ttest <- ttest
     head(roi)
 ```
@@ -409,7 +404,6 @@ this example we create 5 ranges but the optimal value for `ntile` will
 depend on the application and the size of the chromosome (or genome) to
 be tiled.
 ```{r coverage1-tiles}
-library(GenomicFiles)
 chr14_seqlen <- seqlengths(seqinfo(BamFileList(fls))["chr14"])
 tiles <- tileGenome(chr14_seqlen, ntile=5)
 ```
@@ -443,7 +437,6 @@ When iterate=TRUE REDUCE is applied after each MAP step. Iterating
 prevents the data from growing too large on the worker. The total width
 and coverage sum for all ranges are returned for each file.
 ```{r coverage1-results, eval=FALSE}
-library(Rsamtools)
 cvg1 <- reduceByFile(tiles, fls, MAP, REDUCE, iterate=TRUE)
 ```
 
@@ -553,7 +546,6 @@ Again 'tiles' are passed as a GRanges so the chunking in MAP defines the
 groups, not the structure of the GRangesList. Output is a list of length
 8 where each list element is a single Rle of coverage.
 ```{r coverage3-Results, eval=FALSE}
-library(BiocParallel)
 cvg3 <- reduceFiles(unlist(tiles), fls, MAP, REDUCE)
 ```
 ```
