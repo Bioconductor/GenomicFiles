@@ -3,7 +3,6 @@ title: "Introduction to GenomicFiles"
 authors:
   - name: "Valerie Obenchain"
   - name: "Michael Love"
-  - name: "Shepherd"
   - name: "Martin Morgan"
   - name: "Sonali Kumari"
     affiliation: "Vignette translation from Sweave to Rmarkdown / HTML"
@@ -183,7 +182,6 @@ over all files. The second example computes coverage on a group of
 ranges for each file then performs a basepair-level t-test across files.
 The t-test example also demonstrates how to use a blocking factor to
 differentiate files by experimental group (e.g., case vs control).
-
 \pagebreak
 
 ## Pileup summaries
@@ -566,7 +564,6 @@ cvg3 <- reduceFiles(unlist(tiles), fls, MAP, REDUCE)
 ```
 
 \newpage
-
 # Chunking
 
 ## Ranges in a file
