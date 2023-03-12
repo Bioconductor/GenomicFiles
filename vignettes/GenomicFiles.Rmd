@@ -24,10 +24,12 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("BiocStyle", force = TRUE)
 ```
 
+
 ```{r include=FALSE}
 library(knitr)
 opts_chunk$set(tidy=FALSE)
 ```
+
 
 ```{r include=FALSE}
 library(BiocStyle)
@@ -35,7 +37,7 @@ library(BiocStyle)
 
 # Introduction
 
-This vignette illustrates how to use then `r Biocpkg("GenomicFiles")`
+This vignette illustrates how to use the `r Biocpkg("GenomicFiles")`
 package for distributed computing across files. The functions in
 `GenomicFiles` manipulate and combine data subsets via two user-supplied
 functions, MAP and REDUCE. These are similar in spirit to `Map` and
@@ -49,10 +51,10 @@ manipulation of ranges objects such as `GRanges` and `GAlignments` and
 file classes such as `BamFile` and `BigWigFile`. See the vignettes and
 documentation in `r Biocpkg("GenomicRanges")`, `r Biocpkg("GenomicAlignments")`, `r Biocpkg ("GenomicAlignments")`, `r Biocpkg("Rsamtools")` and `r Biocpkg("rtracklayer")` for an introduction to these classes.
 
-The `GenomicFiles` package is available at bioconductor.org and can be downloaded via `BiocManager::install`.
+The GenomicFiles package is available at bioconductor.org and can be downloaded via `BiocManager::install`.
 ```{r install, eval=FALSE}
 if (!require("BiocManager"))
-  install.packages("BiocManager")
+    install.packages("BiocManager")
 BiocManager::install("GenomicFiles")
 ```
 
@@ -62,8 +64,9 @@ GenomicFiles offers functions for the parallel extraction and combination of dat
 subsets. A user-defined MAP function extracts and manipulates data while an optional REDUCE
 function consolidates the output of MAP.
 
-```{r quick_start-load, include=FALSE}
+```{r quick_start-load, message=FALSE}
 library(GenomicFiles)
+
 ```
 
 Ranges can be a `GRanges`, `GRangesList` or `GenomicFiles` class.
@@ -82,8 +85,8 @@ The MAP function extracts and manipulates data subsets. Here we compute
 pileups for a given range and file.
 ```{r quick_start-MAP}
 MAP <- function(range, file, ...) {
-  requireNamespace("Rsamtools")
-  Rsamtools::pileup(file, scanBamParam=Rsamtools::ScanBamParam(which=range))
+    requireNamespace("Rsamtools")
+    Rsamtools::pileup(file, scanBamParam=Rsamtools::ScanBamParam(which=range))
 } 
 ```
 
@@ -107,9 +110,10 @@ across files.
 ```{r quick_start-MAP-REDUCE-reduceByRange}
 library(GenomicAlignments)
 REDUCE <- function(mapped, ...) {
-  cmb = do.call(rbind, mapped)
-  xtabs(count ~ pos + nucleotide, cmb)
+    cmb = do.call(rbind, mapped)
+    xtabs(count ~ pos + nucleotide, cmb)
 }
+
 lst <- reduceByRange(gr, fls, MAP, REDUCE, iterate=FALSE)
 ```
 
@@ -151,22 +155,22 @@ The chart in Figure [1](reduceByRange_flow.png) represents the division of labor
 functions split the problem by range which allows subsets (i.e., the
 same range) to be combined across different files.
 `reduceByRange` iterates through the files, invoking MAP and REDUCE
-for each range/file combination. This approach allows ranges extracted
+for each range / file combination. This approach allows ranges extracted
 from the files to be kept separate or combined before the next call to
 `MAP` based on whether or not a `REDUCE` is supplied.
 
 `reduceRanges` applies `MAP` to each range / file combination and
 REDUCEs the output of all MAP calls. `REDUCE` usually plays a minor
 role by concatenating or unlisting results.
-```{r fig1, fig.cap=": Mechanics of `reduceByRange` and `reduceRanges`"}
+```{r echo = FALSE, fig1, fig.cap=": Mechanics of `reduceByRange` and `reduceRanges`"}
 knitr::include_graphics("reduceByRange_flow.png")
 ```
 
 In contrast to the 'byRange' approach, `reduceByFile` and `reduceFiles`
 (Figure [2](reduceByFile_flow.png)) split the problem by file. Files are sent to different workers with the set of ranges allowing subsets (i.e., multiple ranges) from the same file to be combined. `reduceByFile` invokes MAP for each file / range combination allowing potential `REDUCE` after each MAP step.
 
-`reduceFiles` applies MAP to each range / file combination and REDUCEs the output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or unlisting results.
-```{r fig2, fig.cap=": Mechanics of `reduceByFile` and `reduceFiles`"}
+`reduceFiles` applies `MAP` to each range / file combination and REDUCEs the output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or unlisting results.
+```{r echo = FALSE, fig2, fig.cap=": Mechanics of `reduceByFile` and `reduceFiles`"}
 knitr::include_graphics("reduceByFile_flow.png")
 ```
 
@@ -191,7 +195,7 @@ step).
 
 Create a GRanges with regions of interest:
 ```{r pileups-ranges}
-     gr <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963,
+gr <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963,
      105613740), width=20))
 ```
 
@@ -204,12 +208,12 @@ Because the `bam2R` function is not explicitly passed through the MAP,
 `deepSNV` must be loaded on each worker so the function can be found.
 ```{r pileups-MAP}
 MAP <- function(range, file, ...) {
-  requireNamespace("deepSNV")
-  ct <- deepSNV::bam2R(file,
-                       GenomeInfoDb::seqlevels(range),
-                       GenomicRanges::start(range),
-                       GenomicRanges::end(range), q=0)
-  ct[, c("A", "T", "C", "G", "a", "t", "c", "g")]
+    requireNamespace("deepSNV")
+    ct <- deepSNV::bam2R(file,
+                         GenomeInfoDb::seqlevels(range),
+                         GenomicRanges::start(range),
+                         GenomicRanges::end(range), q=0)
+    ct[, c("A", "T", "C", "G", "a", "t", "c", "g")]
 }
 ```
 
@@ -225,31 +229,31 @@ pile1 <- reduceByRange(gr, fls, MAP)
 Next add a REDUCE to sum the counts by position.
 ```{r pileups-REDUCE}
 REDUCE <- function(mapped, ...) {
-  Reduce("+", mapped)
+    Reduce("+", mapped)
 }
 ```
 
 The output is again a list with the same length as the number of ranges
 but the element lengths have been reduced to 1.
-```{r pileups-reduceByRange}
-    pile2 <- reduceByRange(gr, fls, MAP, REDUCE)
-    length(pile2)
-    elementNROWS(pile2)
+```{r pileups-reduceByRange, message=FALSE}
+pile2 <- reduceByRange(gr, fls, MAP, REDUCE)
+length(pile2)
+elementNROWS(pile2)
 ```
 
 Each element is a matrix of counts (position by nucleotide) for a single
 range summed over all files.
-```{r pileups-res}
+```{r pileups-res, warning=FALSE}
 head(pile2[[1]])
 ```
 
 ## Basepair-level $t$-test with case / control groups
 
-In this example, coverage is computed for a region of interest in files. A grouping variable that defines case/control status is passed as an extra argument to `reduceByRange` and used in the reduction step to perform the t-test.
+In this example, coverage is computed for a region of interest in multiple files. A grouping variable that defines case / control status is passed as an extra argument to `reduceByRange` and used in the reduction step to perform the t-test.
 
 Define ranges of interest,
-```{r ttest-ranges}
-    roi <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963, 105613740), width=20))
+```{r ttest-ranges, warning=FALSE}
+roi <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963,                        105613740), width=20))
 ```
 
 and assign the case, control grouping of files. (Grouping is arbitrary
@@ -259,20 +263,20 @@ grp <- factor(rep(c("A","B"), each=length(fls)/2))
 ```
 
 The MAP reads in alignments from each BAM file and computes coverage.
-Coverage iscoerced from an RleList to numeric vector for later use in
+Coverage is coerced from an RleList to numeric vector for later use in
 the t-test.
 ```{r ttest-MAP}
 MAP <- function(range, file, ...) {
-       requireNamespace("GenomicAlignments")
-       param <- Rsamtools::ScanBamParam(which=range)
-       as.numeric(unlist(
-       GenomicAlignments::coverage(file, param=param)[range], use.names=FALSE))
+    requireNamespace("GenomicAlignments")
+    param <- Rsamtools::ScanBamParam(which=range)
+    as.numeric(unlist(
+        GenomicAlignments::coverage(file, param=param)[range], use.names=FALSE))
     }
 ```
 
 REDUCE combines the coverage vectors into a matrix, identifies all-zero
-rows, and performs row-wise t-testing using the rowttests function from
-the `r Biocpkg("genefilter")`  package. The index of which rows correspond to which basepair of the original range is stored as a column offset.
+rows, and performs row-wise t-testing using the `rowttests` function from
+the `r Biocpkg("genefilter")`  package. The index of which rows correspond to which basepair of the original range is stored as a column `offset`.
 ```{r ttest-REDUCE}
 REDUCE <- function(mapped, ..., grp) {
     mat = simplify2array(mapped)
@@ -287,20 +291,33 @@ The file grouping is passed as an extra argument to `reduceByRange`.
 files have been computed. This delay is necessary because REDUCE uses
 the file grouping factor to perform the t-test and relies on the
 coverage vectors for all files to be present.
-```{r ttest-results}
+```{r ttest-results, eval=FALSE}
 ttest <- reduceByRange(roi, fls, MAP, REDUCE, iterate=FALSE, grp=grp)
 ```
 
 The result is a list of summary tables of basepair-level t-test
 statistics for each range across all files.
-```{r}
-head(ttest[[1]], 3)
+```
+> head(ttest[[1]], 3)
+  offset statistic   dm   p.value
+1      0 1.1489125 2.75 0.2943227
+2      1 0.9761871 2.25 0.3666718
+3      2 0.8320503 1.50 0.4372365
 ```
 
 These tables can be added to the `roi` GRanges as a metadata column.
-```{r}
-    mcols(roi)$ttest <- ttest
-    head(roi)
+```
+mcols(roi)$ttest <- ttest 
+> head(roi)
+GRanges object with 4 ranges and 1 metadata column:
+      seqnames                 ranges strand |    ttest
+         <Rle>              <IRanges>  <Rle> |   <list>
+  [1]    chr14 [ 19411677,  19411696]      * | ########
+  [2]    chr14 [ 19659063,  19659082]      * | ########
+  [3]    chr14 [105421963, 105421982]      * | ########
+  [4]    chr14 [105613740, 105613759]      * | ########
+  -------
+  seqinfo: 1 sequence from an unspecified genome; no seqlengths
 ```
 
 # Queries within files: reduceByFile and reduceFiles
@@ -317,15 +334,12 @@ criteria. Another example computes coverage over complete BAM files by
 streaming over a set of continuous ranges. The coverage example is
 performed with both `reduceByFile` and `reduceFiles` to demonstrate the
 passing ranges to MAP individually vs all at once.
-The last example uses
-a MAP function to chunk through subsets when the data are too large for
-available memory.
+The last example uses a MAP function to chunk through subsets when the data are too large for available memory.
 
 ## Counting read junctions
 
 This example highlights how `reduceByFile` allows detailed control over
-the combination of data subsets from distinct ranges within the sameb
-file. 
+the combination of data subsets from distinct ranges within the same file.
 
 Define ranges of interest.
 ```{r junctions-ranges}
@@ -337,7 +351,7 @@ CIGAR) for each range.
 ```{r junctions-MAP}
 MAP <- function(range, file, ...) {
      requireNamespace("GenomicAlignments") ## for readGAlignments()
-     ## ScanBamParam()
+                                           ## ScanBamParam()
      param = Rsamtools::ScanBamParam(which=range)
      gal = GenomicAlignments::readGAlignments(file, param=param)
      table(GenomicAlignments::njunc(gal))
@@ -355,8 +369,8 @@ ranges argument to functions in `GenomicFiles`. Here the object is
 subset on 3 files and both ranges.
 ```{r junctions-counts1}
 counts1 <- reduceByFile(gf[,1:3], MAP=MAP)
-    length(counts1) ## 3 files
-    elementNROWS(counts1) ## 2 ranges
+length(counts1) ## 3 files
+elementNROWS(counts1) ## 2 ranges
 ```
 
 Each list element has a table of counts for each range.
@@ -368,8 +382,8 @@ Add a reducer that combines counts for records in each range with
 exactly 1 junction.
 ```{r junctions-REDUCE}
 REDUCE <- function(mapped, ...)
-  sum(sapply(mapped, "[", "1"))
-  reduceByFile(gr, fls, MAP, REDUCE)
+    sum(sapply(mapped, "[", "1"))
+    reduceByFile(gr, fls, MAP, REDUCE)
 ```
 
 Next invoke `reduceFiles` with the same files and MAP function.
@@ -385,9 +399,9 @@ and combine them on the fly based on specific criteria. In contrast,
 `reduceFiles` counts junctions for all ranges simultaneously.
 ```{r junctions-counts2-show}
 ## reduceFiles returns counts for all ranges.
-    counts2[[1]]
+counts2[[1]]
 ## reduceByFile returns counts for each range separately.
-    counts1[[1]]
+counts1[[1]]
 ```
 
 ## Coverage 1: reduceByFile
@@ -414,23 +428,22 @@ MAP computes coverage for each range. The sum of coverage across all
 positions is recorded along with the width of the range.
 ```{r coverage1-MAP}
 MAP = function(range, file, ...) {
-library(GenomicAlignments)
     requireNamespace("GenomicAlignments") ## for ScanBamParam() and coverage()
     param = Rsamtools::ScanBamParam(which=range)
     rle = GenomicAlignments::coverage(file, param=param)[range]
     c(width = GenomicRanges::width(range),
-    sum = sum(S4Vectors::runLength(rle) * S4Vectors::runValue(rle)))
+      sum = sum(S4Vectors::runLength(rle) * S4Vectors::runValue(rle)))
 }
 ```
 
 REDUCE sums the width and coverage for all ranges in 'tiles'.
 ```{r coverage1-REDUCE}
 REDUCE = function(mapped, ...) {
-  Reduce(function(i, j) Map("+", i, j), mapped)
+    Reduce(function(i, j) Map("+", i, j), mapped)
 }
 ```
 
-When iterate=TRUE REDUCE is applied after each MAP step. Iterating
+When `iterate=TRUE` REDUCE is applied after each MAP step. Iterating
 prevents the data from growing too large on the worker. The total width
 and coverage sum for all ranges are returned for each file.
 ```{r coverage1-results, eval=FALSE}
@@ -457,15 +470,17 @@ ranges is not important and the overhead of an lapply over all ranges
 may be costly.
 
 An alternative is to use `reduceFiles` which passes all ranges as a
-single argument to MAP. The ranges can be used to create a param or
+single argument to MAP. The ranges can be used to create a 'param' or
 passed as an argument to another function that operates on multiple
 ranges at a time.
+
+This MAP computes coverage on all ranges at once and returns an RleList.
 ```{r coverage2-MAP}
 MAP = function(range, file, ...) {
-        requireNamespace("GenomicAlignments")  ## for ScanBamParam() and coverage()
-        GenomicAlignments::coverage(
-            file,
-            param=Rsamtools::ScanBamParam(which=range))[range]
+    requireNamespace("GenomicAlignments")  ## for ScanBamParam() and coverage()
+    GenomicAlignments::coverage(
+        file,
+        param=Rsamtools::ScanBamParam(which=range))[range]
 }
 ```
 
@@ -499,13 +514,9 @@ cvg2[1]
 
 Continuing with the same coverage example. Now let's assume the result
 from calling `coverage` with all ranges in 'tiles' does not fit in
-available memory. We need a way to chunk through the ranges. One option
-is to use `reduceByFile` to lapply through each range in 'tiles'
-individually and then apply a reducer as we did in the first coverage
-example. Because the 'tiles' GRangesList has only one range per list
-element this approach may be inefficient for a large number of ranges.
+available memory. We need a way to chunk through the ranges.
 
-To reduce the number of iterations in the lapply, the ranges in
+One option is to use `reduceByFile` to lapply through each range in 'tiles' individually and then apply a reducer as we did in the first coverage example. Because the 'tiles' GRangesList has only one range per list element this approach may be inefficient for a large number of ranges. To reduce the number of iterations in the lapply, the ranges in
 'tiles' could be re-grouped into a GRangesList with more than one range
 per element.
 
@@ -518,24 +529,24 @@ data are subset on each worker, coverage is computed and reduced for the
 ranges in the chunk.
 ```{r coverage3-MAP}
 MAP = function(range, file, ...) {
-        requireNamespace("BiocParallel")  ## for bplapply()
-        nranges = 2
-        idx = split(seq_along(range), ceiling(seq_along(range)/nranges))
-        BiocParallel::bplapply(idx, 
-            function(i, range, file) {
-                requireNamespace("GenomicAlignments")  ## ScanBamParam(), coverage()
-                chunk = range[i]
-                param = Rsamtools::ScanBamParam(which=chunk)
-                cvg = GenomicAlignments::coverage(file, param=param)[chunk]
-                Reduce("+", cvg)            ## collapse coverage within chunks
-            }, range, file)
+    requireNamespace("BiocParallel")  ## for bplapply()
+    nranges = 2
+    idx = split(seq_along(range), ceiling(seq_along(range)/nranges))
+    BiocParallel::bplapply(idx, 
+        function(i, range, file) {
+            requireNamespace("GenomicAlignments")  ## ScanBamParam(), coverage()
+            chunk = range[i]
+            param = Rsamtools::ScanBamParam(which=chunk)
+            cvg = GenomicAlignments::coverage(file, param=param)[chunk]
+            Reduce("+", cvg)            ## collapse coverage within chunks
+        }, range, file)
 }
 ```
 
 REDUCE extracts and collapses the RleList of coverage for all chunks.
 ```{r coverage3-REDUCE}
 REDUCE = function(mapped, ...) {
-        sapply(mapped, Reduce, f = "+")
+    sapply(mapped, Reduce, f = "+")
 }
 ```
 
@@ -554,13 +565,15 @@ cvg3 <- reduceFiles(unlist(tiles), fls, MAP, REDUCE)
     Values :    0   22   23   19   17   18   17 ...   20   22   21   23   22    0
 ```
 
+\newpage
+
 # Chunking
 
 ## Ranges in a file
 
 Both `reduceByFile` and `reduceByRange` process `ranges` one element at a
 time. When `ranges` is a GRanges the element is a single range and when
-it is a GRanges List the element can contain multiple ranges.
+it is a GRangesList the element can contain multiple ranges.
 
 If the GRanges is very long (many ranges) working one range at a time can be inefficient. Splitting the GRanges into a GRangesList allows
 `reduceByFile` and `reduceByRange` to work on groups of ranges and will
@@ -578,20 +591,19 @@ GRangesList.
 
 `reduceByYield` iterates through records in a single file that would
 otherwise not fit in memory.It is similar to a one dimensional
-`reduceByFile` but the arguments and approach are slightl ydifferent.
+`reduceByFile` but the arguments and approach are slightly different.
 
 Similar to other `GenomicFiles` functions, data are manipulated and
 reduced with MAP and `REDUCE` functions. What sets `reduceByYield` apart
 are the use of `YIELD` and `DONE` arguments. `YIELD` is a function that
-returns a chunk of data to work on and `DONE` is a function thatdefines a
+returns a chunk of data to work on and `DONE` is a function that defines a
 stopping criteria.
 
-Records from a single file are read by
-`readGAlignments` and limited by the `yieldSize` set in the BamFile.
+Records from a single file are read by `readGAlignments` and limited by the `yieldSize` set in the BamFile.
 ```{r reduceByYield-YIELD}
 library(GenomicAlignments)
-    bf <- BamFile(fls[1], yieldSize=100000)
-    YIELD <- function(x, ...) readGAlignments(x)
+bf <- BamFile(fls[1], yieldSize=100000)
+YIELD <- function(x, ...) readGAlignments(x)
 ```
 
 MAP counts overlaps between the reads and a GRanges of interest while
@@ -605,7 +617,7 @@ MAP <- function(value, gr, ...) {
 REDUCE <- `+`
 ```
 
-When DONE evaluates to TRUE, iteration stops. 'value' is the object
+When `DONE` evaluates to TRUE, iteration stops. 'value' is the object
 returned from calling YIELD on the BAM file. At the end of file the
 length of records will be 0 and `DONE` will evaluate to TRUE.
 ```{r reduceByYield-DONE}
@@ -614,9 +626,11 @@ DONE <- function(value) length(value) == 0L
 
 The MAP step is run in parallel when `parallel=TRUE.` 'parallel' is
 currently implemented for Unix/Mac only so we use multicore workers.
-```{r}
-register(SnowParam(3))
-reduceByYield(bf, YIELD, MAP, REDUCE, DONE, gr=gr, parallel=TRUE)
+```
+register(MulticoreParam(3))
+> reduceByYield(bf, YIELD, MAP, REDUCE, DONE, gr=gr, parallel=TRUE)
+[[1]]
+[1]  21465 163154  75498 212593 327785
 ```
 
 Taking this one step further, we can use `bplapply` to distribute files to workers and call `reduceByYield` on each file. If adequate resources are available this example could have 2 levels of parallel dispatch, one at the file level (`bplapply`) and one at the MAP level (`reduceByYield(..., parallel=TRUE`). This example takes the conservative approach and runs `reduceByYield` in serial on each worker.
@@ -624,17 +638,17 @@ Taking this one step further, we can use `bplapply` to distribute files to worke
 The function 'FUN' will be run on each worker.
 ```{r reduceByYield-bplapply}
 FUN <- function(file, gr, YIELD, MAP, REDUCE, tiles, ...) {
-requireNamespace("GenomicAlignments") ## for BamFile, readGAlignments()
-requireNamespace("GenomicFiles") ## for reduceByYield()
-gr <- unlist(tiles, use.names=FALSE)
-bf <- Rsamtools::BamFile(file, yieldSize=100000)
-YIELD <- function(x, ...) GenomicAlignments::readGAlignments(x)
-MAP <- function(value, gr, ...) {
-requireNamespace("GenomicRanges") ## for countOverlaps()
-GenomicRanges::countOverlaps(gr, value)
-}
-REDUCE <- `+`
-GenomicFiles::reduceByYield(bf, YIELD, MAP, REDUCE, gr=gr, parallel=FALSE)
+    requireNamespace("GenomicAlignments") ## for BamFile, readGAlignments()
+    requireNamespace("GenomicFiles") ## for reduceByYield()
+    gr <- unlist(tiles, use.names=FALSE)
+    bf <- Rsamtools::BamFile(file, yieldSize=100000)
+    YIELD <- function(x, ...) GenomicAlignments::readGAlignments(x)
+    MAP <- function(value, gr, ...) {
+        requireNamespace("GenomicRanges") ## for countOverlaps()
+        GenomicRanges::countOverlaps(gr, value)
+    }
+    REDUCE <- `+`
+    GenomicFiles::reduceByYield(bf, YIELD, MAP, REDUCE, gr=gr, parallel=FALSE)
 }
 ```
 
@@ -666,6 +680,7 @@ GenomicFiles::reduceByYield(bf, YIELD, MAP, REDUCE, gr=gr, parallel=FALSE)
   $ERR127305
   [1]  25646 145655  79854 219333 327909
 ```
+
 
 # `sessionInfo()`
 
