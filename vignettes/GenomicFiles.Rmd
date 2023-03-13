@@ -23,12 +23,10 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("BiocStyle", force = TRUE)
 ```
 
-
 ```{r include=FALSE}
 library(knitr)
 opts_chunk$set(tidy=FALSE)
 ```
-
 
 ```{r include=FALSE}
 library(BiocStyle)
@@ -161,6 +159,8 @@ from the files to be kept separate or combined before the next call to
 `reduceRanges` applies `MAP` to each range / file combination and
 REDUCEs the output of all MAP calls. `REDUCE` usually plays a minor
 role by concatenating or unlisting results.
+
+
 ```{r echo = FALSE, fig1, fig.cap=": Mechanics of `reduceByRange` and `reduceRanges`"}
 knitr::include_graphics("reduceByRange_flow.png")
 ```
@@ -169,6 +169,7 @@ In contrast to the 'byRange' approach, `reduceByFile` and `reduceFiles`
 (Figure [2](reduceByFile_flow.png)) split the problem by file. Files are sent to different workers with the set of ranges allowing subsets (i.e., multiple ranges) from the same file to be combined. `reduceByFile` invokes MAP for each file / range combination allowing potential `REDUCE` after each MAP step.
 
 `reduceFiles` applies `MAP` to each range / file combination and REDUCEs the output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or unlisting results.
+
 ```{r echo = FALSE, fig2, fig.cap=": Mechanics of `reduceByFile` and `reduceFiles`"}
 knitr::include_graphics("reduceByFile_flow.png")
 ```
