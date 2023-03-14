@@ -14,7 +14,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 output:
   BiocStyle::html_document
---- 
+---
 
 # Introduction
   
@@ -75,7 +75,9 @@ MAP <- function(range, file, ...) {
 } 
 ```
 
-`reduceByFile` sends each file to a worker where MAP is applied to each file / range combination. When `summarize=TRUE` the output is a `SummarizedExperiment` object.
+`reduceByFile` sends each file to a worker where MAP is applied to each file /
+range combination. When `summarize=TRUE` the output is a `SummarizedExperiment`
+object.
 
 ```{r quick_start-reduceByFile}
 se <- reduceByFile(gr, fls, MAP, summarize=TRUE)
@@ -88,8 +90,9 @@ Results are stored in the `assays` slot.
 dim(assays(se)$data) ## ranges x files
 ```
 
-`reduceByRange` sends each range to a worker and extracts the same range
-from all files. Adding a reducer to this example combines the pileups from each range across files.
+`reduceByRange` sends each range to a worker and extracts the same range from
+all files. Adding a reducer to this example combines the pileups from each range
+across files.
 
 ```{r quick_start-MAP-REDUCE-reduceByRange}
 library(GenomicAlignments)
@@ -121,12 +124,11 @@ of interest and columns represent files. The object can be subset on files and
 GenomicFiles(gr, fls)
 ```
 
-A `GenomicFiles` can be used as the `ranges` argument to the functions
-in this package. When `summarize=TRUE`, data from the common slots are
-transferred to the `SummarizedExperiment` result.
-NOTE: Results can only be put into a `SummarizedExperiment` when no
-reduction is performed because of the matching dimensions requirement
-(i.e., a REDUCE collapses the results in one dimension).
+A `GenomicFiles` can be used as the `ranges` argument to the functions in this
+package. When `summarize=TRUE`, data from the common slots are transferred to
+the `SummarizedExperiment` result. NOTE: Results can only be put into a
+`SummarizedExperiment` when no reduction is performed because of the matching
+dimensions requirement (i.e., a REDUCE collapses the results in one dimension).
 
 ## Functions
 
@@ -144,18 +146,23 @@ REDUCE for each range / file combination. This approach allows ranges extracted
 from the files to be kept separate or combined before the next call to `MAP`
 based on whether or not a `REDUCE` is supplied.
 
-`reduceRanges` applies `MAP` to each range / file combination and
-REDUCEs the output of all MAP calls. `REDUCE` usually plays a minor
-role by concatenating or unlisting results.
+`reduceRanges` applies `MAP` to each range / file combination and REDUCEs the
+output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or
+unlisting results.
 
 ```{r echo = FALSE, fig1, fig.cap=": Mechanics of `reduceByRange` and `reduceRanges`"}
 knitr::include_graphics("reduceByRange_flow.png")
 ```
 
-In contrast to the 'byRange' approach, `reduceByFile` and `reduceFiles`
-(Figure [2](reduceByFile_flow.png)) split the problem by file. Files are sent to different workers with the set of ranges allowing subsets (i.e., multiple ranges) from the same file to be combined. `reduceByFile` invokes MAP for each file / range combination allowing potential `REDUCE` after each MAP step.
+In contrast to the 'byRange' approach, `reduceByFile` and `reduceFiles` (Figure
+[2](reduceByFile_flow.png)) split the problem by file. Files are sent to
+different workers with the set of ranges allowing subsets (i.e., multiple
+ranges) from the same file to be combined. `reduceByFile` invokes MAP for each
+file / range combination allowing potential `REDUCE` after each MAP step.
 
-`reduceFiles` applies `MAP` to each range / file combination and REDUCEs the output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or unlisting results.
+`reduceFiles` applies `MAP` to each range / file combination and REDUCEs the
+output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or
+unlisting results.
 
 ```{r echo = FALSE, fig2, fig.cap=": Mechanics of `reduceByFile` and `reduceFiles`"}
 knitr::include_graphics("reduceByFile_flow.png")
@@ -240,7 +247,10 @@ head(pile2[[1]])
 
 ## Basepair-level $t$-test with case / control groups
 
-In this example, coverage is computed for a region of interest in multiple files. A grouping variable that defines case / control status is passed as an extra argument to `reduceByRange` and used in the reduction step to perform the t-test.
+In this example, coverage is computed for a region of interest in multiple
+files. A grouping variable that defines case / control status is passed as an
+extra argument to `reduceByRange` and used in the reduction step to perform the
+t-test.
 
 Define ranges of interest,
 
@@ -575,6 +585,7 @@ groups, not the structure of the GRangesList. Output is a list of length
 ```{r coverage3-Results, eval=FALSE}
 cvg3 <- reduceFiles(unlist(tiles), fls, MAP, REDUCE)
 ```
+
 ```
 > cvg3[1]
   $ERR127306
@@ -707,6 +718,7 @@ FUN <- function(file, gr, YIELD, MAP, REDUCE, tiles, ...) {
   $ERR127305
   [1]  25646 145655  79854 219333 327909
 ```
+
 
 # `sessionInfo()`
 
