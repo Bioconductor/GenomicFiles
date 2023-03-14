@@ -14,12 +14,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 output:
   BiocStyle::html_document
----
-
-```{r include=FALSE}
-library(knitr)
-opts_chunk$set(tidy=FALSE)
-``` 
+--- 
 
 # Introduction
   
