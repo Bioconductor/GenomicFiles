@@ -99,6 +99,7 @@ REDUCE <- function(mapped, ...) {
     cmb = do.call(rbind, mapped)
     xtabs(count ~ pos + nucleotide, cmb)
 }
+
 lst <- reduceByRange(gr, fls, MAP, REDUCE, iterate=FALSE)
 ```
 
@@ -386,8 +387,8 @@ subset on 3 files and both ranges.
 
 ```{r junctions-counts1}
 counts1 <- reduceByFile(gf[,1:3], MAP=MAP)
-length(counts1) ## 3 files
-elementNROWS(counts1) ## 2 ranges
+length(counts1)        ## 3 files
+elementNROWS(counts1)  ## 2 ranges
 ```
 
 Each list element has a table of counts for each range.
@@ -402,7 +403,8 @@ exactly 1 junction.
 ```{r junctions-REDUCE}
 REDUCE <- function(mapped, ...)
     sum(sapply(mapped, "[", "1"))
-    reduceByFile(gr, fls, MAP, REDUCE)
+    
+reduceByFile(gr, fls, MAP, REDUCE)
 ```
 
 Next invoke `reduceFiles` with the same files and MAP function.
