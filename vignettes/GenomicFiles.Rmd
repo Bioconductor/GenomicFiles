@@ -29,11 +29,11 @@ worker, not across workers.
 We assume the reader has some previous experience with R and with basic
 manipulation of ranges objects such as `GRanges` and `GAlignments` and file
 classes such as `BamFile` and `BigWigFile`. See the vignettes and documentation
-in `r Biocpkg("GenomicRanges")`, `r Biocpkg("GenomicAlignments")`, `r Biocpkg
-("GenomicAlignments")`, `r Biocpkg("Rsamtools")` and `r Biocpkg("rtracklayer")`
+in `r Biocpkg("GenomicRanges")`, `r Biocpkg("GenomicAlignments")`, `r Biocpkg("Rsamtools")` and `r Biocpkg("rtracklayer")`
 for an introduction to these classes.
 
-The GenomicFiles package is available at bioconductor.org and can be downloaded via `BiocManager::install`.
+The GenomicFiles package is available at bioconductor.org and can be downloaded
+via `BiocManager::install`.
 
 ```{r install, eval=FALSE}
 if (!require("BiocManager"))
@@ -95,7 +95,6 @@ all files. Adding a reducer to this example combines the pileups from each range
 across files.
 
 ```{r quick_start-MAP-REDUCE-reduceByRange}
-library(GenomicAlignments)
 REDUCE <- function(mapped, ...) {
     cmb = do.call(rbind, mapped)
     xtabs(count ~ pos + nucleotide, cmb)
@@ -137,8 +136,12 @@ using the parallel infrastructure provided in `BiocParallel`. Files and ranges
 are sent to workers along with MAP and REDUCE functions. The MAP extracts and/or
 manipulates data and REDUCE consolidates the results from MAP. Both MAP and
 REDUCE are executed in the distributed step and therefore reduction occurs on
-data from the same worker, not across workers. The chart in Figure
-[1](reduceByRange_flow.png) represents the division of labor in `reduceByRange`
+data from the same worker, not across workers.
+
+The chart in Figure 
+<a id="fig1" ></a>
+[1](#fig1)
+represents the division of labor in `reduceByRange`
 and `reduceRanges` with 3 files and 4 ranges. These functions split the problem
 by range which allows subsets (i.e., the same range) to be combined across
 different files. `reduceByRange` iterates through the files, invoking MAP and
@@ -150,12 +153,13 @@ based on whether or not a `REDUCE` is supplied.
 output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or
 unlisting results.
 
-```{r echo = FALSE, fig1, fig.cap=": Mechanics of `reduceByRange` and `reduceRanges`"}
+```{r fig1, echo = FALSE, fig.cap = "Mechanics of `reduceByRange` and `reduceRanges`"}
 knitr::include_graphics("reduceByRange_flow.png")
 ```
 
 In contrast to the 'byRange' approach, `reduceByFile` and `reduceFiles` (Figure
-[2](reduceByFile_flow.png)) split the problem by file. Files are sent to
+<a id="fig2" ></a>
+[2](#fig2)) split the problem by file. Files are sent to
 different workers with the set of ranges allowing subsets (i.e., multiple
 ranges) from the same file to be combined. `reduceByFile` invokes MAP for each
 file / range combination allowing potential `REDUCE` after each MAP step.
@@ -164,7 +168,7 @@ file / range combination allowing potential `REDUCE` after each MAP step.
 output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or
 unlisting results.
 
-```{r echo = FALSE, fig2, fig.cap=": Mechanics of `reduceByFile` and `reduceFiles`"}
+```{r fig2, echo = FALSE, fig.cap = "Mechanics of `reduceByFile` and `reduceFiles`"}
 knitr::include_graphics("reduceByFile_flow.png")
 ```
 
@@ -174,7 +178,7 @@ The `reduceByRange` and `reduceRanges` functions are designed for analyses that
 compare or combine data subsets across files. The first example in this section
 computes pileups on subsets from individual files then sums over all files. The
 second example computes coverage on a group of ranges for each file then
-performs a basepair-level t-test across files. The t-test example also
+performs a basepair-level $t$-test across files. The $t$-test example also
 demonstrates how to use a blocking factor to differentiate files by experimental
 group (e.g., case vs control).
 
@@ -250,7 +254,7 @@ head(pile2[[1]])
 In this example, coverage is computed for a region of interest in multiple
 files. A grouping variable that defines case / control status is passed as an
 extra argument to `reduceByRange` and used in the reduction step to perform the
-t-test.
+$t$-test.
 
 Define ranges of interest,
 
@@ -267,7 +271,7 @@ grp <- factor(rep(c("A","B"), each=length(fls)/2))
 
 The MAP reads in alignments from each BAM file and computes coverage.
 Coverage is coerced from an RleList to numeric vector for later use in
-the t-test.
+the $t$-test.
 
 ```{r ttest-MAP}
 MAP <- function(range, file, ...) {
@@ -278,9 +282,10 @@ MAP <- function(range, file, ...) {
     }
 ```
 
-REDUCE combines the coverage vectors into a matrix, identifies all-zero
-rows, and performs row-wise t-testing using the `rowttests` function from
-the `r Biocpkg("genefilter")`  package. The index of which rows correspond to which basepair of the original range is stored as a column `offset`.
+REDUCE combines the coverage vectors into a matrix, identifies all-zero rows,
+and performs row-wise $t$-testing using the `rowttests` function from the `rBiocpkg("genefilter")` 
+package. The index of which rows correspond to which
+basepair of the original range is stored as a column `offset`.
 
 ```{r ttest-REDUCE}
 REDUCE <- function(mapped, ..., grp) {
@@ -294,14 +299,14 @@ REDUCE <- function(mapped, ..., grp) {
 The file grouping is passed as an extra argument to `reduceByRange`.
 `iterate=FALSE` postpones the reduction until coverage vectors for all
 files have been computed. This delay is necessary because REDUCE uses
-the file grouping factor to perform the t-test and relies on the
+the file grouping factor to perform the $t$-test and relies on the
 coverage vectors for all files to be present.
 
 ```{r ttest-results, eval=FALSE}
 ttest <- reduceByRange(roi, fls, MAP, REDUCE, iterate=FALSE, grp=grp)
 ```
 
-The result is a list of summary tables of basepair-level t-test
+The result is a list of summary tables of basepair-level $t$-test
 statistics for each range across all files.
 
 ```
@@ -435,7 +440,7 @@ chr14_seqlen <- seqlengths(seqinfo(BamFileList(fls))["chr14"])
 tiles <- tileGenome(chr14_seqlen, ntile=5)
 ```
 
-tiles is a `GRangesList` of length `ntile` with one range per element
+`tiles` is a GRangesList of length `ntile` with one range per element
 
 ```{r coverage1-tiles-show}
 tiles
@@ -618,7 +623,7 @@ GRangesList.
 ## Records in a file
 
 `reduceByYield` iterates through records in a single file that would
-otherwise not fit in memory.It is similar to a one dimensional
+otherwise not fit in memory. It is similar to a one dimensional
 `reduceByFile` but the arguments and approach are slightly different.
 
 Similar to other `GenomicFiles` functions, data are manipulated and
@@ -627,7 +632,8 @@ are the use of `YIELD` and `DONE` arguments. `YIELD` is a function that
 returns a chunk of data to work on and `DONE` is a function that defines a
 stopping criteria.
 
-Records from a single file are read by `readGAlignments` and limited by the `yieldSize` set in the BamFile.
+Records from a single file are read by `readGAlignments` and limited by the
+`yieldSize` set in the BamFile.
 
 ```{r reduceByYield-YIELD}
 library(GenomicAlignments)
@@ -690,7 +696,8 @@ FUN <- function(file, gr, YIELD, MAP, REDUCE, tiles, ...) {
 }
 ```
 
-`bplapply` distributes the files to workers. Each worker uses `reduceByYield` to iteratively count and reduce overlaps in a BAM file.
+`bplapply` distributes the files to workers. Each worker uses `reduceByYield` to
+iteratively count and reduce overlaps in a BAM file.
 
 ```
 > bplapply(fls, FUN, gr=gr, YIELD=YIELD, MAP=MAP, REDUCE=REDUCE, tiles=tiles)
