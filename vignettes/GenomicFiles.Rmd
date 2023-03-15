@@ -47,7 +47,7 @@ GenomicFiles offers functions for the parallel extraction and combination of dat
 subsets. A user-defined MAP function extracts and manipulates data while an optional REDUCE
 function consolidates the output of MAP.
 
-```{r quick_start-load, message=FALSE}
+```{r quick_start-load, result="hide"}
 library(GenomicFiles)
 ```
 
