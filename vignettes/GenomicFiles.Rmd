@@ -29,7 +29,8 @@ worker, not across workers.
 We assume the reader has some previous experience with R and with basic
 manipulation of ranges objects such as `GRanges` and `GAlignments` and file
 classes such as `BamFile` and `BigWigFile`. See the vignettes and documentation
-in `r Biocpkg("GenomicRanges")`, `r Biocpkg("GenomicAlignments")`, `r Biocpkg("Rsamtools")` and `r Biocpkg("rtracklayer")`
+in `r Biocpkg("GenomicRanges")`, `r Biocpkg("GenomicAlignments")`,
+`r Biocpkg("Rsamtools")` and `r Biocpkg("rtracklayer")`
 for an introduction to these classes.
 
 The GenomicFiles package is available at bioconductor.org and can be downloaded
@@ -216,7 +217,8 @@ MAP <- function(range, file, ...) {
 }
 ```
 
-With no REDUCE function, the output is a list the same length as the number of ranges where each list element is the length of the number of files.
+With no REDUCE function, the output is a list the same length as 
+the number of ranges where each list element is the length of the number of files.
 
 ```
 pile1 <- reduceByRange(gr, fls, MAP) 
