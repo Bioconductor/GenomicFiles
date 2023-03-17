@@ -10,14 +10,16 @@ Authors@R: c(person("Bioconductor Package Maintainer", role = c("aut", "cre"),
 	      person("Valerie", "Obenchain", role = "aut"),
 	      person("Michael", "Love", role = "aut"),
 	      person("Lori", "Shepherd", role = "aut"),
-	      person("Martin", "Morgan", role = "aut"))
+	      person("Martin", "Morgan", role = "aut"),
+              person("Sonali", "Kumari", role = "ctb",
+                     comment = "Converted 'GenomicFiles' vignettes from Sweave to RMarkdown / HTML."))
 biocViews: Genetics, Infrastructure, DataImport, Sequencing, Coverage
 Depends: R (>= 3.1.0), methods, BiocGenerics (>= 0.11.2), MatrixGenerics,
         GenomicRanges (>= 1.31.16), SummarizedExperiment,
         BiocParallel (>= 1.1.0), Rsamtools (>= 1.17.29), rtracklayer (>= 1.25.3)
 Imports: GenomicAlignments (>= 1.7.7), IRanges, S4Vectors (>= 0.9.25),
         VariantAnnotation (>= 1.27.9), GenomeInfoDb
-Suggests: BiocStyle, RUnit, genefilter, deepSNV, snpStats,
+Suggests: BiocStyle, RUnit, genefilter, deepSNV, snpStats, knitr,
 	RNAseqData.HNRNPC.bam.chr14, Biostrings, Homo.sapiens
 License: Artistic-2.0
 Collate: GenomicFiles-class.R
@@ -33,3 +35,4 @@ Collate: GenomicFiles-class.R
     zzz.R
 Video: https://www.youtube.com/watch?v=3PK_jx44QTs
 RoxygenNote: 6.1.0
+VignetteBuilder: knitr
