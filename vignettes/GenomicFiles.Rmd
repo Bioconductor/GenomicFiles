@@ -192,7 +192,7 @@ Create a GRanges with regions of interest:
 
 ```{r pileups-ranges}
 gr <- GRanges("chr14", IRanges(c(19411677, 19659063, 105421963,
-     105613740), width=20))
+                                 105613740), width=20))
 ```
 
 The `bam2R` function from the `r Biocpkg("deepSNV")` package is used to compute
