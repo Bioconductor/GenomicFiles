@@ -29,8 +29,8 @@ worker, not across workers.
 We assume the reader has some previous experience with R and with basic
 manipulation of ranges objects such as `GRanges` and `GAlignments` and file
 classes such as `BamFile` and `BigWigFile`. See the vignettes and documentation
-in `r Biocpkg("GenomicRanges")`, `r Biocpkg("GenomicAlignments")`, `r Biocpkg("Rsamtools")` 
-and `r Biocpkg("rtracklayer")` for an introduction to
+in `r Biocpkg("GenomicRanges")`, `r Biocpkg("GenomicAlignments")`,
+`r Biocpkg("Rsamtools")` and `r Biocpkg("rtracklayer")` for an introduction to
 these classes.
 
 The GenomicFiles package is available at bioconductor.org and can be downloaded
@@ -44,9 +44,9 @@ BiocManager::install("GenomicFiles")
 
 # Quick Start
 
-GenomicFiles offers functions for the parallel extraction and combination of data
-subsets. A user-defined MAP function extracts and manipulates data while an optional REDUCE
-function consolidates the output of MAP.
+GenomicFiles offers functions for the parallel extraction and combination of
+data subsets. A user-defined MAP function extracts and manipulates data while
+an optional REDUCE function consolidates the output of MAP.
 
 ```{r quick_start-load, results="hide", message=FALSE}
 library(GenomicFiles)
@@ -139,9 +139,7 @@ manipulates data and REDUCE consolidates the results from MAP. Both MAP and
 REDUCE are executed in the distributed step and therefore reduction occurs on
 data from the same worker, not across workers.
 
-The chart in Figure 
-[1](#fig1)
-represents the division of labor in `reduceByRange`
+The chart in Figure [1](#fig1) represents the division of labor in `reduceByRange`
 and `reduceRanges` with 3 files and 4 ranges. These functions split the problem
 by range which allows subsets (i.e., the same range) to be combined across
 different files. `reduceByRange` iterates through the files, invoking MAP and
@@ -153,21 +151,22 @@ based on whether or not a `REDUCE` is supplied.
 output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or
 unlisting results.
 
-<a id="fig1" ></a>
+<a id="fig1"></a>
 ```{r fig1, echo = FALSE, fig.cap = "Mechanics of `reduceByRange` and `reduceRanges`"}
 knitr::include_graphics("reduceByRange_flow.png")
 ```
 
-In contrast to the 'byRange' approach, `reduceByFile` and `reduceFiles` (Figure [2](#fig2)) split the problem by file. Files are sent to
-different workers with the set of ranges allowing subsets (i.e., multiple
-ranges) from the same file to be combined. `reduceByFile` invokes MAP for each
-file / range combination allowing potential `REDUCE` after each MAP step.
+In contrast to the 'byRange' approach, `reduceByFile` and `reduceFiles` (Figure
+[2](#fig2)) split the problem by file. Files are sent to different workers with
+the set of ranges allowing subsets (i.e., multiple ranges) from the same file
+to be combined. `reduceByFile` invokes MAP for each file / range combination
+allowing potential `REDUCE` after each MAP step.
 
 `reduceFiles` applies `MAP` to each range / file combination and REDUCEs the
 output of all MAP calls. `REDUCE` usually plays a minor role by concatenating or
 unlisting results.
 
-<a id="fig2" ></a>
+<a id="fig2"></a>
 ```{r fig2, echo = FALSE, fig.cap = "Mechanics of `reduceByFile` and `reduceFiles`"}
 knitr::include_graphics("reduceByFile_flow.png")
 ```
@@ -202,7 +201,8 @@ the statistics. The MAP invokes `bam2R` and retains only the nucleotide counts
 uppercase and counts from the complement are lowercase.
 
 Because the `bam2R` function is not explicitly passed through the MAP,
-`r Biocpkg("deepSNV")` must be loaded on each worker so the function can be found.
+`r Biocpkg("deepSNV")` must be loaded on each worker so the function can be
+found.
 
 ```{r pileups-MAP}
 MAP <- function(range, file, ...) {
@@ -215,7 +215,8 @@ MAP <- function(range, file, ...) {
 }
 ```
 
-With no REDUCE function, the output is a list the same length as the number of ranges where each list element is the length of the number of files.
+With no REDUCE function, the output is a list the same length as the number of
+ranges where each list element is the length of the number of files.
 
 ```
 pile1 <- reduceByRange(gr, fls, MAP) 
@@ -284,8 +285,8 @@ MAP <- function(range, file, ...) {
 ```
 
 REDUCE combines the coverage vectors into a matrix, identifies all-zero rows,
-and performs row-wise $t$-testing using the `rowttests` function from the `rBiocpkg("genefilter")` 
-package. The index of which rows correspond to which
+and performs row-wise $t$-testing using the `rowttests` function from the
+`rBiocpkg("genefilter")` package. The index of which rows correspond to which
 basepair of the original range is stored as a column `offset`.
 
 ```{r ttest-REDUCE}
@@ -617,8 +618,7 @@ operate on groups of ranges instead of a single range).
 
 For applications that combine data within a file, chunking can be done
 with `reduceByFile` and a GRangesList. Similarly, when chunking through
-ranges to combine data across files use `reduceByRange` with a
-GRangesList.
+ranges to combine data across files use `reduceByRange` with a GRangesList.
 
 ## Records in a file
 
