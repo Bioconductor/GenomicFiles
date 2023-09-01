@@ -1,7 +1,7 @@
 Package: GenomicFiles
 Title: Distributed computing by file or by range
 Description: This package provides infrastructure for parallel 
-	computations distributed 'by file' or 'by range'. User 
+	computations distributed 'by file' or 'by range'. User- 
 	defined MAPPER and REDUCER functions provide added 
 	flexibility for data combination and manipulation.
 Version: 1.37.0
@@ -33,6 +33,7 @@ Collate: GenomicFiles-class.R
     unpack-methods.R
     registry.R
     zzz.R
+URL: https://github.com/Bioconductor/GenomicFiles
 Video: https://www.youtube.com/watch?v=3PK_jx44QTs
 RoxygenNote: 6.1.0
 VignetteBuilder: knitr
