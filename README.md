@@ -30,10 +30,10 @@ If you use `GenomicFiles`, please cite:
 ## Installation
 
 ``` r
-if(!require("remotes")) install.packages("remotes")
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
 
-remotes::install_github("https://github.com/Bioconductor/GenomicFiles")
-library(GenomicFiles)
+BiocManager::install("GenomicFiles")
 ```
 
 ## Documentation

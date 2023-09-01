@@ -28,10 +28,10 @@ If you use ``r pkg``, please cite:
 ## Installation 
 
 ```R
-if(!require("remotes")) install.packages("remotes")
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
 
-remotes::install_github("`r URL`")
-library(`r pkg`)
+BiocManager::install("`r pkg`")
 ```
 ## Documentation 
 
