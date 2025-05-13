@@ -1,0 +1,7 @@
+title: GenomicFiles
+url: https://Bioconductor.github.io/GenomicFiles
+
+template:
+  bootstrap: 5
+  params:
+    bootswatch: flatly
