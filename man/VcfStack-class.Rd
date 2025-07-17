@@ -58,9 +58,8 @@
 
 \section{Constructor}{
   \describe{
-    \item{}{
-        \code{VcfStack(files=NULL, seqinfo=NULL, colData=NULL,
-	  index=TRUE, check=TRUE)}
+    \item{\code{VcfStack(files=NULL, seqinfo=NULL, colData=NULL,
+                         index=TRUE, check=TRUE)}:}{
         Creates a VcfStack object.
         \describe{
           \item{\code{files}}{
@@ -71,7 +70,7 @@
             seqnames in each VCF file.
           }
           \item{\code{seqinfo}}{
-            A \link[GenomeInfoDb]{Seqinfo} object describing the levels
+            A \link[Seqinfo]{Seqinfo} object describing the levels
             genome and circularity of each sequence.
           }
           \item{\code{colData}}{
@@ -87,8 +86,7 @@
 	  }
         }
     }
-    \item{}{
-        \code{RangedVcfStack(vs=NULL, rowRanges=NULL)}
+    \item{\code{RangedVcfStack(vs=NULL, rowRanges=NULL)}:}{
         Creates a RangedVcfStack object.
         \describe{
           \item{\code{vs}}{
@@ -130,7 +128,7 @@
       \link[VariantAnnotation]{VcfFileList}.
     }
     \item{seqinfo(x), seqinfo(x, new2old = NULL, pruning.mode = c("error", "coarse", "fine", "tidy")) <- value}{
-      Get or set the seqinfo on \code{x}. See \link[GenomeInfoDb]{seqinfo<-}
+      Get or set the seqinfo on \code{x}. See \link[Seqinfo]{seqinfo<-}
       for details on \code{new2old} and \code{pruning.mode}.
     }
     \item{seqlevelsStyle(x) <- value}{
@@ -153,7 +151,7 @@
 \section{Methods}{
   In the code below, \code{x} is a VcfStack or RangedVcfStack
   object. \code{i} is a \link[GenomicRanges]{GRanges} object,
-  character() vector of \link[GenomeInfoDb:Seqinfo-class]{seqnames},
+  character() vector of \link[Seqinfo]{seqnames},
   numeric() vector, logical() vector, or can be missing. For a
   RangedVcfStack object, assay and readVcfStack will use the associated
   \code{rowRanges} object for \code{i}.
@@ -198,7 +196,7 @@
       the \code{rowRanges} object will also be subset.
 
       \code{i} can be missing, a character() vector of
-      \link[GenomeInfoDb:Seqinfo-class]{seqnames}, numeric() vector of
+      \link[Seqinfo]{seqnames}, numeric() vector of
       indexes, logical() or \code{GRanges} object. When \code{i} is a
       \code{GRanges} object,  \code{seqnames(i)} is then
       used to subset the files in the VcfStack.
@@ -278,6 +276,8 @@ head(assay(rstack2))
 
 seqlevels(stack2)
 rownames(stack2)
+
+library(GenomeInfoDb)  # for seqlevelsStyle()
 seqlevelsStyle(stack2)
 seqlevelsStyle(stack2) <- "UCSC"
 seqlevelsStyle(stack2)

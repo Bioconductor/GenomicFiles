@@ -140,18 +140,16 @@ reduceRanges(ranges, files, MAP, REDUCE, ..., init)
 
 \value{
   \itemize{
-    \item{reduceByRange:}{
+    \item \code{reduceByRange}:
       When \code{summarize=FALSE} the return value is a \code{list} or
       the value from the final invocation of \code{REDUCE}. When
       \code{summarize=TRUE} output is a \code{SummarizedExperiment}.
       When \code{ranges} is a \code{GenomicFiles} object data from
       \code{rowRanges}, \code{colData} and \code{metadata} are transferred
       to the \code{SummarizedExperiment}.
-    }
-    \item{reduceRanges:}{
+    \item \code{reduceRanges}:
       A \code{list} or the value returned by the final invocation of
       \code{REDUCE}.
-    }
   }
 }
 

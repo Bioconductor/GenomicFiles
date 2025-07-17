@@ -129,18 +129,16 @@ reduceFiles(ranges, files, MAP, REDUCE, ..., init)
 
 \value{
   \itemize{
-    \item{reduceByFile:}{
+    \item \code{reduceByFile}:
       When \code{summarize=FALSE} the return value is a \code{list} or
       the value from the final invocation of \code{REDUCE}. When
       \code{summarize=TRUE} output is a \code{SummarizedExperiment}.
       When \code{ranges} is a \code{GenomicFiles} object data from 
       \code{rowRanges}, \code{colData} and \code{metadata} are transferred 
       to the \code{SummarizedExperiment}.
-    }
-    \item{reduceFiles:}{
+    \item \code{reduceFiles}:
       A \code{list} or the value returned by the final invocation of
       \code{REDUCE}.
-    }
   }
 }
 

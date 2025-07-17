@@ -41,8 +41,8 @@
 
 \details{
 
-  \itemize{
-    \item{registerFileType}{
+  \describe{
+    \item{\code{registerFileType}:}{
       The \code{registerFileType} function adds entries to the file 
       type register created at load time. The point of the register
       is for discovery of file type (class) by file extension.
@@ -57,11 +57,11 @@
       the register with \code{registerFileType} by providing
       these three pieces of information.
     }
-    \item{findTypeRegistry}{
+    \item{\code{findTypeRegistry}:}{
       Searches the registry for a match to the extension of
       \code{fname}. Internal use only. 
     }
-    \item{makeFileType}{
+    \item{\code{makeFileType}:}{
       Performs a look-up in the file registry based on the supplied
       regular expression; returns an object of the associated class. 
       Internal use only.

@@ -37,9 +37,8 @@
 
 \section{Constructor}{
   \describe{
-    \item{}{
-      \code{GenomicFiles(rowRanges, files, colData=DataFrame(),
-                         metadata=list(), ...)}:
+    \item{\code{GenomicFiles(rowRanges, files, colData=DataFrame(),
+                             metadata=list(), ...)}:}{
     }
   }
 }

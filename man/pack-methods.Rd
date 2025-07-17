@@ -54,8 +54,7 @@
   }
   \subsection{Utilities}{
   \describe{
-    \item{}{
-      \code{isPacked(x, ...)}:
+    \item{\code{isPacked(x, ...)}:}{
       Returns a logical indicating if the ranges in \code{x} are packed.
       \code{x} must be a \code{GRangesList} object.
     }
