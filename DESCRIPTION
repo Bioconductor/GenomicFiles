@@ -1,6 +1,6 @@
 Package: GenomicFiles
 Title: Distributed computing by file or by range
-Version: 1.45.1
+Version: 1.45.2
 Authors@R: c(
     person("Bioconductor Package Maintainer",
       email = "maintainer@bioconductor.org", role = c("aut", "cre")
