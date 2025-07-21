@@ -16,17 +16,17 @@ setClass("GenomicFiles",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity 
+### Validity
 ###
 
-setMethod(.validity, "GenomicFiles", 
-    function(object) 
+setMethod(.validity, "GenomicFiles",
+    function(object)
 {
     msg <- NULL
     if (length(files(object)) != nrow(colData(object)))
         msg <- "'length(files(object))' must equal 'nrow(colData(object))'"
 
-    msg 
+    msg
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,11 +48,11 @@ setMethod(GenomicFiles, c("GenomicRanges_OR_GRangesList", "character"),
         if (missing(colData))
             colData <- DataFrame(row.names=nms)
         else
-            rownames(colData) <- nms 
+            rownames(colData) <- nms
     }
-    new("GenomicFiles", 
-        SummarizedExperiment(rowRanges=rowRanges, 
-                             colData=colData, 
+    new("GenomicFiles",
+        SummarizedExperiment(rowRanges=rowRanges,
+                             colData=colData,
                              metadata=metadata, ...), files=files)
 })
 
@@ -68,9 +68,9 @@ setMethod(GenomicFiles, c("GenomicRanges_OR_GRangesList", "List"),
         else
             rownames(colData) <- basename(nms)
     }
-    new("GenomicFiles", 
-        SummarizedExperiment(rowRanges=rowRanges, 
-                             colData=colData, 
+    new("GenomicFiles",
+        SummarizedExperiment(rowRanges=rowRanges,
+                             colData=colData,
                              metadata=metadata, ...), files=files)
 })
 
@@ -171,10 +171,10 @@ setMethod("[", c("GenomicFiles", "ANY", "ANY"),
 ### Show
 ###
 
-setMethod(show, "GenomicFiles", 
-    function(object) 
+setMethod(show, "GenomicFiles",
+    function(object)
 {
-    cat(class(object), "object with", 
+    cat(class(object), "object with",
         paste(dim(object), c("ranges", "files:"), collapse=" and "),
         "\n")
     cat("files:", paste(BiocBaseUtils::selectSome(basename(files(object))),

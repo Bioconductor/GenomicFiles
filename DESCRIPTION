@@ -26,7 +26,7 @@ Depends:
     Rsamtools (>= 2.25.1),
     rtracklayer (>= 1.69.1),
     SummarizedExperiment (>= 1.39.1)
-Imports: 
+Imports:
     BiocBaseUtils,
     GenomeInfoDb (>= 1.45.7),
     GenomicAlignments (>= 1.45.1),
@@ -34,7 +34,7 @@ Imports:
     S4Vectors,
     Seqinfo,
     VariantAnnotation (>= 1.55.1)
-Suggests: 
+Suggests:
     BiocStyle,
     Biostrings,
     deepSNV,
@@ -44,12 +44,12 @@ Suggests:
     RNAseqData.HNRNPC.bam.chr14,
     RUnit,
     snpStats
-VignetteBuilder: 
+VignetteBuilder:
     knitr
 biocViews: Genetics, Infrastructure, DataImport, Sequencing, Coverage
 RoxygenNote: 6.1.0
 Video: https://www.youtube.com/watch?v=3PK_jx44QTs
-Collate: 
+Collate:
     'GenomicFiles-class.R'
     'VcfStack-class.R'
     'reduceByFile-methods.R'
