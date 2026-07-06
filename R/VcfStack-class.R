@@ -313,7 +313,12 @@ readVcfStack <- function(x, i, j=colnames(x), param=ScanVcfParam())
         gr <- GRanges()
     } else {                            # use param
         gr <- GRanges(vcfWhich(param))
-        i = intersect(names(files(x)), as.character(seqnames(gr)))
+        if (length(gr)) {
+            i = intersect(names(files(x)), as.character(seqnames(gr)))
+        } else {
+            ## param provided but no which= specified: read all files
+            i = names(files(x))
+        }
     }
     x = x[i]
 

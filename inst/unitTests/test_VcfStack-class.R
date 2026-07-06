@@ -223,6 +223,14 @@ test_VcfStack_readVcfStack <- function(){
     Rstack = RangedVcfStack(stack, gr)
     temp7 = readVcfStack(Rstack)
     checkTrue(all(dim(temp7) == dim(temp5)))
+
+    # test param=ScanVcfParam() with no which= reads all variants (#50)
+    # Previously returned 0-row VCF because empty which= intersected to empty i
+    tempParam = readVcfStack(Rstack, param=ScanVcfParam())
+    checkTrue(all(dim(tempParam) == dim(temp7)))
+
+    tempParamStack = readVcfStack(stack, param=ScanVcfParam())
+    checkTrue(all(dim(tempParamStack) == dim(temp)))
 }
 
 test_VcfStack_vcfFields <- function(){
